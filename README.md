@@ -40,6 +40,7 @@ Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App n
 
 ## Funktionen
 
+- **Übersicht:** Dashboard mit Kennzahlen, Verlauf, grössten Ausgaben, letzten Einträgen, nächsten Fixposten, Konten und Sparzielen. Auf Mac und iPad mit Seitenleiste.
 - **Einträge:** Ausgaben und Einnahmen in CHF und EUR, CSV-Import von der Bank, Suche über alle Monate.
 - **Planung:** Fixkosten und Verträge werden am gewählten Tag automatisch eingetragen, mit optionaler Kündigungsfrist. Dazu Budgets je Kategorie und Sparziele.
 - **Prognose:** Die Übersicht zeigt, was nach den noch ausstehenden Fixkosten bis Monatsende frei bleibt.

@@ -16,8 +16,9 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
-/* Layout: Liquid Glass. Farbiger Hintergrund, Inhalt auf Milchglas-Karten, Bedienung schwebt als Glas darüber:
-   unten Leiste mit Ansicht und Plus-Knopf, neuer Eintrag als schwebendes Sheet. Am Desktop steht das Formular links. */
+/* Layout: Liquid Glass. Blauer Hintergrund, Inhalt auf Milchglas-Karten, Bedienung schwebt als Glas darüber.
+   Schmal (Handy): Leiste unten mit Plus-Knopf. Breit (Mac, iPad quer): Seitenleiste links, breite Arbeitsfläche,
+   Kennzahlen als Kacheln. Neuer Eintrag ist überall ein schwebendes Fenster. */
 :root {
   --bg: #e9f0fb;
   --w1: #9fc8ff; --w2: #b9cbff; --w3: #a9daf7; --w4: #cfe1ff;
@@ -50,6 +51,7 @@
   --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
   --font-display: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
   --r: 28px;
+  --pad: 16px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -106,7 +108,7 @@ button { cursor: pointer; }
 .panel, .top .btn, .monthbar .btn {
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
   border: 1px solid var(--edge); box-shadow: var(--shine), var(--depth); }
-.panel { background: var(--surface); border-radius: var(--r); padding: 16px; min-width: 0; }
+.panel { background: var(--surface); border-radius: var(--r); padding: var(--pad); min-width: 0; }
 .top .btn, .monthbar .btn { background: var(--glass); }
 
 .hint, .msg { margin: 0; color: var(--muted); font-size: 13px; letter-spacing: -0.005em; line-height: 1.4; }
@@ -165,13 +167,36 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 .form-open .entry { display: flex; }
 .entry .head { justify-content: center; }
 
-/* Handy: schwebende Glas-Leiste unten und Eintrag als schwebendes Sheet */
-@media (max-width: 879.98px) {
+/* Neuer Eintrag: schwebendes Glas-Fenster über abgedunkeltem Inhalt */
+html:has(#app.form-open) { overflow: hidden; }
+#app.form-open::before { content: ""; position: fixed; inset: 0; z-index: 25; background: var(--scrim); animation: scrim-in 250ms ease both; }
+.entry { position: fixed; z-index: 30; margin: 0 auto; max-width: 560px;
+  left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  max-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 36px); overflow-y: auto; overscroll-behavior: contain;
+  border-radius: 38px; background: var(--sheet); box-shadow: var(--shine), var(--shadow-float);
+  -webkit-backdrop-filter: blur(40px) saturate(200%); backdrop-filter: blur(40px) saturate(200%);
+  padding: 28px 18px 18px;
+  animation: sheet-in 460ms cubic-bezier(0.32, 0.72, 0, 1) both; }
+.entry::before { content: ""; position: absolute; top: 9px; left: 50%; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: var(--line); }
+@keyframes sheet-in { from { transform: translateY(calc(100% + 40px)) scale(0.96); } to { transform: none; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.94); } to { opacity: 1; transform: translateX(-50%); } }
+
+.pagehead { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.stack > .bars, .stack > .chart { margin-top: 0; }
+
+/* Schmal: schwebende Glas-Leiste unten */
+@media (max-width: 999.98px) {
+  .side { display: contents; }
+  .brand, .pagetitle, .fab span { display: none; }
+  #extras { margin-bottom: 16px; }
   .seg.tabs, .fab { position: fixed; z-index: 15; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); height: 64px;
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--edge); }
   .seg.tabs { left: max(16px, env(safe-area-inset-left, 0px)); right: calc(max(16px, env(safe-area-inset-right, 0px)) + 74px);
     padding: 4px; background: var(--glass); box-shadow: var(--shine), var(--shadow-float); }
-  .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; padding: 4px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--muted); }
+  .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; min-width: 0; padding: 4px 2px; font-size: 10.5px; font-weight: 600; letter-spacing: 0; color: var(--muted); }
   .seg.tabs svg { width: 24px; height: 24px; }
   .seg.tabs input:checked + label { color: var(--accent); background: var(--fill); box-shadow: inset 0 1px 0 var(--edge); }
   .fab { right: max(16px, env(safe-area-inset-right, 0px)); width: 64px; padding: 0; border-radius: 50%; color: var(--on-accent);
@@ -181,32 +206,12 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
     transition: transform 100ms ease-out; }
   .fab:active { transform: scale(0.93); }
   .fab svg { width: 26px; height: 26px; }
-
-  html:has(#app.form-open) { overflow: hidden; }
-  #app.form-open::before { content: ""; position: fixed; inset: 0; z-index: 25; background: var(--scrim); animation: scrim-in 250ms ease both; }
-  .entry { position: fixed; z-index: 30; margin: 0 auto; max-width: 560px;
-    left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
-    max-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 36px); overflow-y: auto; overscroll-behavior: contain;
-    border-radius: 38px; background: var(--sheet); box-shadow: var(--shine), var(--shadow-float);
-    -webkit-backdrop-filter: blur(40px) saturate(200%); backdrop-filter: blur(40px) saturate(200%);
-    padding: 28px 18px 18px;
-    animation: sheet-in 460ms cubic-bezier(0.32, 0.72, 0, 1) both; }
-  .entry::before { content: ""; position: absolute; top: 9px; left: 50%; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: var(--line); }
 }
-@media (min-width: 600px) and (max-width: 879.98px) {
-  .seg.tabs { left: calc(50% - 237px); right: auto; width: 400px; }
-  .fab { right: auto; left: calc(50% + 173px); }
-}
-@keyframes sheet-in { from { transform: translateY(calc(100% + 40px)) scale(0.96); } to { transform: none; } }
-@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.94); } to { opacity: 1; transform: translateX(-50%); } }
-
-@media (min-width: 880px) {
-  .grid { grid-template-columns: 350px minmax(0, 1fr); align-items: start; gap: 24px; }
-  .entry { display: flex; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); }
-  .entry .head { justify-content: flex-start; }
-  .fab { display: none; }
-  .wrap { padding-block-end: 56px; }
+@media (min-width: 600px) and (max-width: 999.98px) {
+  .seg.tabs { left: calc(50% - 257px); right: auto; width: 440px; }
+  .fab { right: auto; left: calc(50% + 193px); }
+  .dash { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash > .d-wide { grid-column: 1 / -1; }
 }
 
 .monthbar { display: flex; align-items: center; gap: 8px; }
@@ -231,8 +236,8 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 #tab-list { overflow: hidden; }
 .day { font-size: 13px; color: var(--muted); padding: 18px 2px 6px; letter-spacing: -0.005em; }
 .row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left;
-  width: calc(100% + 32px); margin-inline: -16px; padding: 11px 18px; border: 0; background: none; min-height: 60px; transition: background-color 120ms ease; }
-.row::before { content: ""; position: absolute; top: 0; left: 18px; right: 0; height: 1px; background: var(--line); }
+  width: calc(100% + 2 * var(--pad)); margin-inline: calc(-1 * var(--pad)); padding: 11px calc(var(--pad) + 2px); border: 0; background: none; min-height: 60px; transition: background-color 120ms ease; }
+.row::before { content: ""; position: absolute; top: 0; left: calc(var(--pad) + 2px); right: 0; height: 1px; background: var(--line); }
 .day + .row::before { display: none; }
 .row:hover { background: color-mix(in srgb, var(--fill) 50%, transparent); }
 .row:active { background: var(--fill); transition: none; }
@@ -301,14 +306,81 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   max-width: calc(100% - 32px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--shadow-float);
   animation: toast-in 280ms cubic-bezier(0.32, 0.72, 0, 1) both; }
 
+/* Breit: Seitenleiste wie in einer Mac-App, breite Arbeitsfläche */
+@media (min-width: 1000px) {
+  :root { --pad: 24px; }
+  .wrap { max-width: 1560px; padding-block: 20px 40px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(28px, env(safe-area-inset-right, 0px)); }
+  #app { display: grid; grid-template-columns: 256px minmax(0, 1fr); gap: 32px; align-items: start; }
+  .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); display: flex; flex-direction: column; gap: 18px;
+    height: calc(100vh - 40px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); height: calc(100dvh - 40px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 22px 16px 16px; border-radius: 32px; background: var(--surface); overflow-y: auto;
+    -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--edge); box-shadow: var(--shine), var(--depth); }
+  .top { display: contents; }
+  .top h1 { font-size: 21px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 11px; padding: 0 6px 4px; }
+  .brand { width: 36px; height: 36px; border-radius: 24%; flex: none; box-shadow: 0 4px 12px rgba(0, 96, 223, 0.3); }
+  .top .actions { order: 9; margin-top: auto; flex-wrap: nowrap; }
+  .top .actions .btn { flex: 1; padding-inline: 10px; }
+  .fab { order: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 10px 16px; border-radius: 999px;
+    color: var(--on-accent); font-weight: 600; font-size: 16px; background: linear-gradient(180deg, var(--accent-hi), var(--accent));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
+    transition: transform 100ms ease-out, opacity 100ms ease-out; }
+  .fab:active { transform: scale(0.97); opacity: 0.85; }
+  .fab svg { width: 18px; height: 18px; flex: none; }
+  .seg.tabs { order: 2; flex-direction: column; background: none; box-shadow: none; padding: 0; gap: 4px; border-radius: 0; }
+  .seg.tabs label { flex: none; justify-content: flex-start; gap: 12px; min-height: 46px; padding: 10px 14px; border-radius: 15px; font-size: 16px; }
+  .seg.tabs svg { width: 21px; height: 21px; color: var(--accent); }
+  .seg.tabs label:hover { background: color-mix(in srgb, var(--fill) 60%, transparent); }
+  .seg.tabs input:checked + label { background: var(--thumb); box-shadow: var(--shadow-thumb); }
+
+  .content { min-width: 0; display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+  .main { gap: 24px; }
+  .pagehead { flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; }
+  .pagetitle { font-size: 32px; font-weight: 700; line-height: 1.1; letter-spacing: 0.005em; }
+  .monthbar { gap: 6px; }
+  .monthbar strong { flex: none; min-width: 200px; font-size: 18px; }
+  .panel.stack { gap: 16px; }
+  .head .btn { min-height: 38px; }
+
+  /* Kennzahlen als einzelne Glas-Kacheln */
+  .summary { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 24px; padding: 0; background: none; border: 0; border-radius: 0;
+    box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .pair { display: contents; }
+  .summary > .hero, .pair > div, .summary > .free { min-width: 0; padding: 20px 22px; border-radius: 26px; background: var(--surface);
+    -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--edge); box-shadow: var(--shine), var(--depth); }
+  .summary .lab { margin-bottom: 4px; }
+  .hero .num, .pair .num, .free .num { font-size: 28px; font-weight: 700; line-height: 1.2; display: block; }
+  .free .lab + .num + .lab, .hero .sub { margin: 4px 0 0; }
+
+  .dash { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
+  .dash > .panel { grid-column: span 3; }
+  #tab-stats, #tab-plan, #extras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  #tab-stats, #tab-plan { grid-template-rows: auto 1fr; }
+  #tab-stats > :first-child, #tab-plan > :nth-child(2) { grid-row: span 2; }
+  #extras { scroll-margin-top: 20px; }
+  #extras > #more { grid-column: 1 / -1; }
+
+  .entry { inset: 0; margin: auto; width: 480px; max-width: calc(100% - 48px); height: fit-content; max-height: calc(100% - 48px);
+    border-radius: 34px; padding: 28px 26px 22px; animation: pop-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both; }
+  .entry::before { display: none; }
+  .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 32px); }
+}
+@media (min-width: 1280px) {
+  .dash > .d-wide { grid-column: span 4; }
+  .dash > .d-side { grid-column: span 2; }
+}
+@media (min-width: 1000px) and (max-width: 1279.98px) {
+  .dash > .d-wide { grid-column: 1 / -1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entry, .toast { animation: scrim-in 200ms ease both; }
   .btn, .fab, .seg label, .row { transition: none; }
 }
 /* Ohne Transparenz (Einstellung oder alter Browser): deckende Flächen */
 @media (prefers-reduced-transparency: reduce) {
-  .panel, .top .btn, .monthbar .btn, .seg.tabs, .entry, .toast { -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .panel, .top .btn, .monthbar .btn, .seg.tabs, .entry { background: color-mix(in srgb, var(--bg) 82%, var(--ink) 0%); background: Canvas; }
+  .panel, .side, .summary > *, .pair > div, .top .btn, .monthbar .btn, .seg.tabs, .entry, .toast { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .panel, .side, .pair > div, .hero, .free, .top .btn, .monthbar .btn, .seg.tabs, .entry { background: Canvas; }
   .toast { background: #2c2c2e; }
   body::before { opacity: 0.4; }
 }
@@ -344,12 +416,23 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   </section>
 
   <div id="app" hidden>
+    <aside class="side">
     <header class="top">
-      <h1>Juma Finance</h1>
+      <h1><svg class="brand" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-b)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>Juma Finance</h1>
       <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button></div>
     </header>
+    <button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Neuer Eintrag</span></button>
+    <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
+      <input type="radio" name="tab" id="tab-d" value="dash" checked><label for="tab-d"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="7.5" height="9.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="5.5" rx="2.2"/><rect x="3.5" y="15" width="7.5" height="5.5" rx="2.2"/><rect x="13" y="11" width="7.5" height="9.5" rx="2.2"/></svg><span>Übersicht</span></label>
+      <input type="radio" name="tab" id="tab-a" value="list"><label for="tab-a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor"/></svg><span>Einträge</span></label>
+      <input type="radio" name="tab" id="tab-b" value="stats"><label for="tab-b"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.4" height="8.5" rx="1.6"/><rect x="9.8" y="7.5" width="4.4" height="13" rx="1.6"/><rect x="16.1" y="3.5" width="4.4" height="17" rx="1.6"/></svg><span>Auswertung</span></label>
+      <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
+    </div>
+    </aside>
 
-    <div class="stack" id="extras" style="margin-bottom:16px" hidden>
+    <div class="content">
+
+    <div class="stack" id="extras" hidden>
       <section class="panel stack" id="more">
         <h2>Einstellungen</h2>
         <label class="rateline">1 EUR = <input type="text" id="rate" inputmode="decimal" aria-label="Wechselkurs: Franken pro Euro"> CHF <span id="rate-scope"></span></label>
@@ -449,10 +532,13 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       </form>
 
       <div class="main">
+        <div class="pagehead">
+        <h2 class="pagetitle" id="page-title">Übersicht</h2>
         <div class="monthbar">
           <button class="btn" id="m-prev" type="button" aria-label="Vorheriger Monat"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2 2 9l7 7"/></svg></button>
           <strong id="m-label"></strong>
           <button class="btn" id="m-next" type="button" aria-label="Nächster Monat"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 7 7-7 7"/></svg></button>
+        </div>
         </div>
 
         <section class="panel summary">
@@ -464,13 +550,35 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <div class="free" id="s-free-wrap" hidden><span class="lab" id="s-free-lab">Noch frei bis Monatsende</span><span class="num" id="s-free"></span><span class="lab" id="s-free-sub"></span></div>
         </section>
 
-        <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
-          <input type="radio" name="tab" id="tab-a" value="list" checked><label for="tab-a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor"/></svg><span>Einträge</span></label>
-          <input type="radio" name="tab" id="tab-b" value="stats"><label for="tab-b"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.4" height="8.5" rx="1.6"/><rect x="9.8" y="7.5" width="4.4" height="13" rx="1.6"/><rect x="16.1" y="3.5" width="4.4" height="17" rx="1.6"/></svg><span>Auswertung</span></label>
-          <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
+
+        <div class="dash" id="tab-dash">
+          <section class="panel stack d-wide">
+            <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
+            <div id="dash-chart" class="chart"></div>
+          </section>
+          <section class="panel stack d-side">
+            <div class="head"><h2>Grösste Ausgaben</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div class="bars" id="dash-cats"></div>
+          </section>
+          <section class="panel stack clip">
+            <div class="head"><h2>Letzte Einträge</h2><button class="btn" type="button" data-go="tab-a">Alle</button></div>
+            <div id="dash-recent"></div>
+          </section>
+          <section class="panel stack clip">
+            <div class="head"><h2>Nächste Fixposten</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
+            <div id="dash-fx"></div>
+          </section>
+          <section class="panel stack">
+            <div class="head"><h2>Konten</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div id="dash-acc"></div>
+          </section>
+          <section class="panel stack clip">
+            <div class="head"><h2>Sparziele</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
+            <div id="dash-goals"></div>
+          </section>
         </div>
 
-        <section class="panel" id="tab-list">
+        <section class="panel" id="tab-list" hidden>
           <input type="search" id="q" placeholder="Suchen in allen Monaten" aria-label="Einträge suchen" autocomplete="off" enterkeyhint="search">
           <div class="seg wide" role="radiogroup" aria-label="Einträge filtern">
             <input type="radio" name="lf" id="lf-all" value="all" checked><label for="lf-all">Alle</label>
@@ -555,9 +663,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         </div>
       </div>
     </div>
+    </div>
   </div>
 </div>
-<button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="vendor/supabase.js"></script>
@@ -577,7 +685,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   let months = {}, settings = DEF();
   let seen = {}, busy = {}, dirty = {}, applyChain = Promise.resolve();
   let view = ym(new Date()), editing = null, idleTimer = null, loadTimer = null;
-  let tab = 'list', listFilter = 'all', formOpen = false, imp = null, resizeT;
+  let tab = 'dash', listFilter = 'all', formOpen = false, imp = null, resizeT;
   let searchQ = '', synced = false, noticed = false, listSig = '', listsSig = '', budSig = '', fxEdit = null, goalEdit = null;
 
   /* ---------- Hilfen ---------- */
@@ -599,7 +707,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function timeout(p, ms) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), ms))]); }
   function setMsg(id, t, err) { const el = $(id); el.textContent = t; el.classList.toggle('err', !!err); }
   let toastT; function toast(t) { const el = $('toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 3500); }
-  const wide = () => window.matchMedia('(min-width: 880px)').matches;
+  const wide = () => false; // das Formular ist auf allen Grössen ein schwebendes Fenster
   function confirmTwice(btn, label, question) { if (btn.dataset.sure) { delete btn.dataset.sure; btn.textContent = label; return true; }
     btn.dataset.sure = '1'; btn.textContent = question; setTimeout(() => { if (btn.dataset.sure) { delete btn.dataset.sure; btn.textContent = label; } }, 5000); return false; }
 
@@ -808,7 +916,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true;
     $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
-    ['list', 'cats', 'chart-year', 'dup-list', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
+    ['list', 'cats', 'chart-year', 'dup-list', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
     $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
     $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
   }
@@ -826,7 +934,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function curVal() { return $('f-cur-eur').checked ? 'EUR' : 'CHF'; }
   function setCur(c) { $('f-cur-eur').checked = c === 'EUR'; $('f-cur-chf').checked = c !== 'EUR'; }
   function syncCats(keep) { fillSelect($('f-cat'), withKeep(typeVal() === 'in' ? incats() : cats(), keep), keep); }
-  function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key || open;
+  function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key;
     if (open) { if (!wide()) $('entry-form').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('f-amount').focus({ preventScroll: true }); } }
   function resetForm() {
     editing = null; $('entry-form').reset();
@@ -866,9 +974,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   /* ---------- Monat, Ansicht, Einstellungen ---------- */
   $('m-prev').addEventListener('click', () => { view = shift(view, -1); render(); });
   $('m-next').addEventListener('click', () => { view = shift(view, 1); render(); });
-  ['tab-a', 'tab-b', 'tab-c'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
+  ['tab-d', 'tab-a', 'tab-b', 'tab-c'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
   ['lf-all', 'lf-out', 'lf-in'].forEach(id => $(id).addEventListener('change', () => { listFilter = $(id).value; render(); }));
-  window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && tab === 'stats') drawYear(baseCur()); }, 150); });
+  window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && (tab === 'stats' || tab === 'dash')) render(); }, 150); });
   $('rate').addEventListener('change', () => {
     const r = Number($('rate').value.trim().replace(',', '.'));
     if (!isFinite(r) || r < 0.5 || r > 2) { toast('Der Kurs muss zwischen 0.5 und 2 liegen.'); $('rate').value = rateFor(view).toFixed(4); return; }
@@ -901,19 +1009,15 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
     $('base-eur').checked = base === 'EUR'; $('base-chf').checked = base === 'CHF';
-    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan';
+    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash';
+    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung' }[tab];
     syncLists(); renderFree(base, t); renderLists();
     renderDups();
+    if (tab === 'dash') { renderDash(base, list); return; }
     if (tab === 'plan') { renderPlan(); return; }
 
     if (tab === 'stats') {
-      const cg = {}; for (const e of list) if (e.t !== 'in') cg[e.cat] = (cg[e.cat] || 0) + conv(e.a, e.c, view, base);
-      const names = new Set(Object.keys(cg)); cats().forEach(c => { if (budgetOf(c, base)) names.add(c); });
-      const rows = Array.from(names, n => [n, cg[n] || 0, budgetOf(n, base)]).sort((a, b) => b[1] - a[1]), host = $('cats'), max = rows.length ? Math.max(rows[0][1], 1) : 1;
-      if (!rows.length) host.replaceChildren(h('div', 'empty', 'Noch keine Ausgaben im ' + monthName(view) + '.'));
-      else host.replaceChildren(...rows.map(([n, v, b]) => { const over = b && v > b, el = h('div', 'bar'), tr = h('div', 'track' + (over ? ' over' : '')), i = h('i');
-        i.style.width = Math.min(100, v / (b || max) * 100) + '%'; tr.append(i);
-        el.append(h('span', 'name', n), h('span', 'val num' + (over ? ' neg' : ''), fmt(Math.round(v), base) + (b ? ' von ' + (base === 'CHF' ? nfCH : nfAT).format(b / 100) : '')), tr); return el; }));
+      catBars('cats', list, base, 0);
       renderAccounts(base);
       drawYear(base); return;
     }
@@ -947,8 +1051,8 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function sv(tag, at, text) { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (text != null) e.textContent = text; return e; }
   function niceMax(v) { if (!(v > 0)) return 100; const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
   function tick(v) { return v >= 1000 ? Number((v / 1000).toFixed(2)) + 'k' : String(Number(v.toFixed(2))); }
-  function drawYear(base) {
-    const host = $('chart-year'), W = Math.max(260, host.clientWidth || 600), H = 200, L = 40, R = 4, T = 10, B = 24;
+  function drawYear(base, hid) {
+    const host = $(hid || 'chart-year'), W = Math.max(260, host.clientWidth || 600), H = hid ? 240 : 200, L = 40, R = 4, T = 10, B = 24;
     const n = W < 460 ? 6 : 12, now = ym(new Date()), end = view > now ? view : (shift(now, 1 - n) <= view ? now : view);
     const ms = Array.from({ length: n }, (_, i) => shift(end, i - n + 1)), tt = ms.map(m => totals(m, base));
     const top = niceMax(Math.max(...tt.map(x => Math.max(x.outB, x.inB))) / 100), y = c => T + (H - T - B) * (1 - c / 100 / top), zero = y(0);
@@ -1269,12 +1373,13 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   }
 
   /* ---------- Sparziele ---------- */
-  function renderGoals() { const gs = settings.goals || [];
-    $('goal-hint').hidden = !!gs.length;
-    $('goal-list').replaceChildren(...gs.map(g => { const row = h('button', 'row'), what = h('span'), tr = h('span', 'track'), i = h('i');
+  function renderGoals(hid) { const gs = settings.goals || [];
+    if (!hid) $('goal-hint').hidden = !!gs.length;
+    if (hid && !gs.length) return $(hid).replaceChildren(h('div', 'empty', 'Noch keine Sparziele. Lege eines in der Planung an.'));
+    $(hid || 'goal-list').replaceChildren(...gs.map(g => { const row = h('button', 'row'), what = h('span'), tr = h('span', 'track'), i = h('i');
       const pct = g.target ? Math.min(100, Math.round(g.saved / g.target * 100)) : 0; row.type = 'button';
       i.style.width = pct + '%'; tr.append(i); what.append(h('b', null, g.name), h('small', null, fmt(g.saved, g.c) + ' von ' + fmt(g.target, g.c)), tr);
-      row.append(what, h('span', 'amt num' + (pct >= 100 ? ' pos' : ''), pct + ' %')); row.addEventListener('click', () => goalOpen(g)); return row; }));
+      row.append(what, h('span', 'amt num' + (pct >= 100 ? ' pos' : ''), pct + ' %')); row.addEventListener('click', () => { if (hid) go('tab-c'); goalOpen(g); }); return row; }));
   }
   function goalClose() { goalEdit = null; $('goal-form').hidden = true; }
   function goalOpen(g) {
@@ -1319,14 +1424,14 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     accs().forEach(a => { const s = (settings.start || {})[a.n] || {}, g = get(a.n); g.CHF += s.CHF || 0; g.EUR += s.EUR || 0; });
     for (const m in months) for (const e of months[m]) get(e.acc)[e.c === 'EUR' ? 'EUR' : 'CHF'] += e.t === 'in' ? e.a : -e.a;
     return b; }
-  function renderAccounts(base) { const b = balances(), now = ym(new Date()); let tot = 0;
+  function renderAccounts(base, hid) { const b = balances(), now = ym(new Date()); let tot = 0;
     const rows = Object.keys(b).map(n => { const v = b[n], a = accs().find(x => x.n === n), row = h('div', 'accrow'), parts = [];
       tot += conv(v.CHF, 'CHF', now, base) + conv(v.EUR, 'EUR', now, base);
       if (v.CHF || (a && a.c === 'CHF')) parts.push(sfmt(v.CHF, 'CHF')); if (v.EUR || (a && a.c === 'EUR')) parts.push(sfmt(v.EUR, 'EUR')); if (!parts.length) parts.push(sfmt(0, base));
       row.append(h('span', null, n), h('span', 'num', parts.join(' · '))); return row; });
     const total = h('div', 'accrow total'); total.append(h('span', null, 'Gesamt'), h('span', 'num' + (tot < 0 ? ' neg' : ''), sfmt(Math.round(tot), base)));
-    $('acc-list').replaceChildren(...rows, total);
-    $('acc-note').textContent = 'Startsaldo plus alle erfassten Einträge. Den Startsaldo legst du unter Mehr > Kategorien & Konten fest. Gesamt umgerechnet in ' + base + '.';
+    $(hid || 'acc-list').replaceChildren(...rows, total);
+    if (!hid) $('acc-note').textContent = 'Startsaldo plus alle erfassten Einträge. Den Startsaldo legst du unter Mehr > Kategorien & Konten fest. Gesamt umgerechnet in ' + base + '.';
   }
 
   /* ---------- Suche ---------- */
@@ -1381,6 +1486,41 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('bk-text').value = ''; $('bk-file').value = '';
     setMsg('bk-msg', (n === 1 ? '1 Eintrag' : n + ' Einträge') + ' übernommen' + (dup ? ', ' + dup + ' schon vorhanden' : '') + (bad ? ', ' + bad + ' ungültige übersprungen' : '') + '.');
   });
+
+  /* ---------- Übersicht (Dashboard) ---------- */
+  function go(id) { $(id).checked = true; tab = $(id).value; render(); window.scrollTo({ top: 0 }); }
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+  $('btn-more').addEventListener('click', () => { if (!$('extras').hidden) $('extras').scrollIntoView({ block: 'start', behavior: 'smooth' }); });
+  function catBars(hid, list, base, limit) {
+    const cg = {}; for (const e of list) if (e.t !== 'in') cg[e.cat] = (cg[e.cat] || 0) + conv(e.a, e.c, view, base);
+    const names = new Set(Object.keys(cg)); cats().forEach(c => { if (budgetOf(c, base)) names.add(c); });
+    let rows = Array.from(names, n => [n, cg[n] || 0, budgetOf(n, base)]).sort((a, b) => b[1] - a[1]); const host = $(hid), max = rows.length ? Math.max(rows[0][1], 1) : 1;
+    if (limit) rows = rows.slice(0, limit);
+    if (!rows.length) return host.replaceChildren(h('div', 'empty', 'Noch keine Ausgaben im ' + monthName(view) + '.'));
+    host.replaceChildren(...rows.map(([n, v, b]) => { const over = b && v > b, el = h('div', 'bar'), tr = h('div', 'track' + (over ? ' over' : '')), i = h('i');
+      i.style.width = Math.min(100, v / (b || max) * 100) + '%'; tr.append(i);
+      el.append(h('span', 'name', n), h('span', 'val num' + (over ? ' neg' : ''), fmt(Math.round(v), base) + (b ? ' von ' + (base === 'CHF' ? nfCH : nfAT).format(b / 100) : '')), tr); return el; }));
+  }
+  function nextDue(f) { const now = ym(new Date()); let m = now < f.from ? f.from : now, g = 0;
+    while (g++ < 14) { if (dueIn(f, m) && !fxBooked(f, m)) { const [y, mo] = m.split('-').map(Number);
+        return m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0'); } m = shift(m, 1); }
+    return null; }
+  function renderDash(base, list) {
+    drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); renderGoals('dash-goals');
+    const all = []; for (const m in months) for (const e of months[m]) all.push(e);
+    all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
+    $('dash-recent').replaceChildren(...(all.length ? all.slice(0, 6).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
+      row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
+      what.append(h('b', null, e.cat), h('small', null, de(e.d) + ' · ' + e.acc + (e.note ? ' · ' + e.note : '')));
+      row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; })
+      : [h('div', 'empty', 'Noch keine Einträge. Erfasse den ersten über „Neuer Eintrag“.')]));
+    const due = (settings.fixed || []).map(f => [f, nextDue(f)]).filter(x => x[1]).sort((a, b) => a[1] < b[1] ? -1 : 1).slice(0, 6);
+    const dFmt = new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long' });
+    $('dash-fx').replaceChildren(...(due.length ? due.map(([f, d]) => { const row = h('button', 'row'), what = h('span'), n = daysTo(d), [y, mo, dd] = d.split('-').map(Number); row.type = 'button';
+      what.append(h('b', null, f.name), h('small', null, dFmt.format(new Date(y, mo - 1, dd)) + ' · ' + (n <= 0 ? 'heute' : n === 1 ? 'morgen' : 'in ' + n + ' Tagen')));
+      row.append(what, amtEl(f)); row.addEventListener('click', () => { go('tab-c'); fxOpen(f); }); return row; })
+      : [h('div', 'empty', (settings.fixed || []).length ? 'Keine Fixposten ausstehend.' : 'Noch keine Fixposten. Lege Miete, Abos oder Gehalt in der Planung an.')]));
+  }
 
   boot();
 })();
