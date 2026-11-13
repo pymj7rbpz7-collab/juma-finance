@@ -188,14 +188,21 @@ html:has(#app.form-open) { overflow: hidden; }
 .seg.show { display: flex; }
 .seg.show label { min-height: 36px; padding: 5px 10px; font-size: 14px; }
 .ln { display: block; }
-.btn.icon { width: 42px; padding: 0; flex: none; display: inline-flex; align-items: center; justify-content: center; }
-.btn.icon svg { width: 20px; height: 20px; }
-.btn.icon .sun, .btn.icon.dark .moon { display: none; }
-.btn.icon.dark .sun { display: block; }
+.seg.themeseg { background: var(--glass); border: 1px solid var(--edge); box-shadow: var(--shine), var(--depth);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.seg.themeseg label { min-height: 34px; padding: 4px 11px; gap: 5px; font-size: 14px; font-weight: 600; }
+.seg.themeseg svg { width: 16px; height: 16px; }
 .dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .stack > .bars, .stack > .chart { margin-top: 0; }
 
 /* Schmal: schwebende Glas-Leiste unten */
+@media (max-width: 999.98px) {
+  .top .actions { flex-wrap: nowrap; }
+  .top .btn { padding-inline: 14px; }
+}
+@media (max-width: 359.98px) {
+  .top .actions { flex-wrap: wrap; }
+}
 @media (max-width: 999.98px) {
   .side { display: contents; }
   .brand, .pagetitle, .fab span { display: none; }
@@ -344,9 +351,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .top { display: contents; }
   .top h1 { font-size: 21px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 11px; padding: 0 6px 4px; }
   .brand { width: 36px; height: 36px; border-radius: 24%; flex: none; box-shadow: 0 4px 12px rgba(0, 96, 223, 0.3); }
-  .top .actions { order: 9; margin-top: auto; flex-wrap: nowrap; }
+  .top .actions { order: 9; margin-top: auto; flex-wrap: wrap; }
   .top .actions .btn { flex: 1; padding-inline: 10px; }
-  .top .actions .btn.icon { flex: none; padding: 0; }
+  .top .actions .themeseg { order: -1; flex-basis: 100%; display: flex; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--fill); border: 0; }
   .fab { order: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 10px 16px; border-radius: 999px;
     color: var(--on-accent); font-weight: 600; font-size: 16px; background: linear-gradient(180deg, var(--accent-hi), var(--accent));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -451,7 +458,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     <aside class="side">
     <header class="top">
       <h1><svg class="brand" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-b)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>Juma Finance</h1>
-      <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button><button class="btn icon" id="btn-theme" type="button" aria-label="Dunkle Darstellung"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"/></svg><svg class="moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></button></div>
+      <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button><div class="seg themeseg" role="radiogroup" aria-label="Darstellung"><input type="radio" name="themequick" id="tq-light" value="light"><label for="tq-light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"/></svg>Hell</label><input type="radio" name="themequick" id="tq-dark" value="dark"><label for="tq-dark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>Dunkel</label></div></div>
     </header>
     <button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Neuer Eintrag</span></button>
     <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
@@ -1633,13 +1640,12 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   /* ---------- Darstellung: automatisch, hell, dunkel (pro Gerät) ---------- */
   function themePref() { const t = document.documentElement.dataset.theme; return t === 'light' || t === 'dark' ? t : 'auto'; }
   function isDark() { const t = themePref(); return t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches); }
-  function syncTheme() { const t = themePref(), b = $('btn-theme'); $('theme-' + t).checked = true;
-    b.classList.toggle('dark', isDark()); b.setAttribute('aria-label', isDark() ? 'Helle Darstellung' : 'Dunkle Darstellung');
+  function syncTheme() { const t = themePref(); $('theme-' + t).checked = true; $(isDark() ? 'tq-dark' : 'tq-light').checked = true;
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => { if (!m.dataset.o) m.dataset.o = m.content; m.content = t === 'auto' ? m.dataset.o : t === 'dark' ? '#0a1430' : '#dfe9fb'; }); }
   function setTheme(t) { try { if (t === 'auto') localStorage.removeItem('juma:theme'); else localStorage.setItem('juma:theme', t); } catch (e) { /* gilt dann nur bis zum Schliessen */ }
     if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t; syncTheme(); }
   ['theme-auto', 'theme-light', 'theme-dark'].forEach(id => $(id).addEventListener('change', () => setTheme($(id).value)));
-  $('btn-theme').addEventListener('click', () => setTheme(isDark() ? 'light' : 'dark'));
+  ['tq-light', 'tq-dark'].forEach(id => $(id).addEventListener('change', () => setTheme($(id).value)));
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
   syncTheme();
 
