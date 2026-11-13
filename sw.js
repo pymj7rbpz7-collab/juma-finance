@@ -1,5 +1,5 @@
 // Offline-Betrieb: App-Dateien aus dem Cache, im Hintergrund aktualisieren.
-const CACHE = 'juma-finance-v3';
+const CACHE = 'juma-finance-v4';
 const FILES = ['./', 'index.html', 'config.js', 'vendor/supabase.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

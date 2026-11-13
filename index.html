@@ -19,8 +19,8 @@
 /* Layout: Liquid Glass. Farbiger Hintergrund, Inhalt auf Milchglas-Karten, Bedienung schwebt als Glas darüber:
    unten Leiste mit Ansicht und Plus-Knopf, neuer Eintrag als schwebendes Sheet. Am Desktop steht das Formular links. */
 :root {
-  --bg: #eef1f8;
-  --w1: #a9cdff; --w2: #cdbfff; --w3: #a4e8de; --w4: #ffd6c6;
+  --bg: #e9f0fb;
+  --w1: #9fc8ff; --w2: #b9cbff; --w3: #a9daf7; --w4: #cfe1ff;
   --surface: rgba(255, 255, 255, 0.5);
   --glass: rgba(255, 255, 255, 0.62);
   --sheet: rgba(248, 250, 255, 0.8);
@@ -54,7 +54,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #05070d; --w1: #123a86; --w2: #43248a; --w3: #0b5454; --w4: #5a2136;
+    --bg: #040813; --w1: #123a86; --w2: #1b2f8c; --w3: #0b4670; --w4: #14285e;
     --surface: rgba(36, 40, 54, 0.5); --glass: rgba(70, 76, 96, 0.5); --sheet: rgba(28, 31, 42, 0.76); --edge: rgba(255, 255, 255, 0.16);
     --shine: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(255, 255, 255, 0.06), inset 0 0 14px rgba(255, 255, 255, 0.04);
     --depth: 0 10px 34px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -68,7 +68,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #05070d; --w1: #123a86; --w2: #43248a; --w3: #0b5454; --w4: #5a2136;
+  --bg: #040813; --w1: #123a86; --w2: #1b2f8c; --w3: #0b4670; --w4: #14285e;
   --surface: rgba(36, 40, 54, 0.5); --glass: rgba(70, 76, 96, 0.5); --sheet: rgba(28, 31, 42, 0.76); --edge: rgba(255, 255, 255, 0.16);
   --shine: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(255, 255, 255, 0.06), inset 0 0 14px rgba(255, 255, 255, 0.04);
   --depth: 0 10px 34px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -83,7 +83,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.35; letter-spacing: -0.02em;
   -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
-/* Hintergrund: weiche Farbflächen, damit das Glas etwas zu brechen hat */
+/* Hintergrund: weiche Farbflächen, in Blautönen, damit das Glas etwas zu brechen hat */
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background:
   radial-gradient(65% 46% at 8% 4%, var(--w1) 0, transparent 72%),
   radial-gradient(58% 42% at 100% 18%, var(--w2) 0, transparent 72%),
