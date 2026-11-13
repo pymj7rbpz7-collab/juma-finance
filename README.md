@@ -44,7 +44,8 @@ Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App n
 - **Einträge:** Ausgaben und Einnahmen in CHF und EUR, CSV-Import von der Bank, Suche über alle Monate.
 - **Planung:** Fixkosten und Verträge werden am gewählten Tag automatisch eingetragen, mit optionaler Kündigungsfrist. Dazu Budgets je Kategorie und Sparziele.
 - **Prognose:** Die Übersicht zeigt, was nach den noch ausstehenden Fixkosten bis Monatsende frei bleibt.
-- **Auswertung:** Ausgaben je Kategorie mit Budget, Verlauf über zwölf Monate, Kontostände je Konto.
+- **Tage:** Ausgaben pro Tag als Diagramm mit Durchschnitt, heutigen Ausgaben und dem höchsten Tag; ein Tipp auf einen Tag zeigt seine Einträge. Die Eintragsliste zeigt die Summe je Tag.
+- **Auswertung:** Ausgaben je Kategorie mit Budget, Verlauf über zwölf Monate, Monatsvergleich nach Durchschnitt pro Tag, Kontostände je Konto.
 - **Mehr:** Wechselkurs, eigene Kategorien und Konten mit Startsaldo, Sicherung als Datei oder Text.
 
 ## Gut zu wissen

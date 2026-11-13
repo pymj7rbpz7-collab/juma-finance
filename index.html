@@ -242,7 +242,24 @@ html:has(#app.form-open) { overflow: hidden; }
 
 /* Einträge als gruppierte Liste */
 #tab-list { overflow: hidden; }
-.day { font-size: 13px; color: var(--muted); padding: 18px 2px 6px; letter-spacing: -0.005em; }
+.day { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13px; color: var(--muted); padding: 18px 2px 6px; letter-spacing: -0.005em; }
+.day .dt { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.daystats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.daystats > div { min-width: 0; padding: 12px 14px; border-radius: 18px; background: var(--fill); }
+.daystats .lab { display: block; font-size: 13px; color: var(--muted); letter-spacing: -0.005em; }
+.daystats .num { display: block; font-size: 20px; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+.daystats .sub { margin-top: 3px; font-size: 12px; }
+.dot.acc { background: var(--accent); } .dot.cchf { background: var(--chf); } .dot.ceur { background: var(--eur); }
+.dot.avg { background: none; border: 1.5px dashed var(--muted); }
+.chip { display: inline-block; margin-top: 3px; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--fill); color: var(--muted); }
+.chip.neg { color: var(--danger); background: color-mix(in srgb, var(--danger) 13%, transparent); }
+.chip.pos { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); }
+.tablewrap th.r { text-align: right; }
+.cmp tbody tr, .cmp tr + tr { cursor: pointer; }
+.cmp tr:hover td { background: color-mix(in srgb, var(--fill) 50%, transparent); }
+.cmp tr.on td { font-weight: 600; background: var(--fill); }
+.cmp td .ln { display: block; }
+.dayinfo-more { margin-top: 10px; }
 .row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left;
   width: calc(100% + 2 * var(--pad)); margin-inline: calc(-1 * var(--pad)); padding: 11px calc(var(--pad) + 2px); border: 0; background: none; min-height: 60px; transition: background-color 120ms ease; }
 .row::before { content: ""; position: absolute; top: 0; left: calc(var(--pad) + 2px); right: 0; height: 1px; background: var(--line); }
@@ -367,8 +384,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .dash { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
   .dash > .panel { grid-column: span 3; }
   #tab-stats, #tab-plan, #extras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
-  #tab-stats, #tab-plan { grid-template-rows: auto 1fr; }
-  #tab-stats > :first-child, #tab-plan > :nth-child(2) { grid-row: span 2; }
+  #tab-plan { grid-template-rows: auto 1fr; }
+  #tab-stats { grid-template-rows: auto auto 1fr auto; }
+  #tab-stats > .tall, #tab-plan > :nth-child(2) { grid-row: span 2; }
+  #tab-stats > .full { grid-column: 1 / -1; }
+  .daystats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   #extras { scroll-margin-top: 20px; }
   #extras > #more { grid-column: 1 / -1; }
 
@@ -572,14 +592,25 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
 
         <div class="dash" id="tab-dash">
+          <section class="panel stack clip d-wide">
+            <div class="head"><h2>Ausgaben pro Tag</h2><span class="legendrow" id="dash-days-legend"></span></div>
+            <div class="daystats" id="dash-daystats"></div>
+            <div id="dash-days" class="chart"></div>
+            <p class="hint" id="dash-days-note"></p>
+            <div id="dash-dayinfo"></div>
+          </section>
+          <section class="panel stack d-side">
+            <div class="head"><h2>Grösste Ausgaben</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div class="bars" id="dash-cats"></div>
+          </section>
           <section class="panel stack d-wide">
             <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
             <div id="dash-chart" class="chart"></div>
             <p class="hint" id="dash-chart-note" hidden>Balken in CHF umgerechnet, damit beide Währungen vergleichbar sind.</p>
           </section>
-          <section class="panel stack d-side">
-            <div class="head"><h2>Grösste Ausgaben</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
-            <div class="bars" id="dash-cats"></div>
+          <section class="panel stack clip d-side">
+            <div class="head"><h2>Monatsvergleich</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div id="dash-cmp"></div>
           </section>
           <section class="panel stack clip">
             <div class="head"><h2>Letzte Einträge</h2><button class="btn" type="button" data-go="tab-a">Alle</button></div>
@@ -610,7 +641,14 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         </section>
 
         <div class="stack" id="tab-stats" hidden>
-          <section class="panel">
+          <section class="panel stack clip full">
+            <div class="head"><h2>Ausgaben pro Tag</h2><span class="legendrow" id="st-days-legend"></span></div>
+            <div class="daystats" id="st-daystats"></div>
+            <div id="st-days" class="chart"></div>
+            <p class="hint" id="st-days-note"></p>
+            <div id="st-dayinfo"></div>
+          </section>
+          <section class="panel tall">
             <h2>Ausgaben nach Kategorie</h2>
             <div class="bars" id="cats"></div>
           </section>
@@ -623,6 +661,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <h2>Konten</h2>
             <div id="acc-list"></div>
             <p class="hint" id="acc-note"></p>
+          </section>
+          <section class="panel stack full">
+            <h2>Monatsvergleich</h2>
+            <div class="tablewrap"><table class="cmp" id="st-cmp"></table></div>
+            <p class="hint" id="st-cmp-note"></p>
           </section>
         </div>
 
@@ -707,7 +750,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   let seen = {}, busy = {}, dirty = {}, applyChain = Promise.resolve();
   let view = ym(new Date()), editing = null, idleTimer = null, loadTimer = null;
   let tab = 'dash', listFilter = 'all', formOpen = false, imp = null, resizeT;
-  let searchQ = '', synced = false, noticed = false, listSig = '', listsSig = '', budSig = '', fxEdit = null, goalEdit = null;
+  let selDay = '', searchQ = '', synced = false, noticed = false, listSig = '', listsSig = '', budSig = '', fxEdit = null, goalEdit = null;
 
   /* ---------- Hilfen ---------- */
   function ym(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
@@ -935,12 +978,12 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   }
 
   function lock() {
-    key = null; months = {}; seen = {}; editing = null; settings = DEF();
+    key = null; months = {}; seen = {}; editing = null; settings = DEF(); selDay = '';
     synced = false; noticed = false; searchQ = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
     $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true;
     $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
-    ['list', 'cats', 'chart-year', 'dup-list', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
+    ['list', 'cats', 'chart-year', 'dup-list', 'dash-days', 'dash-daystats', 'dash-dayinfo', 'dash-cmp', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
     $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
     $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
   }
@@ -1050,6 +1093,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (tab === 'plan') { renderPlan(); return; }
 
     if (tab === 'stats') {
+      renderDays('st', base); renderCompare(base);
       catBars('cats', list, base, 0);
       renderAccounts(base);
       drawYear(base); return;
@@ -1066,10 +1110,17 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       : 'Noch keine Einträge im ' + monthName(view) + '. Erfasse den ersten Betrag über das Plus.')); return; }
     shown.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
     const more = shown.length > 300 ? shown.length - 300 : 0; if (more) shown.length = 300;
+    const dts = {};
+    for (const e of shown) { const x = dts[e.d] || (dts[e.d] = { o: [0, 0], i: [0, 0], ob: 0, ib: 0 }), k = e.c === 'EUR' ? 1 : 0, b = conv(e.a, e.c, e.d.slice(0, 7), base);
+      if (e.t === 'in') { x.i[k] += e.a; x.ib += b; } else { x.o[k] += e.a; x.ob += b; } }
+    const dayTot = d => { const x = dts[d]; if (x.ob) return isSplit() ? moneyText(x.o[0], x.o[1]) : fmt(Math.round(x.ob), base);
+      if (x.ib) return isSplit() ? [x.i[0] ? '+' + fmt(x.i[0], 'CHF') : '', x.i[1] ? '+' + fmt(x.i[1], 'EUR') : ''].filter(Boolean).join(' · ') : '+' + fmt(Math.round(x.ib), base);
+      return ''; };
     const frag = document.createDocumentFragment(); let lastDay = '';
     const dayFmt = new Intl.DateTimeFormat('de-CH', q ? { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' } : { weekday: 'short', day: 'numeric', month: 'long' });
     for (const e of shown) {
-      if (e.d !== lastDay) { lastDay = e.d; const [y, mo, d] = e.d.split('-').map(Number); frag.append(h('div', 'day', dayFmt.format(new Date(y, mo - 1, d)))); }
+      if (e.d !== lastDay) { lastDay = e.d; const [y, mo, d] = e.d.split('-').map(Number), hd = h('div', 'day');
+        hd.append(h('span', null, dayFmt.format(new Date(y, mo - 1, d))), h('span', 'dt', dayTot(e.d))); frag.append(hd); }
       const row = h('button', 'row'), what = h('span'); row.type = 'button';
       row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
       what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : '')));
@@ -1551,6 +1602,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         return m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0'); } m = shift(m, 1); }
     return null; }
   function renderDash(base, list) {
+    renderDays('dash', base); renderCompareMini(base);
     drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); renderGoals('dash-goals');
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
@@ -1590,6 +1642,118 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   $('btn-theme').addEventListener('click', () => setTheme(isDark() ? 'light' : 'dark'));
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
   syncTheme();
+
+  /* ---------- Tage: Ausgaben pro Tag ---------- */
+  const dayFmtL = new Intl.DateTimeFormat('de-CH', { weekday: 'short', day: 'numeric', month: 'long' });
+  function dayLabel(m, day) { const [y, mo] = m.split('-').map(Number); return dayFmtL.format(new Date(y, mo - 1, day)); }
+  function dim(m) { const [y, mo] = m.split('-').map(Number); return new Date(y, mo, 0).getDate(); }
+  // Anzahl Tage, über die gemittelt wird: ganzer Monat, im laufenden Monat bis heute, in der Zukunft keine
+  function daysCounted(m) { const now = ym(new Date()); return m < now ? dim(m) : m === now ? new Date().getDate() : 0; }
+  function dayData(m, base) {
+    const d = Array.from({ length: dim(m) }, () => ({ CHF: 0, EUR: 0, b: 0, fC: 0, fE: 0, fb: 0 }));
+    for (const e of months[m] || []) { if (e.t === 'in') continue; const x = d[Number(e.d.slice(8, 10)) - 1]; if (!x) continue;
+      const b = conv(e.a, e.c, m, base), k = e.c === 'EUR' ? 'EUR' : 'CHF'; x[k] += e.a; x.b += b;
+      if (e.fx) { x[k === 'EUR' ? 'fE' : 'fC'] += e.a; x.fb += b; } }
+    return d; }
+  function val(c, e, b, base) { return isSplit() ? money(Math.round(c), Math.round(e)) : [document.createTextNode(fmt(Math.round(b), base))]; }
+  function dayStats(pre, base, d) {
+    const cnt = daysCounted(view), now = ym(new Date()), sp = isSplit();
+    const sum = d.reduce((s, x) => { for (const k in s) s[k] += x[k]; return s; }, { CHF: 0, EUR: 0, b: 0, fC: 0, fE: 0, fb: 0 });
+    const tile = (lab, nodes, sub) => { const t = h('div'), v = h('span', 'num'); v.replaceChildren(...nodes); t.append(h('span', 'lab', lab), v); if (sub) t.append(h('span', 'lab sub', sub)); return t; };
+    const tiles = [];
+    if (cnt) { const over = (view === now ? 'bisher, ' : 'über ') + cnt + (cnt === 1 ? ' Tag' : ' Tage');
+      const noFx = sum.fb ? 'ohne Fixkosten ' + (sp ? moneyText(Math.round((sum.CHF - sum.fC) / cnt), Math.round((sum.EUR - sum.fE) / cnt)) : fmt(Math.round((sum.b - sum.fb) / cnt), base)) + ' · ' : '';
+      tiles.push(tile('Ø pro Tag', val(sum.CHF / cnt, sum.EUR / cnt, sum.b / cnt, base), noFx + over)); }
+    else tiles.push(tile('Ø pro Tag', [document.createTextNode('–')], 'Der Monat hat noch nicht begonnen.'));
+    if (view === now) { const x = d[new Date().getDate() - 1]; tiles.push(tile('Heute', val(x.CHF, x.EUR, x.b, base), x.b ? dayLabel(view, new Date().getDate()) : 'noch nichts ausgegeben')); }
+    let mi = -1; d.forEach((x, i) => { if (x.b > 0 && (mi < 0 || x.b > d[mi].b)) mi = i; });
+    tiles.push(mi >= 0 ? tile('Höchster Tag', val(d[mi].CHF, d[mi].EUR, d[mi].b, base), dayLabel(view, mi + 1)) : tile('Höchster Tag', [document.createTextNode('–')], 'noch keine Ausgaben'));
+    $(pre + '-daystats').replaceChildren(...tiles);
+  }
+  function drawDays(pre, base, d) {
+    const host = $(pre + '-days'), W = Math.max(260, host.clientWidth || 600), H = 180, L = 40, R = 4, T = 12, B = 22, n = d.length, sp = isSplit();
+    const now = ym(new Date()), today0 = new Date().getDate(), cnt = daysCounted(view), avg = cnt ? d.reduce((s, x) => s + x.b, 0) / cnt : 0;
+    const top = niceMax(Math.max(avg, ...d.map(x => x.b)) / 100), y = c => T + (H - T - B) * (1 - c / 100 / top), zero = y(0);
+    const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': 'Ausgaben pro Tag im ' + monthName(view) + (sp ? ', Balkenhöhe in CHF' : ' in ' + base) });
+    for (let i = 0; i <= 4; i++) { const v = top * i / 4, yy = Math.round(y(v * 100)) + 0.5;
+      svg.append(sv('line', { x1: L, x2: W - R, y1: yy, y2: yy, stroke: 'var(--line)', 'stroke-width': 1 }),
+        sv('text', { x: L - 6, y: yy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)' }, tick(v))); }
+    const slot = (W - L - R) / n, bw = Math.max(3, Math.min(18, slot * 0.62)), step = slot >= 20 ? 1 : slot >= 10 ? 2 : 5;
+    const rect = (x, from, to, fill) => { const a = y(to), b = y(from); if (b - a > 0.3) svg.append(sv('rect', { x, y: a, width: bw, height: b - a, fill, rx: Math.min(2, bw / 3) })); };
+    const hits = [];
+    d.forEach((x, i) => { const day = i + 1, x0 = L + slot * i, cx = x0 + slot / 2, id = view + '-' + String(day).padStart(2, '0');
+      const sel = selDay === id, isToday = view === now && day === today0, fut = view > now || (view === now && day > today0);
+      if (sel) svg.append(sv('rect', { x: x0 + 0.5, y: T - 6, width: slot - 1, height: H - T + 4, fill: 'var(--sunken)', rx: 4 }));
+      if (sp) { const c = conv(x.CHF, 'CHF', view, base); rect(cx - bw / 2, 0, x.b, 'var(--eur)'); rect(cx - bw / 2, 0, c, 'var(--chf)'); }
+      else rect(cx - bw / 2, 0, x.b, 'var(--accent)');
+      if (day === 1 || day % step === 0 || ((sel || isToday) && step === 1))
+        svg.append(sv('text', { x: cx, y: H - 6, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': sel || isToday ? 600 : 400,
+          fill: sel || isToday ? 'var(--ink)' : 'var(--muted)', 'fill-opacity': fut && !sel ? 0.5 : 1 }, String(day)));
+      const hit = sv('rect', { x: x0, y: T - 6, width: slot, height: H - T + 6, fill: 'transparent', style: 'cursor:pointer', 'data-day': day });
+      hit.append(sv('title', {}, dayLabel(view, day)));
+      hit.addEventListener('click', () => { selDay = id; render(); }); hits.push(hit); });
+    if (avg > 0) { const yy = y(avg);
+      svg.append(sv('line', { x1: L, x2: W - R, y1: yy, y2: yy, stroke: 'var(--ink)', 'stroke-opacity': 0.55, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' }),
+        sv('text', { x: W - R - 2, y: yy - 5, 'text-anchor': 'end', 'font-size': 11, 'font-weight': 600, fill: 'var(--ink)', 'fill-opacity': 0.7 }, 'Ø')); }
+    svg.append(...hits);
+    host.replaceChildren(svg);
+  }
+  function dayInfo(pre, base, d) {
+    const host = $(pre + '-dayinfo'), sp = isSplit();
+    if (!selDay || selDay.slice(0, 7) !== view) return host.replaceChildren();
+    const day = Number(selDay.slice(8)), x = d[day - 1] || { CHF: 0, EUR: 0, b: 0 };
+    const es = (months[view] || []).filter(e => e.d === selDay).sort((a, b) => (a.t === 'in') - (b.t === 'in') || b.a - a.a);
+    const hd = h('div', 'day'); hd.append(h('span', null, dayLabel(view, day)), h('span', 'dt', x.b ? (sp ? moneyText(x.CHF, x.EUR) : fmt(Math.round(x.b), base)) + ' ausgegeben' : ''));
+    if (!es.length) return host.replaceChildren(hd, h('div', 'empty', 'Keine Einträge an diesem Tag.'));
+    const lim = pre === 'dash' ? 5 : 12, rows = es.slice(0, lim).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
+      row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
+      what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : ''))); row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; });
+    const out = [hd, ...rows];
+    if (es.length > lim) { const b = h('button', 'btn dayinfo-more', 'Alle ' + es.length + ' Einträge dieses Tages'); b.type = 'button';
+      b.addEventListener('click', () => { $('q').value = de(selDay); searchQ = de(selDay).toLowerCase(); go('tab-a'); }); out.push(b); }
+    host.replaceChildren(...out);
+  }
+  function renderDays(pre, base) {
+    const now = ym(new Date());
+    if (!selDay || selDay.slice(0, 7) !== view) { let def = ''; if (view === now) def = today(); else for (const e of months[view] || []) if (!def || e.d > def) def = e.d; selDay = def; }
+    const d = dayData(view, base); dayStats(pre, base, d); drawDays(pre, base, d); dayInfo(pre, base, d);
+    const item = (cls, t) => { const sp = h('span'); sp.append(h('i', 'dot ' + cls), document.createTextNode(t)); return sp; };
+    $(pre + '-days-legend').replaceChildren(...(isSplit() ? [item('cchf', 'CHF'), item('ceur', 'EUR'), item('avg', 'Ø pro Tag')] : [item('acc', 'Ausgaben'), item('avg', 'Ø pro Tag')]));
+    $(pre + '-days-note').textContent = 'Tippe auf einen Tag, um seine Einträge zu sehen.' + (isSplit() ? ' Balkenhöhe in CHF umgerechnet.' : '');
+  }
+
+  /* ---------- Monatsvergleich ---------- */
+  function monthAvg(m, base) { const cnt = daysCounted(m); if (!cnt) return null; const t = totals(m, base); return { cnt, b: t.outB / cnt, c: t.chf / cnt, e: t.eur / cnt }; }
+  function cmpMonths() { const have = Object.keys(months).filter(k => (months[k] || []).length).sort(), first = have[0] || view, out = [];
+    for (let i = 0; i < 6; i++) { const m = shift(view, -i); if (i && m < first) break; out.push(m); } return out; }
+  // Verglichen wird der Tagesdurchschnitt, damit der laufende Monat nicht immer günstiger aussieht
+  function deltaChip(m, base) { const a = monthAvg(m, base), p = monthAvg(shift(m, -1), base);
+    if (!a || !p || !p.b) return h('span', 'chip', '–');
+    const d = Math.round((a.b - p.b) / p.b * 100); return h('span', 'chip ' + (d > 0 ? 'neg' : d < 0 ? 'pos' : ''), (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d) + ' %'); }
+  function renderCompare(base) {
+    const sp = isSplit(), now = ym(new Date());
+    const cell = (c, e, b, signed) => { const td = h('td', 'r');
+      if (sp) td.append(...money(Math.round(c), Math.round(e), signed ? 1 : 0));
+      else { const v = Math.round(b); td.textContent = signed ? (v < 0 ? '−' : '+') + fmt(Math.abs(v), base) : fmt(v, base); if (signed) td.classList.add(v < 0 ? 'neg' : 'pos'); }
+      return td; };
+    const hr = h('tr'); ['Monat', 'Ausgaben', 'Einnahmen', 'Saldo', 'Ø pro Tag', 'Ø/Tag ggü. Vormonat'].forEach((t, i) => hr.append(h('th', i ? 'r' : null, t)));
+    const rows = cmpMonths().map(m => { const t = totals(m, base), a = monthAvg(m, base), tr = h('tr', m === view ? 'on' : null), dc = h('td', 'r');
+      tr.append(h('td', null, monthName(m) + (m === now ? ' (bisher)' : '')), cell(t.chf, t.eur, t.outB), cell(t.inc, t.ine, t.inB), cell(t.inc - t.chf, t.ine - t.eur, t.inB - t.outB, true));
+      if (a) tr.append(cell(a.c, a.e, a.b)); else tr.append(h('td', 'r', '–'));
+      dc.append(deltaChip(m, base)); tr.append(dc);
+      tr.addEventListener('click', () => { view = m; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }); return tr; });
+    $('st-cmp').replaceChildren(hr, ...rows);
+    $('st-cmp-note').textContent = 'Verglichen wird der Durchschnitt pro Tag, so ist auch der laufende Monat fair vergleichbar' + (sp ? '; die Prozente sind in CHF umgerechnet' : '') + '. Tippe auf einen Monat, um ihn zu öffnen.';
+  }
+  function renderCompareMini(base) {
+    const sp = isSplit(), now = ym(new Date());
+    $('dash-cmp').replaceChildren(...cmpMonths().map(m => { const t = totals(m, base), a = monthAvg(m, base), row = h('button', 'row' + (m === view ? ' on' : '')), what = h('span'), amt = h('span', 'amt num'), cw = h('span', 'ln');
+      row.type = 'button';
+      what.append(h('b', null, monthName(m)), h('small', null, a ? 'Ø ' + (sp ? moneyText(Math.round(a.c), Math.round(a.e)) : fmt(Math.round(a.b), base)) + ' pro Tag' + (m === now ? ' (bisher)' : '') : 'noch nicht begonnen'));
+      if (sp) amt.append(...money(t.chf, t.eur)); else amt.append(fmt(Math.round(t.outB), base));
+      cw.append(deltaChip(m, base)); amt.append(cw);
+      row.append(what, amt); row.addEventListener('click', () => { view = m; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }); return row; }));
+  }
 
   boot();
 })();
