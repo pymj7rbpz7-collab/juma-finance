@@ -1,4 +1,4 @@
-# Juma Finance
+# pairo
 
 Haushaltsbuch für CHF und EUR. Läuft als Web-App auf iPhone, iPad und Mac und gleicht die Einträge über dein Konto zwischen allen Geräten ab. Alle Einträge werden auf dem Gerät mit AES-256 verschlüsselt, bevor sie das Gerät verlassen.
 
@@ -33,7 +33,7 @@ Haushaltsbuch für CHF und EUR. Läuft als Web-App auf iPhone, iPad und Mac und 
 
 ### 4. Auf den Geräten installieren
 
-- **Mac:** Adresse in Safari öffnen, dann *Ablage > Zum Dock hinzufügen*. Juma Finance liegt danach als eigene App im Dock und im Launchpad. (In Chrome: Symbol „Installieren“ in der Adresszeile.)
+- **Mac:** Adresse in Safari öffnen, dann *Ablage > Zum Dock hinzufügen*. pairo liegt danach als eigene App im Dock und im Launchpad. (In Chrome: Symbol „Installieren“ in der Adresszeile.)
 - **iPhone und iPad:** Adresse in Safari öffnen, *Teilen > Zum Home-Bildschirm*.
 
 Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App nur noch nach dem Passwort.
