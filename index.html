@@ -438,7 +438,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   <section id="lock" class="lock">
     <svg class="appicon" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-g)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>
     <h1>Juma Finance</h1>
-    <form id="lock-form" class="panel stack" autocomplete="off">
+    <form id="lock-form" class="panel stack" autocomplete="off" action="javascript:void(0)" onsubmit="return false">
       <p class="hint" id="lock-intro">Lade …</p>
       <label class="field" id="em-wrap" hidden><span>E-Mail</span>
         <input type="email" id="em" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false"></label>
@@ -892,13 +892,21 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     catch (e) { lockState('error', 'Keine Antwort vom Speicher. Prüfe die Verbindung und versuch es erneut.'); }
   }
   $('retry-btn').addEventListener('click', loadMeta);
+  function errText(e) { return String((e && (e.message || e.reason && e.reason.message || e.reason)) || e || 'unbekannt').slice(0, 160); }
+  function showErr(e) { const t = 'Technischer Fehler: ' + errText(e);
+    if (!$('lock').hidden) { $('lock-btn').disabled = false; if (mode) lockState(mode, t); setMsg('lock-msg', t, true); } else if (window.console) console.warn(t); }
+  window.addEventListener('error', e => showErr(e.error || e.message));
+  window.addEventListener('unhandledrejection', e => showErr(e.reason));
   $('alt-btn').addEventListener('click', () => { if (mode === 'login') lockState('signup'); else if (mode === 'signup') lockState('login'); else logout(); });
 
   $('lock-form').addEventListener('submit', async ev => {
     ev.preventDefault();
     const pass = $('pw').value, btn = $('lock-btn'), m = mode;
-    if (!pass) return;
-    const fail = t => { btn.disabled = false; setMsg('lock-msg', t, true); };
+    if (btn.disabled) return;
+    if (!pass) { $('pw').focus(); return setMsg('lock-msg', 'Gib dein Passwort ein. Wenn es automatisch ausgefüllt wurde, tippe einmal ins Feld und dann erneut auf ' + btn.textContent + '.', true); }
+    const label = btn.textContent, busy = t => { btn.disabled = true; btn.textContent = t; setMsg('lock-msg', t); };
+    const fail = t => { btn.disabled = false; btn.textContent = label; setMsg('lock-msg', t, true); };
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); // Tastatur schliessen, damit Meldungen sichtbar sind
     const fresh = m === 'signup' || (m === 'create' && !user);
     if (fresh && pass.length < 10) return fail('Das Passwort braucht mindestens 10 Zeichen.');
     if (fresh && pass !== $('pw2').value) return fail('Die beiden Passwörter stimmen nicht überein.');
@@ -906,7 +914,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       if (m === 'login' || m === 'signup') {
         const email = $('em').value.trim().toLowerCase();
         if (!/^\S+@\S+\.\S+$/.test(email)) return fail('Gib deine E-Mail-Adresse ein.');
-        btn.disabled = true; setMsg('lock-msg', m === 'signup' ? 'Erstelle Konto …' : 'Melde an …');
+        busy(m === 'signup' ? 'Erstelle Konto …' : 'Melde an …');
         const ap = await authPass(email, pass);
         const r = m === 'signup' ? await sb.auth.signUp({ email, password: ap }) : await sb.auth.signInWithPassword({ email, password: ap });
         if (r.error) return fail(authErr(r.error));
@@ -915,25 +923,26 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         user = r.data.session.user; backend = cloudBackend(user.id);
         meta = await timeout(backend.get('meta'), 10000);
       } else if (m === 'create' && user) {
-        btn.disabled = true; setMsg('lock-msg', 'Prüfe Passwort …');
+        busy('Prüfe Passwort …');
         const r = await sb.auth.signInWithPassword({ email: user.email, password: await authPass(user.email, pass) });
         if (r.error) return fail('Verwende dein Konto-Passwort. Es verschlüsselt auch deine Einträge.');
       }
       if (!meta) {
-        btn.disabled = true; setMsg('lock-msg', 'Erzeuge Schlüssel …');
+        busy('Erzeuge Schlüssel …');
         const salt = crypto.getRandomValues(new Uint8Array(16));
         const k = await derive(pass, salt, ITER);
         const mt = { v: 1, salt: b64(salt), iter: ITER, check: await seal('grenzbuch', k) };
         await backend.set('meta', mt); meta = mt; key = k;
       } else {
-        btn.disabled = true; setMsg('lock-msg', 'Entschlüssle …');
+        busy('Entschlüssle …');
         const k = await derive(pass, unb64(meta.salt), meta.iter || ITER);
         try { await unseal(meta.check, k); } catch (e) { if (m !== 'unlock') lockState('unlock'); $('pw').select(); return fail('Falsches Passwort.'); }
         key = k;
       }
       $('pw').value = ''; $('pw2').value = '';
+      btn.textContent = label; btn.disabled = false;
       start();
-    } catch (e) { fail('Das hat nicht geklappt. Prüfe die Verbindung und versuch es noch einmal.'); }
+    } catch (e) { fail('Das hat nicht geklappt. Prüfe die Verbindung und versuch es noch einmal. (' + errText(e) + ')'); }
   });
   async function logout() {
     lock(); try { await sb.auth.signOut({ scope: 'local' }); } catch (e) { /* lokal abgemeldet */ }
