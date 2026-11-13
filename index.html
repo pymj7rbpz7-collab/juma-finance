@@ -14,6 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<script>try{var t=localStorage.getItem('juma:theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
 /* Layout: Liquid Glass. Blauer Hintergrund, Inhalt auf Milchglas-Karten, Bedienung schwebt als Glas darüber.
@@ -184,6 +185,13 @@ html:has(#app.form-open) { overflow: hidden; }
 @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.94); } to { opacity: 1; transform: translateX(-50%); } }
 
 .pagehead { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.seg.show { display: flex; }
+.seg.show label { min-height: 36px; padding: 5px 10px; font-size: 14px; }
+.ln { display: block; }
+.btn.icon { width: 42px; padding: 0; flex: none; display: inline-flex; align-items: center; justify-content: center; }
+.btn.icon svg { width: 20px; height: 20px; }
+.btn.icon .sun, .btn.icon.dark .moon { display: none; }
+.btn.icon.dark .sun { display: block; }
 .dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .stack > .bars, .stack > .chart { margin-top: 0; }
 
@@ -321,6 +329,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .brand { width: 36px; height: 36px; border-radius: 24%; flex: none; box-shadow: 0 4px 12px rgba(0, 96, 223, 0.3); }
   .top .actions { order: 9; margin-top: auto; flex-wrap: nowrap; }
   .top .actions .btn { flex: 1; padding-inline: 10px; }
+  .top .actions .btn.icon { flex: none; padding: 0; }
   .fab { order: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 10px 16px; border-radius: 999px;
     color: var(--on-accent); font-weight: 600; font-size: 16px; background: linear-gradient(180deg, var(--accent-hi), var(--accent));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -337,7 +346,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .main { gap: 24px; }
   .pagehead { flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; }
   .pagetitle { font-size: 32px; font-weight: 700; line-height: 1.1; letter-spacing: 0.005em; }
-  .monthbar { gap: 6px; }
+  .pagetitle { margin-right: auto; }
+  .seg.show { display: inline-flex; order: 1; }
+  .seg.show label { padding: 5px 16px; }
+  .monthbar { gap: 6px; order: 2; }
   .monthbar strong { flex: none; min-width: 200px; font-size: 18px; }
   .panel.stack { gap: 16px; }
   .head .btn { min-height: 38px; }
@@ -419,7 +431,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     <aside class="side">
     <header class="top">
       <h1><svg class="brand" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-b)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>Juma Finance</h1>
-      <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button></div>
+      <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button><button class="btn icon" id="btn-theme" type="button" aria-label="Dunkle Darstellung"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"/></svg><svg class="moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></button></div>
     </header>
     <button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Neuer Eintrag</span></button>
     <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
@@ -436,9 +448,12 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <section class="panel stack" id="more">
         <h2>Einstellungen</h2>
         <label class="rateline">1 EUR = <input type="text" id="rate" inputmode="decimal" aria-label="Wechselkurs: Franken pro Euro"> CHF <span id="rate-scope"></span></label>
-        <div class="seg wide" role="radiogroup" aria-label="Summen anzeigen in">
-          <input type="radio" name="base" id="base-chf" value="CHF" checked><label for="base-chf">Summen in CHF</label>
-          <input type="radio" name="base" id="base-eur" value="EUR"><label for="base-eur">Summen in EUR</label>
+        <div class="field"><span>Darstellung</span>
+          <div class="seg wide" role="radiogroup" aria-label="Darstellung">
+            <input type="radio" name="theme" id="theme-auto" value="auto" checked><label for="theme-auto">Automatisch</label>
+            <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Hell</label>
+            <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dunkel</label>
+          </div>
         </div>
         <div class="actions">
           <button class="btn grow" id="btn-import" type="button">CSV importieren</button>
@@ -539,6 +554,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <strong id="m-label"></strong>
           <button class="btn" id="m-next" type="button" aria-label="Nächster Monat"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 7 7-7 7"/></svg></button>
         </div>
+        <div class="seg show" role="radiogroup" aria-label="Beträge anzeigen">
+          <input type="radio" name="show" id="show-both" value="both" checked><label for="show-both">CHF + EUR</label>
+          <input type="radio" name="show" id="show-chf" value="CHF"><label for="show-chf">Alles in CHF</label>
+          <input type="radio" name="show" id="show-eur" value="EUR"><label for="show-eur">Alles in EUR</label>
+        </div>
         </div>
 
         <section class="panel summary">
@@ -555,6 +575,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <section class="panel stack d-wide">
             <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
             <div id="dash-chart" class="chart"></div>
+            <p class="hint" id="dash-chart-note" hidden>Balken in CHF umgerechnet, damit beide Währungen vergleichbar sind.</p>
           </section>
           <section class="panel stack d-side">
             <div class="head"><h2>Grösste Ausgaben</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
@@ -701,7 +722,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const n = Number(s); return (!s || !isFinite(n) || n <= 0) ? null : Math.round(n * 100); }
   function rateFor(m) { return settings.rates[m] || settings.rate; }
   function conv(cents, cur, m, base) { if (cur === base) return cents; const r = rateFor(m); return base === 'CHF' ? cents * r : cents / r; }
-  function baseCur() { return settings.base === 'EUR' ? 'EUR' : 'CHF'; }
+  function show() { return settings.show === 'CHF' || settings.show === 'EUR' ? settings.show : 'both'; }
+  function isSplit() { return show() === 'both'; }
+  // Rechenwährung für Balken, Diagramm und Budgets. Bei getrennter Anzeige ist das CHF.
+  function baseCur() { const v = show(); return v === 'both' ? 'CHF' : v; }
   function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function newId() { const a = crypto.getRandomValues(new Uint8Array(8)); return Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); }
   function timeout(p, ms) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), ms))]); }
@@ -983,7 +1007,8 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     settings.rates[view] = r; if (view >= ym(new Date())) settings.rate = r;
     render(); flush('settings'); toast('Kurs für ' + monthName(view) + ' gespeichert');
   });
-  ['base-chf', 'base-eur'].forEach(id => $(id).addEventListener('change', () => { settings.base = $('base-eur').checked ? 'EUR' : 'CHF'; render(); flush('settings'); }));
+  ['show-both', 'show-chf', 'show-eur'].forEach(id => $(id).addEventListener('change', () => { const v = $(id).value; settings.show = v; if (v !== 'both') settings.base = v;
+    budSig = ''; render(); flush('settings'); }));
   $('btn-wipe').addEventListener('click', () => {
     if (!confirmTwice($('btn-wipe'), 'Alle Einträge löschen', 'Wirklich alle Einträge in allen Monaten löschen? Das lässt sich nicht rückgängig machen.')) return;
     const ms = Object.keys(months); let n = 0; ms.forEach(m => { n += months[m].length; months[m] = []; });
@@ -991,24 +1016,32 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   });
 
   /* ---------- Anzeige ---------- */
-  function totals(m, base) { const t = { eur: 0, chf: 0, outB: 0, inB: 0 };
+  function totals(m, base) { const t = { eur: 0, chf: 0, ine: 0, inc: 0, outB: 0, inB: 0 };
     for (const e of months[m] || []) { const b = conv(e.a, e.c, m, base);
-      if (e.t === 'in') t.inB += b; else { t.outB += b; if (e.c === 'EUR') t.eur += e.a; else t.chf += e.a; } }
+      if (e.t === 'in') { t.inB += b; if (e.c === 'EUR') t.ine += e.a; else t.inc += e.a; } else { t.outB += b; if (e.c === 'EUR') t.eur += e.a; else t.chf += e.a; } }
     return t; }
 
   function render() {
     if (!key) return;
     const base = baseCur(), t = totals(view, base), list = (months[view] || []).slice();
     $('m-label').textContent = monthName(view);
-    $('s-total').textContent = fmt(Math.round(t.outB), base);
-    const parts = []; if (t.chf) parts.push(fmt(t.chf, 'CHF')); if (t.eur) parts.push(fmt(t.eur, 'EUR'));
-    $('s-split').textContent = parts.length === 2 ? 'davon ' + parts.join(' und ') : (t.eur && base === 'CHF') || (t.chf && base === 'EUR') ? 'bezahlt: ' + parts[0] : '';
-    $('s-in').textContent = fmt(Math.round(t.inB), base);
-    const sal = Math.round(t.inB - t.outB), se = $('s-saldo');
-    se.textContent = (sal < 0 ? '−' : '+') + fmt(Math.abs(sal), base); se.className = 'num ' + (sal < 0 ? 'neg' : 'pos');
+    const se = $('s-saldo');
+    if (isSplit()) {
+      $('s-total').replaceChildren(...money(t.chf, t.eur));
+      $('s-split').textContent = t.chf && t.eur ? 'zusammen ca. ' + fmt(Math.round(t.outB), base) : '';
+      $('s-in').replaceChildren(...money(t.inc, t.ine));
+      se.className = 'num'; se.replaceChildren(...money(t.inc - t.chf, t.ine - t.eur, 1));
+    } else {
+      $('s-total').textContent = fmt(Math.round(t.outB), base);
+      const parts = []; if (t.chf) parts.push(fmt(t.chf, 'CHF')); if (t.eur) parts.push(fmt(t.eur, 'EUR'));
+      $('s-split').textContent = parts.length === 2 ? 'davon ' + parts.join(' und ') : (t.eur && base === 'CHF') || (t.chf && base === 'EUR') ? 'bezahlt: ' + parts[0] : '';
+      $('s-in').textContent = fmt(Math.round(t.inB), base);
+      const sal = Math.round(t.inB - t.outB);
+      se.textContent = (sal < 0 ? '−' : '+') + fmt(Math.abs(sal), base); se.className = 'num ' + (sal < 0 ? 'neg' : 'pos');
+    }
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
-    $('base-eur').checked = base === 'EUR'; $('base-chf').checked = base === 'CHF';
+    $('show-' + show().toLowerCase()).checked = true;
     $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash';
     $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung' }[tab];
     syncLists(); renderFree(base, t); renderLists();
@@ -1069,7 +1102,8 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       const hit = sv('rect', { x: x0, y: T, width: slot, height: H - T, fill: 'transparent', style: 'cursor:pointer' });
       hit.addEventListener('click', () => { view = m; render(); }); svg.append(hit); });
     host.replaceChildren(svg);
-    $('year-note').textContent = 'Umgerechnet in ' + base + '. Tippe auf einen Monat, um ihn zu öffnen.';
+    $('year-note').textContent = (isSplit() ? 'Balken in CHF umgerechnet, damit beide Währungen vergleichbar sind' : 'Umgerechnet in ' + base) + '. Tippe auf einen Monat, um ihn zu öffnen.';
+    $('dash-chart-note').hidden = !isSplit();
   }
 
   /* ---------- CSV-Import ---------- */
@@ -1317,6 +1351,13 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function renderFree(base, t) {
     const now = ym(new Date()), wrap = $('s-free-wrap'), fx = settings.fixed || [];
     if (view < now || !fx.length) { wrap.hidden = true; return; }
+    if (isSplit()) { const pd = { CHF: [0, 0], EUR: [0, 0] }; pendingFixed(view).forEach(f => { pd[f.c === 'EUR' ? 'EUR' : 'CHF'][f.t === 'in' ? 0 : 1] += f.a; });
+      const el = $('s-free'), hasOut = pd.CHF[1] || pd.EUR[1], hasIn = pd.CHF[0] || pd.EUR[0];
+      wrap.hidden = false; $('s-free-lab').textContent = view === now ? 'Noch frei bis Monatsende' : 'Voraussichtlich frei';
+      el.className = 'num'; el.replaceChildren(...money(t.inc + pd.CHF[0] - t.chf - pd.CHF[1], t.ine + pd.EUR[0] - t.eur - pd.EUR[1], 2));
+      $('s-free-sub').textContent = hasOut || hasIn ? 'nach ' + moneyText(pd.CHF[1], pd.EUR[1]) + ' ausstehenden Fixkosten' + (hasIn ? ' und mit ' + moneyText(pd.CHF[0], pd.EUR[0]) + ' erwarteten Einnahmen' : '')
+        : 'Alle Fixposten dieses Monats sind eingetragen.';
+      return; }
     let pin = 0, pout = 0; pendingFixed(view).forEach(f => { const b = conv(f.a, f.c, view, base); if (f.t === 'in') pin += b; else pout += b; });
     const free = Math.round(t.inB + pin - t.outB - pout), el = $('s-free');
     wrap.hidden = false; $('s-free-lab').textContent = view === now ? 'Noch frei bis Monatsende' : 'Voraussichtlich frei';
@@ -1409,7 +1450,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function renderPlan() {
     const base = baseCur(), fx = settings.fixed || [], now = ym(new Date());
     let out = 0, inc = 0; fx.forEach(f => { const v = conv(f.a, f.c, now, base) / (f.every || 1); if (f.t === 'in') inc += v; else out += v; });
-    $('fx-sum').textContent = fx.length ? 'Fixkosten pro Monat: ' + fmt(Math.round(out), base) + (inc ? ' · Fixe Einnahmen: ' + fmt(Math.round(inc), base) : '')
+    $('fx-sum').textContent = fx.length ? fxSum(fx, base, out, inc)
       : 'Lege Miete, Versicherungen, Abos oder das Gehalt einmal an. Sie werden am gewählten Tag automatisch eingetragen und in der Prognose berücksichtigt.';
     $('fx-list').replaceChildren(...fx.slice().sort((a, b) => (a.day || 1) - (b.day || 1)).map(f => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
       what.append(h('b', null, f.name), h('small', null, f.cat + ' · ' + f.acc + ' · ' + EVERY[f.every || 1] + ' am ' + (f.day || 1) + '.'));
@@ -1424,14 +1465,14 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     accs().forEach(a => { const s = (settings.start || {})[a.n] || {}, g = get(a.n); g.CHF += s.CHF || 0; g.EUR += s.EUR || 0; });
     for (const m in months) for (const e of months[m]) get(e.acc)[e.c === 'EUR' ? 'EUR' : 'CHF'] += e.t === 'in' ? e.a : -e.a;
     return b; }
-  function renderAccounts(base, hid) { const b = balances(), now = ym(new Date()); let tot = 0;
+  function renderAccounts(base, hid) { const b = balances(), now = ym(new Date()); let tot = 0, tc = 0, te = 0;
     const rows = Object.keys(b).map(n => { const v = b[n], a = accs().find(x => x.n === n), row = h('div', 'accrow'), parts = [];
-      tot += conv(v.CHF, 'CHF', now, base) + conv(v.EUR, 'EUR', now, base);
+      tot += conv(v.CHF, 'CHF', now, base) + conv(v.EUR, 'EUR', now, base); tc += v.CHF; te += v.EUR;
       if (v.CHF || (a && a.c === 'CHF')) parts.push(sfmt(v.CHF, 'CHF')); if (v.EUR || (a && a.c === 'EUR')) parts.push(sfmt(v.EUR, 'EUR')); if (!parts.length) parts.push(sfmt(0, base));
       row.append(h('span', null, n), h('span', 'num', parts.join(' · '))); return row; });
-    const total = h('div', 'accrow total'); total.append(h('span', null, 'Gesamt'), h('span', 'num' + (tot < 0 ? ' neg' : ''), sfmt(Math.round(tot), base)));
+    const total = h('div', 'accrow total'); total.append(h('span', null, 'Gesamt'), h('span', 'num' + (tot < 0 ? ' neg' : ''), isSplit() ? moneyText(tc, te) : sfmt(Math.round(tot), base)));
     $(hid || 'acc-list').replaceChildren(...rows, total);
-    if (!hid) $('acc-note').textContent = 'Startsaldo plus alle erfassten Einträge. Den Startsaldo legst du unter Mehr > Kategorien & Konten fest. Gesamt umgerechnet in ' + base + '.';
+    if (!hid) $('acc-note').textContent = 'Startsaldo plus alle erfassten Einträge. Den Startsaldo legst du unter Mehr > Kategorien & Konten fest. ' + (isSplit() ? 'Gesamt je Währung.' : 'Gesamt umgerechnet in ' + base + '.');
   }
 
   /* ---------- Suche ---------- */
@@ -1492,14 +1533,18 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
   $('btn-more').addEventListener('click', () => { if (!$('extras').hidden) $('extras').scrollIntoView({ block: 'start', behavior: 'smooth' }); });
   function catBars(hid, list, base, limit) {
-    const cg = {}; for (const e of list) if (e.t !== 'in') cg[e.cat] = (cg[e.cat] || 0) + conv(e.a, e.c, view, base);
+    const cg = {}, nat = {}, sp = isSplit();
+    for (const e of list) if (e.t !== 'in') { cg[e.cat] = (cg[e.cat] || 0) + conv(e.a, e.c, view, base);
+      const n = nat[e.cat] || (nat[e.cat] = { CHF: 0, EUR: 0 }); n[e.c === 'EUR' ? 'EUR' : 'CHF'] += e.a; }
     const names = new Set(Object.keys(cg)); cats().forEach(c => { if (budgetOf(c, base)) names.add(c); });
     let rows = Array.from(names, n => [n, cg[n] || 0, budgetOf(n, base)]).sort((a, b) => b[1] - a[1]); const host = $(hid), max = rows.length ? Math.max(rows[0][1], 1) : 1;
     if (limit) rows = rows.slice(0, limit);
     if (!rows.length) return host.replaceChildren(h('div', 'empty', 'Noch keine Ausgaben im ' + monthName(view) + '.'));
     host.replaceChildren(...rows.map(([n, v, b]) => { const over = b && v > b, el = h('div', 'bar'), tr = h('div', 'track' + (over ? ' over' : '')), i = h('i');
       i.style.width = Math.min(100, v / (b || max) * 100) + '%'; tr.append(i);
-      el.append(h('span', 'name', n), h('span', 'val num' + (over ? ' neg' : ''), fmt(Math.round(v), base) + (b ? ' von ' + (base === 'CHF' ? nfCH : nfAT).format(b / 100) : '')), tr); return el; }));
+      const txt = sp ? moneyText((nat[n] || {}).CHF || 0, (nat[n] || {}).EUR || 0) + (b ? ' von ' + fmt(settings.budgets[n].a, settings.budgets[n].c) : '')
+        : fmt(Math.round(v), base) + (b ? ' von ' + (base === 'CHF' ? nfCH : nfAT).format(b / 100) : '');
+      el.append(h('span', 'name', n), h('span', 'val num' + (over ? ' neg' : ''), txt), tr); return el; }));
   }
   function nextDue(f) { const now = ym(new Date()); let m = now < f.from ? f.from : now, g = 0;
     while (g++ < 14) { if (dueIn(f, m) && !fxBooked(f, m)) { const [y, mo] = m.split('-').map(Number);
@@ -1521,6 +1566,30 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       row.append(what, amtEl(f)); row.addEventListener('click', () => { go('tab-c'); fxOpen(f); }); return row; })
       : [h('div', 'empty', (settings.fixed || []).length ? 'Keine Fixposten ausstehend.' : 'Noch keine Fixposten. Lege Miete, Abos oder Gehalt in der Planung an.')]));
   }
+
+  /* ---------- Beträge je Währung ---------- */
+  // mode 0: ohne Vorzeichen, 1: mit + und − (farbig), 2: nur − (farbig)
+  function money(c, e, mode) { const out = [], ln = (v, cur) => h('span', 'ln' + (mode ? (v < 0 ? ' neg' : ' pos') : ''), (v < 0 ? '−' : mode === 1 ? '+' : '') + fmt(Math.abs(v), cur));
+    if (c || !e) out.push(ln(c, 'CHF')); if (e) out.push(ln(e, 'EUR')); return out; }
+  function moneyText(c, e) { const out = []; if (c || !e) out.push(sfmt(c, 'CHF')); if (e) out.push(sfmt(e, 'EUR')); return out.join(' · '); }
+  function fxSum(fx, base, out, inc) {
+    if (!isSplit()) return 'Fixkosten pro Monat: ' + fmt(Math.round(out), base) + (inc ? ' · Fixe Einnahmen: ' + fmt(Math.round(inc), base) : '');
+    const t = { out: [0, 0], in: [0, 0] }; fx.forEach(f => { t[f.t === 'in' ? 'in' : 'out'][f.c === 'EUR' ? 1 : 0] += f.a / (f.every || 1); });
+    const r = a => moneyText(Math.round(a[0]), Math.round(a[1]));
+    return 'Fixkosten pro Monat: ' + r(t.out) + (t.in[0] || t.in[1] ? ' · Fixe Einnahmen: ' + r(t.in) : ''); }
+
+  /* ---------- Darstellung: automatisch, hell, dunkel (pro Gerät) ---------- */
+  function themePref() { const t = document.documentElement.dataset.theme; return t === 'light' || t === 'dark' ? t : 'auto'; }
+  function isDark() { const t = themePref(); return t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches); }
+  function syncTheme() { const t = themePref(), b = $('btn-theme'); $('theme-' + t).checked = true;
+    b.classList.toggle('dark', isDark()); b.setAttribute('aria-label', isDark() ? 'Helle Darstellung' : 'Dunkle Darstellung');
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { if (!m.dataset.o) m.dataset.o = m.content; m.content = t === 'auto' ? m.dataset.o : t === 'dark' ? '#0a1430' : '#dfe9fb'; }); }
+  function setTheme(t) { try { if (t === 'auto') localStorage.removeItem('juma:theme'); else localStorage.setItem('juma:theme', t); } catch (e) { /* gilt dann nur bis zum Schliessen */ }
+    if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t; syncTheme(); }
+  ['theme-auto', 'theme-light', 'theme-dark'].forEach(id => $(id).addEventListener('change', () => setTheme($(id).value)));
+  $('btn-theme').addEventListener('click', () => setTheme(isDark() ? 'light' : 'dark'));
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  syncTheme();
 
   boot();
 })();
