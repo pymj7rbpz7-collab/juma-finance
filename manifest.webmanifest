@@ -1,0 +1,16 @@
+{
+  "name": "Juma Finance",
+  "short_name": "Juma Finance",
+  "description": "Haushaltsbuch für CHF und EUR, verschlüsselt auf deinem Gerät.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#dfe9fb",
+  "theme_color": "#dfe9fb",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

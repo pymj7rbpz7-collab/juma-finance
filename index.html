@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Juma Finance</title>
+<meta name="description" content="Haushaltsbuch für CHF und EUR, verschlüsselt auf deinem Gerät.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Juma Finance">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#dfe9fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1430" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+/* Layout: Liquid Glass. Farbiger Hintergrund, Inhalt auf Milchglas-Karten, Bedienung schwebt als Glas darüber:
+   unten Leiste mit Ansicht und Plus-Knopf, neuer Eintrag als schwebendes Sheet. Am Desktop steht das Formular links. */
+:root {
+  --bg: #eef1f8;
+  --w1: #a9cdff; --w2: #cdbfff; --w3: #a4e8de; --w4: #ffd6c6;
+  --surface: rgba(255, 255, 255, 0.5);
+  --glass: rgba(255, 255, 255, 0.62);
+  --sheet: rgba(248, 250, 255, 0.8);
+  --edge: rgba(255, 255, 255, 0.75);
+  --shine: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.35), inset 0 0 14px rgba(255, 255, 255, 0.25);
+  --depth: 0 10px 34px rgba(40, 60, 120, 0.13), 0 1px 3px rgba(40, 60, 120, 0.08);
+  --sunken: rgba(110, 125, 170, 0.14);
+  --fill: rgba(110, 120, 150, 0.14);
+  --thumb: rgba(255, 255, 255, 0.9);
+  --ink: #0b0d14;
+  --muted: #565c6e;
+  --line: rgba(50, 60, 90, 0.16);
+  --accent: #0071e3;
+  --accent-hi: #3d9bff;
+  --on-accent: #ffffff;
+  --eur: #006a99;
+  --chf: #b53a00;
+  --pos: #1a7f37;
+  --out: #ff3b30;
+  --danger: #cf0f1e;
+  --scrim: rgba(20, 28, 55, 0.28);
+  --toast-bg: rgba(30, 34, 48, 0.72);
+  --toast-ink: #ffffff;
+  --shadow-thumb: 0 2px 8px rgba(40, 60, 120, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-float: 0 18px 50px rgba(30, 45, 100, 0.26), 0 2px 6px rgba(30, 45, 100, 0.1);
+  --blur: blur(26px) saturate(190%);
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --r: 28px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #05070d; --w1: #123a86; --w2: #43248a; --w3: #0b5454; --w4: #5a2136;
+    --surface: rgba(36, 40, 54, 0.5); --glass: rgba(70, 76, 96, 0.5); --sheet: rgba(28, 31, 42, 0.76); --edge: rgba(255, 255, 255, 0.16);
+    --shine: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(255, 255, 255, 0.06), inset 0 0 14px rgba(255, 255, 255, 0.04);
+    --depth: 0 10px 34px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --sunken: rgba(255, 255, 255, 0.1); --fill: rgba(255, 255, 255, 0.1); --thumb: rgba(255, 255, 255, 0.24);
+    --ink: #ffffff; --muted: #aab0c2; --line: rgba(255, 255, 255, 0.16);
+    --accent: #2f95ff; --accent-hi: #6bb6ff; --on-accent: #ffffff; --eur: #6fd6ff; --chf: #ffa63d; --pos: #3ddc6a; --out: #ff5a50; --danger: #ff6b61;
+    --scrim: rgba(0, 0, 0, 0.5); --toast-bg: rgba(90, 96, 118, 0.6); --toast-ink: #ffffff;
+    --shadow-thumb: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #05070d; --w1: #123a86; --w2: #43248a; --w3: #0b5454; --w4: #5a2136;
+  --surface: rgba(36, 40, 54, 0.5); --glass: rgba(70, 76, 96, 0.5); --sheet: rgba(28, 31, 42, 0.76); --edge: rgba(255, 255, 255, 0.16);
+  --shine: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(255, 255, 255, 0.06), inset 0 0 14px rgba(255, 255, 255, 0.04);
+  --depth: 0 10px 34px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --sunken: rgba(255, 255, 255, 0.1); --fill: rgba(255, 255, 255, 0.1); --thumb: rgba(255, 255, 255, 0.24);
+  --ink: #ffffff; --muted: #aab0c2; --line: rgba(255, 255, 255, 0.16);
+  --accent: #2f95ff; --accent-hi: #6bb6ff; --on-accent: #ffffff; --eur: #6fd6ff; --chf: #ffa63d; --pos: #3ddc6a; --out: #ff5a50; --danger: #ff6b61;
+  --scrim: rgba(0, 0, 0, 0.5); --toast-bg: rgba(90, 96, 118, 0.6); --toast-ink: #ffffff;
+  --shadow-thumb: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.35; letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+/* Hintergrund: weiche Farbflächen, damit das Glas etwas zu brechen hat */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background:
+  radial-gradient(65% 46% at 8% 4%, var(--w1) 0, transparent 72%),
+  radial-gradient(58% 42% at 100% 18%, var(--w2) 0, transparent 72%),
+  radial-gradient(75% 50% at 78% 102%, var(--w3) 0, transparent 72%),
+  radial-gradient(55% 40% at -4% 82%, var(--w4) 0, transparent 72%); }
+.wrap {
+  max-width: 1000px; margin: 0 auto; padding-block: 20px 128px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1 { font-size: 34px; font-weight: 700; line-height: 1.1; margin: 0; letter-spacing: 0.01em; text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 600; margin: 0; }
+.num { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+button, input, select { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* Glas: Karten (ruhig) und schwebende Bedienelemente (kräftiger) */
+.panel, .top .btn, .monthbar .btn {
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid var(--edge); box-shadow: var(--shine), var(--depth); }
+.panel { background: var(--surface); border-radius: var(--r); padding: 16px; min-width: 0; }
+.top .btn, .monthbar .btn { background: var(--glass); }
+
+.hint, .msg { margin: 0; color: var(--muted); font-size: 13px; letter-spacing: -0.005em; line-height: 1.4; }
+.msg { min-height: 1.4em; } .msg.err { color: var(--danger); }
+.pos { color: var(--pos); } .neg { color: var(--danger); }
+
+.btn { border: 0; background: var(--fill); color: var(--accent); border-radius: 999px; padding: 10px 18px; font-weight: 600; font-size: 16px; min-height: 44px;
+  transition: transform 100ms ease-out, opacity 100ms ease-out; }
+.btn:active { transform: scale(0.96); opacity: 0.75; }
+.btn.primary { color: var(--on-accent); min-height: 52px; font-size: 17px;
+  background: linear-gradient(180deg, var(--accent-hi), var(--accent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent); }
+.btn.warn { color: var(--danger); background: color-mix(in srgb, var(--danger) 13%, transparent); }
+.btn.plain { background: none; }
+.btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.actions .grow { flex: 1; padding-inline: 10px; font-size: 15px; white-space: nowrap; }
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > span { font-size: 13px; color: var(--muted); letter-spacing: -0.005em; padding-left: 6px; }
+input[type="text"], input[type="password"], input[type="email"], input[type="date"], select {
+  width: 100%; min-width: 0; min-height: 48px; padding: 8px 16px; border-radius: 16px;
+  border: 1px solid var(--line); background: var(--fill); font-size: 17px; -webkit-appearance: none; appearance: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); }
+input::placeholder { color: var(--muted); opacity: 0.7; }
+select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 21px) 21px, calc(100% - 16px) 21px; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+input[type="file"] { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--fill); font-size: 15px; }
+input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px; flex: none; }
+
+/* Segmented Control: Glas-Schieber in einer Kapsel */
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { padding: 6px 16px; min-height: 40px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-size: 15px; font-weight: 500;
+  cursor: pointer; flex: 1; white-space: nowrap; transition: background-color 200ms ease, box-shadow 200ms ease, color 200ms ease, transform 100ms ease-out; }
+.seg label:active { transform: scale(0.96); }
+.seg input:checked + label { background: var(--thumb); box-shadow: var(--shadow-thumb); font-weight: 600; }
+.seg input:focus-visible + label { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: -1px; }
+.seg.wide { display: flex; }
+.seg svg { width: 18px; height: 18px; flex: none; }
+
+/* Sperrbildschirm */
+.lock { max-width: 400px; margin: 7vh auto 0; display: flex; flex-direction: column; gap: 18px; }
+.lock h1 { text-align: center; font-size: 28px; }
+.lock > p { margin: 0; color: var(--muted); font-size: 13px; letter-spacing: -0.005em; line-height: 1.4; text-align: center; padding-inline: 8px; }
+.appicon { width: 80px; height: 80px; margin: 0 auto; display: block; border-radius: 24%;
+  box-shadow: 0 12px 30px rgba(0, 96, 223, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+
+/* Kopf */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.top .btn { min-height: 42px; padding: 8px 18px; font-size: 15px; color: var(--ink); }
+
+.grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+.main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.entry { display: none; }
+.form-open .entry { display: flex; }
+.entry .head { justify-content: center; }
+
+/* Handy: schwebende Glas-Leiste unten und Eintrag als schwebendes Sheet */
+@media (max-width: 879.98px) {
+  .seg.tabs, .fab { position: fixed; z-index: 15; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); height: 64px;
+    -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--edge); }
+  .seg.tabs { left: max(16px, env(safe-area-inset-left, 0px)); right: calc(max(16px, env(safe-area-inset-right, 0px)) + 74px);
+    padding: 4px; background: var(--glass); box-shadow: var(--shine), var(--shadow-float); }
+  .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; padding: 4px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--muted); }
+  .seg.tabs svg { width: 24px; height: 24px; }
+  .seg.tabs input:checked + label { color: var(--accent); background: var(--fill); box-shadow: inset 0 1px 0 var(--edge); }
+  .fab { right: max(16px, env(safe-area-inset-right, 0px)); width: 64px; padding: 0; border-radius: 50%; color: var(--on-accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-hi) 88%, transparent), color-mix(in srgb, var(--accent) 88%, transparent));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 10px 28px color-mix(in srgb, var(--accent) 45%, transparent), 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: transform 100ms ease-out; }
+  .fab:active { transform: scale(0.93); }
+  .fab svg { width: 26px; height: 26px; }
+
+  html:has(#app.form-open) { overflow: hidden; }
+  #app.form-open::before { content: ""; position: fixed; inset: 0; z-index: 25; background: var(--scrim); animation: scrim-in 250ms ease both; }
+  .entry { position: fixed; z-index: 30; margin: 0 auto; max-width: 560px;
+    left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+    max-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 36px); overflow-y: auto; overscroll-behavior: contain;
+    border-radius: 38px; background: var(--sheet); box-shadow: var(--shine), var(--shadow-float);
+    -webkit-backdrop-filter: blur(40px) saturate(200%); backdrop-filter: blur(40px) saturate(200%);
+    padding: 28px 18px 18px;
+    animation: sheet-in 460ms cubic-bezier(0.32, 0.72, 0, 1) both; }
+  .entry::before { content: ""; position: absolute; top: 9px; left: 50%; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: var(--line); }
+}
+@media (min-width: 600px) and (max-width: 879.98px) {
+  .seg.tabs { left: calc(50% - 237px); right: auto; width: 400px; }
+  .fab { right: auto; left: calc(50% + 173px); }
+}
+@keyframes sheet-in { from { transform: translateY(calc(100% + 40px)) scale(0.96); } to { transform: none; } }
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.94); } to { opacity: 1; transform: translateX(-50%); } }
+
+@media (min-width: 880px) {
+  .grid { grid-template-columns: 350px minmax(0, 1fr); align-items: start; gap: 24px; }
+  .entry { display: flex; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); }
+  .entry .head { justify-content: flex-start; }
+  .fab { display: none; }
+  .wrap { padding-block-end: 56px; }
+}
+
+.monthbar { display: flex; align-items: center; gap: 8px; }
+.monthbar strong { font-size: 20px; font-weight: 600; flex: 1; text-align: center; letter-spacing: -0.01em; }
+.monthbar .btn { width: 46px; min-height: 46px; padding: 0; border-radius: 50%; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; }
+.monthbar svg { width: 11px; height: 18px; display: block; }
+
+.summary { display: flex; flex-direction: column; gap: 16px; padding: 22px; }
+.summary .lab { font-size: 13px; color: var(--muted); display: block; letter-spacing: -0.005em; }
+.hero .num { font-size: 40px; font-weight: 700; line-height: 1.15; display: block; overflow-wrap: anywhere; }
+.hero .sub { font-size: 13px; color: var(--muted); display: block; min-height: 1.4em; letter-spacing: -0.005em; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+.pair .num { font-size: 20px; font-weight: 600; overflow-wrap: anywhere; }
+
+.amountrow { display: flex; gap: 8px; align-items: center; }
+.amountrow input { font-family: var(--font-display); font-size: 30px; font-weight: 700; flex: 1; min-height: 60px; border-radius: 20px; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.head .btn { min-height: 36px; padding: 6px 14px; font-size: 15px; }
+
+/* Einträge als gruppierte Liste */
+#tab-list { overflow: hidden; }
+.day { font-size: 13px; color: var(--muted); padding: 18px 2px 6px; letter-spacing: -0.005em; }
+.row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left;
+  width: calc(100% + 32px); margin-inline: -16px; padding: 11px 18px; border: 0; background: none; min-height: 60px; transition: background-color 120ms ease; }
+.row::before { content: ""; position: absolute; top: 0; left: 18px; right: 0; height: 1px; background: var(--line); }
+.day + .row::before { display: none; }
+.row:hover { background: color-mix(in srgb, var(--fill) 50%, transparent); }
+.row:active { background: var(--fill); transition: none; }
+.row b { font-weight: 500; display: block; overflow-wrap: anywhere; }
+.row small { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; display: block; letter-spacing: -0.005em; }
+.row .amt { text-align: right; font-size: 17px; font-weight: 600; white-space: nowrap; }
+.tag { font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 2px 7px; border-radius: 999px; margin-left: 7px; vertical-align: 2px; }
+.tag.eur { color: var(--eur); background: color-mix(in srgb, var(--eur) 15%, transparent); }
+.tag.chf { color: var(--chf); background: color-mix(in srgb, var(--chf) 15%, transparent); }
+.empty { color: var(--muted); padding: 22px 2px 6px; font-size: 15px; }
+
+.bars { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: baseline; font-size: 15px; }
+.bar .name { overflow-wrap: anywhere; } .bar .val { color: var(--muted); }
+.track { grid-column: 1 / -1; height: 10px; border-radius: 5px; background: var(--fill); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08); }
+.track i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(180deg, var(--accent-hi), var(--accent)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+.chart { margin-top: 14px; min-width: 0; } .chart svg { display: block; font-family: var(--font-body); letter-spacing: 0; }
+.legendrow { display: flex; gap: 14px; font-size: 12px; color: var(--muted); flex-wrap: wrap; letter-spacing: 0; }
+.legendrow span { display: inline-flex; align-items: center; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.dot.inc { background: var(--pos); } .dot.out { background: var(--out); }
+
+.rateline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 15px; }
+.rateline input { width: 108px; text-align: right; font-variant-numeric: tabular-nums; }
+.rateline span { color: var(--muted); font-size: 13px; }
+.check { display: flex; gap: 10px; align-items: center; font-size: 14px; color: var(--muted); }
+.mapgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+.tablewrap table { border-collapse: collapse; width: 100%; font-size: 13px; letter-spacing: 0; }
+.tablewrap th, .tablewrap td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tablewrap th { color: var(--muted); font-weight: 500; }
+.tablewrap tr:last-child td { border-bottom: 0; }
+.tablewrap td.r { text-align: right; font-variant-numeric: tabular-nums; }
+.duprow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.duprow b { font-weight: 500; }
+.duprow small { color: var(--muted); font-size: 13px; display: block; overflow-wrap: anywhere; }
+.duprow .btn { min-height: 36px; padding: 6px 14px; font-size: 15px; }
+
+.fab { border: 0; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); z-index: 40;
+  background: var(--toast-bg); color: var(--toast-ink); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid rgba(255, 255, 255, 0.18); padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 500; text-align: center;
+  max-width: calc(100% - 32px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--shadow-float);
+  animation: toast-in 280ms cubic-bezier(0.32, 0.72, 0, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .entry, .toast { animation: scrim-in 200ms ease both; }
+  .btn, .fab, .seg label, .row { transition: none; }
+}
+/* Ohne Transparenz (Einstellung oder alter Browser): deckende Flächen */
+@media (prefers-reduced-transparency: reduce) {
+  .panel, .top .btn, .monthbar .btn, .seg.tabs, .entry, .toast { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .panel, .top .btn, .monthbar .btn, .seg.tabs, .entry { background: color-mix(in srgb, var(--bg) 82%, var(--ink) 0%); background: Canvas; }
+  .toast { background: #2c2c2e; }
+  body::before { opacity: 0.4; }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel, .top .btn, .monthbar .btn, .seg.tabs, .entry { background: Canvas; }
+  .toast { background: #2c2c2e; }
+}
+@media (prefers-contrast: more) {
+  .panel, input[type="text"], input[type="password"], input[type="email"], input[type="date"], select, .btn, .seg { outline: 1px solid var(--ink); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="lock" class="lock">
+    <svg class="appicon" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-g)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>
+    <h1>Juma Finance</h1>
+    <form id="lock-form" class="panel stack" autocomplete="off">
+      <p class="hint" id="lock-intro">Lade …</p>
+      <label class="field" id="em-wrap" hidden><span>E-Mail</span>
+        <input type="email" id="em" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false"></label>
+      <label class="field" id="pw-wrap" hidden><span id="pw-label">Passwort</span>
+        <input type="password" id="pw" autocomplete="current-password"></label>
+      <label class="field" id="pw2-wrap" hidden><span>Passwort wiederholen</span>
+        <input type="password" id="pw2" autocomplete="new-password"></label>
+      <button class="btn primary" id="lock-btn" type="submit" hidden>Entsperren</button>
+      <button class="btn" id="retry-btn" type="button" hidden>Erneut versuchen</button>
+      <button class="btn plain" id="alt-btn" type="button" hidden></button>
+      <div class="msg" id="lock-msg" role="status"></div>
+    </form>
+    <p>Deine Einträge werden auf dem Gerät mit AES-256 verschlüsselt, bevor sie gespeichert oder abgeglichen werden. Das Passwort wird nirgends abgelegt. Wenn du es vergisst, sind die Daten nicht wiederherstellbar.</p>
+  </section>
+
+  <div id="app" hidden>
+    <header class="top">
+      <h1>Juma Finance</h1>
+      <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button></div>
+    </header>
+
+    <div class="stack" id="extras" style="margin-bottom:16px" hidden>
+      <section class="panel stack" id="more">
+        <h2>Einstellungen</h2>
+        <label class="rateline">1 EUR = <input type="text" id="rate" inputmode="decimal" aria-label="Wechselkurs: Franken pro Euro"> CHF <span id="rate-scope"></span></label>
+        <div class="seg wide" role="radiogroup" aria-label="Summen anzeigen in">
+          <input type="radio" name="base" id="base-chf" value="CHF" checked><label for="base-chf">Summen in CHF</label>
+          <input type="radio" name="base" id="base-eur" value="EUR"><label for="base-eur">Summen in EUR</label>
+        </div>
+        <div class="actions">
+          <button class="btn grow" id="btn-import" type="button">CSV importieren</button>
+          <button class="btn grow" id="btn-dups" type="button">Doppelte suchen</button>
+        </div>
+        <button class="btn" id="btn-logout" type="button" hidden>Abmelden</button>
+        <button class="btn warn" id="btn-wipe" type="button">Alle Einträge löschen</button>
+        <p class="hint" id="store-note"></p>
+      </section>
+
+      <section class="panel stack" id="import" hidden>
+        <div class="head"><h2>CSV importieren</h2><button class="btn" id="imp-close" type="button">Schliessen</button></div>
+        <p class="hint">Exportiere die Umsätze bei deiner Bank als CSV und wähle die Datei aus. Sie wird nur in deinem Browser gelesen.</p>
+        <label class="field"><span>CSV-Datei</span><input type="file" id="imp-file" accept=".csv,.txt,.tsv,text/csv,text/plain"></label>
+        <div id="imp-map" class="stack" hidden>
+          <div class="mapgrid">
+            <label class="field"><span>Konto</span><select id="imp-acc"></select></label>
+            <label class="field"><span>Spalte Datum</span><select id="imp-date"></select></label>
+            <label class="field"><span>Spalte Betrag (mit Vorzeichen)</span><select id="imp-amount"></select></label>
+            <label class="field"><span>oder Spalte Belastung</span><select id="imp-debit"></select></label>
+            <label class="field"><span>und Spalte Gutschrift</span><select id="imp-credit"></select></label>
+            <label class="field"><span>Währung</span><select id="imp-cur"></select></label>
+            <label class="field"><span>Spalte Text</span><select id="imp-text"></select></label>
+          </div>
+          <label class="check"><input type="checkbox" id="imp-flip"> Vorzeichen umkehren (in dieser Datei sind Ausgaben positiv)</label>
+          <div class="tablewrap"><table id="imp-prev"></table></div>
+          <button class="btn primary" id="imp-go" type="button">Importieren</button>
+        </div>
+        <div class="msg" id="imp-msg" role="status"></div>
+      </section>
+
+      <section class="panel stack" id="dups" hidden>
+        <div class="head"><h2>Mögliche Doppelte</h2><button class="btn" id="dup-close" type="button">Schliessen</button></div>
+        <p class="hint" id="dup-note"></p>
+        <div id="dup-list"></div>
+        <button class="btn warn" id="dup-all" type="button" hidden></button>
+      </section>
+    </div>
+
+    <div class="grid">
+      <form id="entry-form" class="panel stack entry" autocomplete="off">
+        <div class="head"><h2 id="form-title">Neuer Eintrag</h2></div>
+        <div class="seg wide" role="radiogroup" aria-label="Art">
+          <input type="radio" name="type" id="f-type-out" value="out" checked><label for="f-type-out">Ausgabe</label>
+          <input type="radio" name="type" id="f-type-in" value="in"><label for="f-type-in">Einnahme</label>
+        </div>
+        <div class="amountrow">
+          <input type="text" id="f-amount" inputmode="decimal" placeholder="0.00" aria-label="Betrag" required>
+          <div class="seg" role="radiogroup" aria-label="Währung">
+            <input type="radio" name="cur" id="f-cur-chf" value="CHF" checked><label for="f-cur-chf">CHF</label>
+            <input type="radio" name="cur" id="f-cur-eur" value="EUR"><label for="f-cur-eur">EUR</label>
+          </div>
+        </div>
+        <div class="two">
+          <label class="field"><span>Kategorie</span><select id="f-cat"></select></label>
+          <label class="field"><span>Konto</span><select id="f-acc"></select></label>
+        </div>
+        <label class="field"><span>Datum</span><input type="date" id="f-date" required></label>
+        <label class="field"><span>Notiz (optional)</span><input type="text" id="f-note" maxlength="120" placeholder="z. B. Spar Dornbirn"></label>
+        <div class="actions">
+          <button class="btn primary grow" id="f-save" type="submit">Speichern</button>
+          <button class="btn" id="f-cancel" type="button" style="min-height:52px">Abbrechen</button>
+        </div>
+        <button class="btn warn" id="f-delete" type="button" hidden>Eintrag löschen</button>
+        <div class="msg" id="form-msg" role="status"></div>
+      </form>
+
+      <div class="main">
+        <div class="monthbar">
+          <button class="btn" id="m-prev" type="button" aria-label="Vorheriger Monat"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2 2 9l7 7"/></svg></button>
+          <strong id="m-label"></strong>
+          <button class="btn" id="m-next" type="button" aria-label="Nächster Monat"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 7 7-7 7"/></svg></button>
+        </div>
+
+        <section class="panel summary">
+          <div class="hero"><span class="lab">Ausgaben</span><span class="num" id="s-total"></span><span class="sub" id="s-split"></span></div>
+          <div class="pair">
+            <div><span class="lab">Einnahmen</span><span class="num" id="s-in"></span></div>
+            <div><span class="lab">Saldo</span><span class="num" id="s-saldo"></span></div>
+          </div>
+        </section>
+
+        <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
+          <input type="radio" name="tab" id="tab-a" value="list" checked><label for="tab-a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor"/></svg><span>Einträge</span></label>
+          <input type="radio" name="tab" id="tab-b" value="stats"><label for="tab-b"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.4" height="8.5" rx="1.6"/><rect x="9.8" y="7.5" width="4.4" height="13" rx="1.6"/><rect x="16.1" y="3.5" width="4.4" height="17" rx="1.6"/></svg><span>Auswertung</span></label>
+        </div>
+
+        <section class="panel" id="tab-list">
+          <div class="seg wide" role="radiogroup" aria-label="Einträge filtern">
+            <input type="radio" name="lf" id="lf-all" value="all" checked><label for="lf-all">Alle</label>
+            <input type="radio" name="lf" id="lf-out" value="out"><label for="lf-out">Ausgaben</label>
+            <input type="radio" name="lf" id="lf-in" value="in"><label for="lf-in">Einnahmen</label>
+          </div>
+          <div id="list"></div>
+        </section>
+
+        <div class="stack" id="tab-stats" hidden>
+          <section class="panel">
+            <h2>Ausgaben nach Kategorie</h2>
+            <div class="bars" id="cats"></div>
+          </section>
+          <section class="panel">
+            <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
+            <div id="chart-year" class="chart"></div>
+            <p class="hint" id="year-note"></p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const CATS = ['Lebensmittel', 'Restaurant & Café', 'Wohnen', 'Mobilität', 'Gesundheit', 'Versicherung',
+    'Freizeit & Sport', 'Shopping', 'Abos', 'Reisen', 'Steuern & Gebühren', 'Sonstiges'];
+  const INCATS = ['Gehalt', 'Rückerstattung', 'Sonstige Einnahme'];
+  const ACCS = [{ n: 'UBS', c: 'CHF' }, { n: 'Revolut', c: null }, { n: 'Sparkasse', c: 'EUR' }, { n: 'Bar', c: null }];
+  const ITER = 600000, LOCAL = 'grenzbuch:', IDLE_MS = 10 * 60 * 1000;
+  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF' });
+
+  const CFG = window.JUMA_CONFIG || {};
+  let backend = null, meta = null, key = null, unsub = null, sb = null, user = null, mode = 'loading', pending = {};
+  let months = {}, settings = DEF();
+  let seen = {}, busy = {}, dirty = {}, applyChain = Promise.resolve();
+  let view = ym(new Date()), editing = null, idleTimer = null, loadTimer = null;
+  let tab = 'list', listFilter = 'all', formOpen = false, imp = null, resizeT;
+
+  /* ---------- Hilfen ---------- */
+  function ym(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function today() { const d = new Date(); return ym(d) + '-' + String(d.getDate()).padStart(2, '0'); }
+  function shift(m, n) { const [y, mo] = m.split('-').map(Number); return ym(new Date(y, mo - 1 + n, 1)); }
+  const nfCH = new Intl.NumberFormat('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nfAT = new Intl.NumberFormat('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function fmt(cents, cur) { return cur === 'CHF' ? 'CHF ' + nfCH.format(cents / 100) : nfAT.format(cents / 100) + ' €'; }
+  function monthName(m, short) { const [y, mo] = m.split('-').map(Number);
+    return new Intl.DateTimeFormat('de-CH', short ? { month: 'short' } : { month: 'long', year: 'numeric' }).format(new Date(y, mo - 1, 1)); }
+  function parseAmt(s) { s = String(s).trim().replace(/['’\s]/g, ''); if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+    const n = Number(s); return (!s || !isFinite(n) || n <= 0) ? null : Math.round(n * 100); }
+  function rateFor(m) { return settings.rates[m] || settings.rate; }
+  function conv(cents, cur, m, base) { if (cur === base) return cents; const r = rateFor(m); return base === 'CHF' ? cents * r : cents / r; }
+  function baseCur() { return settings.base === 'EUR' ? 'EUR' : 'CHF'; }
+  function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function newId() { const a = crypto.getRandomValues(new Uint8Array(8)); return Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); }
+  function timeout(p, ms) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), ms))]); }
+  function setMsg(id, t, err) { const el = $(id); el.textContent = t; el.classList.toggle('err', !!err); }
+  let toastT; function toast(t) { const el = $('toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 3500); }
+  const wide = () => window.matchMedia('(min-width: 880px)').matches;
+  function confirmTwice(btn, label, question) { if (btn.dataset.sure) { delete btn.dataset.sure; btn.textContent = label; return true; }
+    btn.dataset.sure = '1'; btn.textContent = question; setTimeout(() => { if (btn.dataset.sure) { delete btn.dataset.sure; btn.textContent = label; } }, 5000); return false; }
+
+  /* ---------- Verschlüsselung ---------- */
+  const te = new TextEncoder(), td = new TextDecoder();
+  function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+  function unb64(s) { return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+  async function derive(pass, salt, iter) {
+    const base = await crypto.subtle.importKey('raw', te.encode(pass), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base,
+      { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  async function seal(obj, k) { const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k || key, te.encode(JSON.stringify(obj)));
+    return { iv: b64(iv), ct: b64(new Uint8Array(ct)) }; }
+  async function unseal(box, k) { const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(box.iv) }, k || key, unb64(box.ct));
+    return JSON.parse(td.decode(pt)); }
+
+  /* ---------- Speicher ---------- */
+  function cloudBackend(uid) {
+    const T = () => sb.from('juma_docs'), CK = 'juma:cache:' + uid + ':', PK = 'juma:pending:' + uid;
+    const cget = id => { try { const v = localStorage.getItem(CK + id); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+    const cset = (id, d) => { try { localStorage.setItem(CK + id, JSON.stringify(d)); } catch (e) { /* ohne Spiegel weiter */ } };
+    const call = () => { const out = []; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i);
+      if (k && k.startsWith(CK)) out.push({ id: k.slice(CK.length), data: JSON.parse(localStorage.getItem(k)) }); } } catch (e) { /* leer */ } return out; };
+    return { kind: 'cloud',
+      get: async id => {
+        try { const { data, error } = await T().select('data').eq('id', id).maybeSingle(); if (error) throw error;
+          if (data) cset(id, data.data); return data ? data.data : null;
+        } catch (e) { const c = cget(id); if (c) return c; throw e; } },
+      set: async (id, data) => {
+        const row = { user_id: uid, id, data, updated_at: new Date().toISOString() };
+        if (id !== 'meta') cset(id, data);
+        // meta wird nur angelegt, nie überschrieben: sonst wären alle Einträge unlesbar
+        const { error } = id === 'meta' ? await T().insert(row) : await T().upsert(row);
+        if (error) throw error; if (id === 'meta') cset(id, data); },
+      pendingIds: () => { try { const o = {}; JSON.parse(localStorage.getItem(PK) || '[]').forEach(id => { o[id] = true; }); return o; } catch (e) { return {}; } },
+      savePending: o => { try { localStorage.setItem(PK, JSON.stringify(Object.keys(o))); } catch (e) { /* nur im Speicher */ } },
+      watch: cb => {
+        let dead = false;
+        cb(call(), { fromCache: true });
+        const pull = async () => { try { const { data, error } = await T().select('id,data'); if (error || dead) return;
+          data.forEach(r => { if (!pending[r.id]) cset(r.id, r.data); }); cb(data.map(r => ({ id: r.id, data: r.data })), { fromCache: false }); } catch (e) { /* offline */ } };
+        pull();
+        const ch = sb.channel('juma-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'juma_docs', filter: 'user_id=eq.' + uid }, pl => {
+          const r = pl && pl.new; if (dead || !r || !r.id) return;
+          if (!pending[r.id]) cset(r.id, r.data); cb([{ id: r.id, data: r.data }], { fromCache: false }); }).subscribe();
+        const wake = () => { if (!document.hidden) pull(); };
+        document.addEventListener('visibilitychange', wake); window.addEventListener('online', wake); window.addEventListener('focus', wake);
+        const iv = setInterval(wake, 60000);
+        return () => { dead = true; clearInterval(iv); document.removeEventListener('visibilitychange', wake);
+          window.removeEventListener('online', wake); window.removeEventListener('focus', wake); try { sb.removeChannel(ch); } catch (e) { /* schon zu */ } };
+      } }; }
+  function localBackend() { let mem = null;
+    try { localStorage.setItem(LOCAL + 'probe', '1'); localStorage.removeItem(LOCAL + 'probe'); } catch (e) { mem = {}; }
+    return { kind: mem ? 'memory' : 'local',
+      get: async id => { if (mem) return mem[id] || null; const v = localStorage.getItem(LOCAL + id); return v ? JSON.parse(v) : null; },
+      set: async (id, data) => { if (mem) mem[id] = data; else localStorage.setItem(LOCAL + id, JSON.stringify(data)); },
+      all: () => { if (mem) return Object.keys(mem).map(id => ({ id, data: mem[id] })); const out = [];
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i);
+          if (k && k.startsWith(LOCAL)) out.push({ id: k.slice(LOCAL.length), data: JSON.parse(localStorage.getItem(k)) }); } return out; } }; }
+
+  /* ---------- Konto, Start und Sperrbildschirm ---------- */
+  // Das Konto-Passwort für den Server wird aus dem Passwort abgeleitet. Das Passwort selbst verlässt das Gerät nie.
+  async function authPass(email, pass) {
+    const base = await crypto.subtle.importKey('raw', te.encode(pass), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: te.encode('juma-finance-auth:' + email), iterations: 210000, hash: 'SHA-256' }, base, 256);
+    return Array.from(new Uint8Array(bits), b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function authErr(e) { const t = String((e && e.message) || '');
+    return /invalid login/i.test(t) ? 'E-Mail oder Passwort stimmt nicht.'
+      : /not confirmed/i.test(t) ? 'Öffne zuerst den Bestätigungslink in der E-Mail.'
+      : /already registered|already exists/i.test(t) ? 'Für diese E-Mail gibt es schon ein Konto. Melde dich an.'
+      : /signups? not allowed|signup is disabled|signups are disabled/i.test(t) ? 'Neue Konten sind für diese App abgeschaltet.'
+      : /rate limit|too many/i.test(t) ? 'Zu viele Versuche. Warte ein paar Minuten.'
+      : 'Anmeldung nicht möglich. Prüfe die Verbindung und versuch es erneut.'; }
+  function lockState(m, msg) {
+    mode = m;
+    const create = m === 'create', unlock = m === 'unlock', login = m === 'login', signup = m === 'signup', ready = create || unlock || login || signup;
+    $('em-wrap').hidden = !(login || signup); $('pw-wrap').hidden = !ready; $('pw2-wrap').hidden = !(signup || (create && !user));
+    $('lock-btn').hidden = !ready; $('retry-btn').hidden = m !== 'error';
+    const alt = $('alt-btn'); alt.hidden = !(login || signup || (user && (unlock || create)));
+    alt.textContent = login ? 'Neues Konto erstellen' : signup ? 'Ich habe schon ein Konto' : 'Abmelden';
+    $('pw').autocomplete = (signup || (create && !user)) ? 'new-password' : 'current-password';
+    $('pw-label').textContent = (signup || (create && !user)) ? 'Neues Passwort (mindestens 10 Zeichen)' : 'Passwort';
+    $('lock-btn').textContent = login ? 'Anmelden' : signup ? 'Konto erstellen' : create ? 'Passwort festlegen' : 'Entsperren'; $('lock-btn').disabled = false;
+    $('lock-intro').textContent = login ? 'Melde dich an. Deine Einträge werden auf allen deinen Geräten abgeglichen.'
+      : signup ? 'Erstelle dein Konto. Das Passwort verschlüsselt alle Einträge und verlässt dieses Gerät nie.'
+      : create ? (user ? 'Gib dein Konto-Passwort ein. Damit werden alle Einträge verschlüsselt.' : 'Lege ein Passwort fest. Damit werden alle Einträge verschlüsselt.')
+      : unlock ? (user ? 'Angemeldet als ' + user.email + '. Gib dein Passwort ein, um deine Einträge zu entschlüsseln.' : 'Gib dein Passwort ein, um deine Einträge zu entschlüsseln.')
+      : m === 'error' ? 'Dein Speicher ist gerade nicht erreichbar.' : 'Lade …';
+    setMsg('lock-msg', msg || '', m === 'error');
+    if (login || signup) ($('em').value ? $('pw') : $('em')).focus(); else if (ready) $('pw').focus();
+  }
+  async function boot() {
+    if (!(window.crypto && crypto.subtle)) { lockState('error', 'Dieser Browser bietet hier keine Verschlüsselung. Öffne die Seite über https in einem aktuellen Browser.'); $('retry-btn').hidden = true; return; }
+    if (CFG.supabaseUrl && CFG.supabaseKey && window.supabase) {
+      sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+      let ses = null; try { ses = (await sb.auth.getSession()).data.session; } catch (e) { /* keine Sitzung */ }
+      if (!ses) return lockState('login');
+      user = ses.user; backend = cloudBackend(user.id);
+    } else backend = localBackend();
+    await loadMeta();
+  }
+  async function loadMeta() {
+    lockState('loading');
+    try { meta = await timeout(backend.get('meta'), 10000); lockState(meta ? 'unlock' : 'create'); }
+    catch (e) { lockState('error', 'Keine Antwort vom Speicher. Prüfe die Verbindung und versuch es erneut.'); }
+  }
+  $('retry-btn').addEventListener('click', loadMeta);
+  $('alt-btn').addEventListener('click', () => { if (mode === 'login') lockState('signup'); else if (mode === 'signup') lockState('login'); else logout(); });
+
+  $('lock-form').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const pass = $('pw').value, btn = $('lock-btn'), m = mode;
+    if (!pass) return;
+    const fail = t => { btn.disabled = false; setMsg('lock-msg', t, true); };
+    const fresh = m === 'signup' || (m === 'create' && !user);
+    if (fresh && pass.length < 10) return fail('Das Passwort braucht mindestens 10 Zeichen.');
+    if (fresh && pass !== $('pw2').value) return fail('Die beiden Passwörter stimmen nicht überein.');
+    try {
+      if (m === 'login' || m === 'signup') {
+        const email = $('em').value.trim().toLowerCase();
+        if (!/^\S+@\S+\.\S+$/.test(email)) return fail('Gib deine E-Mail-Adresse ein.');
+        btn.disabled = true; setMsg('lock-msg', m === 'signup' ? 'Erstelle Konto …' : 'Melde an …');
+        const ap = await authPass(email, pass);
+        const r = m === 'signup' ? await sb.auth.signUp({ email, password: ap }) : await sb.auth.signInWithPassword({ email, password: ap });
+        if (r.error) return fail(authErr(r.error));
+        if (!r.data.session) { $('pw').value = ''; $('pw2').value = '';
+          return lockState('login', 'Fast fertig: Öffne den Bestätigungslink in der E-Mail an ' + email + ' und melde dich danach hier an.'); }
+        user = r.data.session.user; backend = cloudBackend(user.id);
+        meta = await timeout(backend.get('meta'), 10000);
+      } else if (m === 'create' && user) {
+        btn.disabled = true; setMsg('lock-msg', 'Prüfe Passwort …');
+        const r = await sb.auth.signInWithPassword({ email: user.email, password: await authPass(user.email, pass) });
+        if (r.error) return fail('Verwende dein Konto-Passwort. Es verschlüsselt auch deine Einträge.');
+      }
+      if (!meta) {
+        btn.disabled = true; setMsg('lock-msg', 'Erzeuge Schlüssel …');
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const k = await derive(pass, salt, ITER);
+        const mt = { v: 1, salt: b64(salt), iter: ITER, check: await seal('grenzbuch', k) };
+        await backend.set('meta', mt); meta = mt; key = k;
+      } else {
+        btn.disabled = true; setMsg('lock-msg', 'Entschlüssle …');
+        const k = await derive(pass, unb64(meta.salt), meta.iter || ITER);
+        try { await unseal(meta.check, k); } catch (e) { if (m !== 'unlock') lockState('unlock'); $('pw').select(); return fail('Falsches Passwort.'); }
+        key = k;
+      }
+      $('pw').value = ''; $('pw2').value = '';
+      start();
+    } catch (e) { fail('Das hat nicht geklappt. Prüfe die Verbindung und versuch es noch einmal.'); }
+  });
+  async function logout() {
+    lock(); try { await sb.auth.signOut({ scope: 'local' }); } catch (e) { /* lokal abgemeldet */ }
+    user = null; backend = null; meta = null; $('em').value = ''; lockState('login');
+  }
+  function retryPending() { if (key) Object.keys(pending).forEach(id => flush(id)); }
+
+  function start() {
+    $('lock').hidden = true; $('app').hidden = false;
+    $('store-note').textContent = backend.kind === 'cloud'
+      ? 'Angemeldet als ' + user.email + '. Verschlüsselt gespeichert und auf allen deinen Geräten abgeglichen. Sperrt sich nach 10 Minuten ohne Eingabe.'
+      : backend.kind === 'local' ? 'Die Einträge liegen verschlüsselt nur auf diesem Gerät und werden nicht synchronisiert. Sperrt sich nach 10 Minuten ohne Eingabe.'
+      : 'Dieser Browser erlaubt kein Speichern. Die Einträge gehen beim Schliessen der Seite verloren.';
+    $('btn-logout').hidden = backend.kind !== 'cloud';
+    if (backend.kind === 'memory') toast('Dieser Browser erlaubt kein Speichern.');
+    resetForm(); setForm(false); render(); armIdle();
+    if (backend.kind === 'cloud') {
+      pending = backend.pendingIds();
+      loadTimer = setTimeout(() => toast('Keine Verbindung. Du siehst den letzten Stand dieses Geräts.'), 10000);
+      unsub = backend.watch((docs, md) => { if (!md.fromCache) clearTimeout(loadTimer);
+        applyChain = applyChain.then(() => apply(docs, md.fromCache)).then(() => { if (!md.fromCache) retryPending(); }).catch(() => {}); },
+        () => { clearTimeout(loadTimer); toast('Die Verbindung zum Speicher wurde beendet. Lade die Seite neu, um weiterzuarbeiten.'); });
+    } else { apply(backend.all()); }
+  }
+  async function apply(docs, cached) {
+    if (!key) return; let changed = false;
+    for (const d of docs) {
+      if (d.id === 'meta' || !d.data || !d.data.ct || seen[d.id] === d.data.ct || busy[d.id] || (pending[d.id] && !cached)) continue;
+      try { const v = await unseal(d.data); if (!key) return;
+        if (d.id === 'settings') settings = Object.assign(DEF(), v);
+        else if (d.id.startsWith('m-')) months[d.id.slice(2)] = Array.isArray(v) ? v : [];
+        seen[d.id] = d.data.ct; changed = true;
+      } catch (e) { /* mit anderem Schlüssel geschrieben: überspringen */ }
+    }
+    if (changed) render();
+  }
+  async function flush(id) {
+    if (busy[id]) { dirty[id] = true; return; }
+    busy[id] = true;
+    try { do { dirty[id] = false;
+        const box = await seal(id === 'settings' ? settings : (months[id.slice(2)] || []));
+        seen[id] = box.ct; await backend.set(id, box);
+      } while (dirty[id] && key);
+      if (pending[id]) { delete pending[id]; backend.savePending(pending); }
+    } catch (e) {
+      if (backend && backend.kind === 'cloud') { pending[id] = true; backend.savePending(pending); toast('Auf diesem Gerät gespeichert. Wird abgeglichen, sobald die Verbindung zurück ist.'); }
+      else toast(e && e.code === 'quota_exceeded' ? 'Speicher voll. Der Eintrag wurde nicht gesichert.' : 'Nicht gespeichert. Prüfe die Verbindung und speichere den Eintrag erneut.');
+    } finally { busy[id] = false; }
+  }
+
+  function lock() {
+    key = null; months = {}; seen = {}; editing = null; settings = DEF();
+    if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
+    ['list', 'cats', 'chart-year', 'dup-list'].forEach(id => $(id).replaceChildren());
+    $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
+    $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
+  }
+  function armIdle() { clearTimeout(idleTimer); if (key) idleTimer = setTimeout(lock, IDLE_MS); }
+  ['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, armIdle, { passive: true }));
+  $('btn-lock').addEventListener('click', lock);
+  $('btn-logout').addEventListener('click', logout);
+  function setMore(open) { $('extras').hidden = !open; $('btn-more').setAttribute('aria-expanded', String(open)); $('btn-more').textContent = open ? 'Weniger' : 'Mehr'; }
+  $('btn-more').addEventListener('click', () => setMore($('extras').hidden));
+
+  /* ---------- Formular ---------- */
+  function fillSelect(sel, items, value) { sel.replaceChildren(...items.map(n => { const o = h('option', null, n); o.value = n; return o; }));
+    if (value && items.includes(value)) sel.value = value; }
+  function typeVal() { return $('f-type-in').checked ? 'in' : 'out'; }
+  function curVal() { return $('f-cur-eur').checked ? 'EUR' : 'CHF'; }
+  function setCur(c) { $('f-cur-eur').checked = c === 'EUR'; $('f-cur-chf').checked = c !== 'EUR'; }
+  function syncCats(keep) { fillSelect($('f-cat'), typeVal() === 'in' ? INCATS : CATS, keep); }
+  function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key || open;
+    if (open) { if (!wide()) $('entry-form').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('f-amount').focus({ preventScroll: true }); } }
+  function resetForm() {
+    editing = null; $('entry-form').reset();
+    fillSelect($('f-acc'), ACCS.map(a => a.n)); syncCats();
+    $('f-date').value = view === ym(new Date()) ? today() : view + '-01';
+    setCur(ACCS[0].c); $('form-title').textContent = 'Neuer Eintrag'; $('f-delete').hidden = true; delete $('f-delete').dataset.sure;
+    $('f-delete').textContent = 'Eintrag löschen'; setMsg('form-msg', '');
+  }
+  $('fab').addEventListener('click', () => { resetForm(); setForm(true); });
+  $('f-type-out').addEventListener('change', () => syncCats()); $('f-type-in').addEventListener('change', () => syncCats());
+  $('f-acc').addEventListener('change', () => { const a = ACCS.find(x => x.n === $('f-acc').value); if (a && a.c) setCur(a.c); });
+  $('f-cancel').addEventListener('click', () => { resetForm(); setForm(false); });
+
+  $('entry-form').addEventListener('submit', ev => {
+    ev.preventDefault(); if (!key) return;
+    const a = parseAmt($('f-amount').value), d = $('f-date').value;
+    if (a == null) { setMsg('form-msg', 'Gib einen Betrag grösser als 0 ein, z. B. 24.90.', true); $('f-amount').focus(); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { setMsg('form-msg', 'Wähle ein Datum.', true); return; }
+    const e = { id: editing || newId(), d, a, c: curVal(), t: typeVal(), cat: $('f-cat').value, acc: $('f-acc').value, note: $('f-note').value.trim() };
+    const touched = new Set();
+    if (editing) for (const m in months) { if (months[m].some(x => x.id === editing)) { months[m] = months[m].filter(x => x.id !== editing); touched.add(m); } }
+    const m = d.slice(0, 7); months[m] = (months[m] || []).concat(e); touched.add(m);
+    const was = editing; view = m; resetForm(); setForm(false); render();
+    touched.forEach(x => flush('m-' + x));
+    toast(was ? 'Änderung gespeichert' : 'Gespeichert: ' + fmt(e.a, e.c)); if (wide()) $('f-amount').focus();
+  });
+  function edit(e) {
+    editing = e.id; $('f-type-in').checked = e.t === 'in'; $('f-type-out').checked = e.t !== 'in'; syncCats(e.cat);
+    $('f-amount').value = (e.a / 100).toFixed(2); setCur(e.c); $('f-date').value = e.d; $('f-acc').value = e.acc; $('f-note').value = e.note || '';
+    $('form-title').textContent = 'Eintrag ändern'; $('f-delete').hidden = false; setForm(true);
+  }
+  function remove(e) { const m = e.d.slice(0, 7); months[m] = (months[m] || []).filter(x => x.id !== e.id);
+    if (editing === e.id) { resetForm(); setForm(false); } render(); flush('m-' + m); toast('Eintrag gelöscht'); }
+  $('f-delete').addEventListener('click', () => { if (!editing || !confirmTwice($('f-delete'), 'Eintrag löschen', 'Wirklich löschen?')) return;
+    for (const m in months) { const e = months[m].find(x => x.id === editing); if (e) return remove(e); } });
+
+  /* ---------- Monat, Ansicht, Einstellungen ---------- */
+  $('m-prev').addEventListener('click', () => { view = shift(view, -1); render(); });
+  $('m-next').addEventListener('click', () => { view = shift(view, 1); render(); });
+  ['tab-a', 'tab-b'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
+  ['lf-all', 'lf-out', 'lf-in'].forEach(id => $(id).addEventListener('change', () => { listFilter = $(id).value; render(); }));
+  window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && tab === 'stats') drawYear(baseCur()); }, 150); });
+  $('rate').addEventListener('change', () => {
+    const r = Number($('rate').value.trim().replace(',', '.'));
+    if (!isFinite(r) || r < 0.5 || r > 2) { toast('Der Kurs muss zwischen 0.5 und 2 liegen.'); $('rate').value = rateFor(view).toFixed(4); return; }
+    settings.rates[view] = r; if (view >= ym(new Date())) settings.rate = r;
+    render(); flush('settings'); toast('Kurs für ' + monthName(view) + ' gespeichert');
+  });
+  ['base-chf', 'base-eur'].forEach(id => $(id).addEventListener('change', () => { settings.base = $('base-eur').checked ? 'EUR' : 'CHF'; render(); flush('settings'); }));
+  $('btn-wipe').addEventListener('click', () => {
+    if (!confirmTwice($('btn-wipe'), 'Alle Einträge löschen', 'Wirklich alle Einträge in allen Monaten löschen? Das lässt sich nicht rückgängig machen.')) return;
+    const ms = Object.keys(months); let n = 0; ms.forEach(m => { n += months[m].length; months[m] = []; });
+    resetForm(); setForm(false); render(); ms.forEach(m => flush('m-' + m)); toast(n + (n === 1 ? ' Eintrag' : ' Einträge') + ' gelöscht');
+  });
+
+  /* ---------- Anzeige ---------- */
+  function totals(m, base) { const t = { eur: 0, chf: 0, outB: 0, inB: 0 };
+    for (const e of months[m] || []) { const b = conv(e.a, e.c, m, base);
+      if (e.t === 'in') t.inB += b; else { t.outB += b; if (e.c === 'EUR') t.eur += e.a; else t.chf += e.a; } }
+    return t; }
+
+  function render() {
+    if (!key) return;
+    const base = baseCur(), t = totals(view, base), list = (months[view] || []).slice();
+    $('m-label').textContent = monthName(view);
+    $('s-total').textContent = fmt(Math.round(t.outB), base);
+    const parts = []; if (t.chf) parts.push(fmt(t.chf, 'CHF')); if (t.eur) parts.push(fmt(t.eur, 'EUR'));
+    $('s-split').textContent = parts.length === 2 ? 'davon ' + parts.join(' und ') : (t.eur && base === 'CHF') || (t.chf && base === 'EUR') ? 'bezahlt: ' + parts[0] : '';
+    $('s-in').textContent = fmt(Math.round(t.inB), base);
+    const sal = Math.round(t.inB - t.outB), se = $('s-saldo');
+    se.textContent = (sal < 0 ? '−' : '+') + fmt(Math.abs(sal), base); se.className = 'num ' + (sal < 0 ? 'neg' : 'pos');
+    if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
+    $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
+    $('base-eur').checked = base === 'EUR'; $('base-chf').checked = base === 'CHF';
+    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats';
+    renderDups();
+
+    if (tab === 'stats') {
+      const cg = {}; for (const e of list) if (e.t !== 'in') cg[e.cat] = (cg[e.cat] || 0) + conv(e.a, e.c, view, base);
+      const rows = Object.entries(cg).sort((a, b) => b[1] - a[1]), host = $('cats');
+      if (!rows.length) host.replaceChildren(h('div', 'empty', 'Noch keine Ausgaben im ' + monthName(view) + '.'));
+      else host.replaceChildren(...rows.map(([n, v]) => { const el = h('div', 'bar'), tr = h('div', 'track'), i = h('i');
+        i.style.width = (v / rows[0][1] * 100) + '%'; tr.append(i); el.append(h('span', 'name', n), h('span', 'val num', fmt(Math.round(v), base)), tr); return el; }));
+      drawYear(base); return;
+    }
+
+    const host = $('list'), shown = listFilter === 'all' ? list : list.filter(e => (e.t === 'in') === (listFilter === 'in'));
+    if (!shown.length) { host.replaceChildren(h('div', 'empty', list.length ? 'Keine ' + (listFilter === 'in' ? 'Einnahmen' : 'Ausgaben') + ' im ' + monthName(view) + '.'
+      : 'Noch keine Einträge im ' + monthName(view) + '. Erfasse den ersten Betrag über das Plus.')); return; }
+    shown.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
+    const frag = document.createDocumentFragment(); let lastDay = '';
+    const dayFmt = new Intl.DateTimeFormat('de-CH', { weekday: 'short', day: 'numeric', month: 'long' });
+    for (const e of shown) {
+      if (e.d !== lastDay) { lastDay = e.d; const [y, mo, d] = e.d.split('-').map(Number); frag.append(h('div', 'day', dayFmt.format(new Date(y, mo - 1, d)))); }
+      const row = h('button', 'row'), what = h('span'); row.type = 'button';
+      row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
+      what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : '')));
+      const amt = h('span', 'amt num' + (e.t === 'in' ? ' pos' : ''), (e.t === 'in' ? '+' : '') + (e.c === 'CHF' ? nfCH : nfAT).format(e.a / 100));
+      amt.append(h('span', 'tag ' + (e.c === 'EUR' ? 'eur' : 'chf'), e.c));
+      row.append(what, amt); row.addEventListener('click', () => edit(e)); frag.append(row);
+    }
+    host.replaceChildren(frag);
+  }
+
+  /* ---------- Verlaufsdiagramm ---------- */
+  const NS = 'http://www.w3.org/2000/svg';
+  function sv(tag, at, text) { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (text != null) e.textContent = text; return e; }
+  function niceMax(v) { if (!(v > 0)) return 100; const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+  function tick(v) { return v >= 1000 ? Number((v / 1000).toFixed(2)) + 'k' : String(Number(v.toFixed(2))); }
+  function drawYear(base) {
+    const host = $('chart-year'), W = Math.max(260, host.clientWidth || 600), H = 200, L = 40, R = 4, T = 10, B = 24;
+    const n = W < 460 ? 6 : 12, now = ym(new Date()), end = view > now ? view : (shift(now, 1 - n) <= view ? now : view);
+    const ms = Array.from({ length: n }, (_, i) => shift(end, i - n + 1)), tt = ms.map(m => totals(m, base));
+    const top = niceMax(Math.max(...tt.map(x => Math.max(x.outB, x.inB))) / 100), y = c => T + (H - T - B) * (1 - c / 100 / top), zero = y(0);
+    const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': 'Einnahmen und Ausgaben der letzten ' + n + ' Monate in ' + base });
+    for (let i = 0; i <= 4; i++) { const v = top * i / 4, yy = Math.round(y(v * 100)) + 0.5;
+      svg.append(sv('line', { x1: L, x2: W - R, y1: yy, y2: yy, stroke: 'var(--line)', 'stroke-width': 1 }),
+        sv('text', { x: L - 6, y: yy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)' }, tick(v))); }
+    const slot = (W - L - R) / n, bw = Math.max(5, Math.min(20, slot * 0.32));
+    const bar = (x, v, fill) => { const yt = y(v); if (zero - yt > 0.3) svg.append(sv('rect', { x, y: yt, width: bw, height: zero - yt, fill, rx: 2 })); };
+    ms.forEach((m, i) => { const x0 = L + slot * i, cx = x0 + slot / 2, on = m === view;
+      if (on) svg.append(sv('rect', { x: x0 + 1, y: T, width: slot - 2, height: H - T - 2, fill: 'var(--sunken)', rx: 4 }));
+      bar(cx - bw - 1, tt[i].inB, 'var(--pos)'); bar(cx + 1, tt[i].outB, 'var(--out)');
+      svg.append(sv('text', { x: cx, y: H - 7, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': on ? 600 : 400, fill: on ? 'var(--ink)' : 'var(--muted)' }, monthName(m, true).replace('.', '')));
+      const hit = sv('rect', { x: x0, y: T, width: slot, height: H - T, fill: 'transparent', style: 'cursor:pointer' });
+      hit.addEventListener('click', () => { view = m; render(); }); svg.append(hit); });
+    host.replaceChildren(svg);
+    $('year-note').textContent = 'Umgerechnet in ' + base + '. Tippe auf einen Monat, um ihn zu öffnen.';
+  }
+
+  /* ---------- CSV-Import ---------- */
+  const KEYS = [
+    [/migros|coop|denner|spar\b|interspar|eurospar|hofer|aldi|lidl|billa|sutterl|volg|penny/i, 'Lebensmittel'],
+    [/restaurant|café|cafe|mcdonald|burger|pizza|bäckerei|baeckerei|gasthaus|takeaway/i, 'Restaurant & Café'],
+    [/\bsbb\b|öbb|oebb|tankstelle|shell|\bomv\b|\bbp\b|avia|\beni\b|parking|parkhaus|vignette|asfinag|\buber\b/i, 'Mobilität'],
+    [/netflix|spotify|apple\.com|icloud|youtube|disney|\babo\b/i, 'Abos'],
+    [/apotheke|arzt|pharma|spital|krankenhaus/i, 'Gesundheit'],
+    [/versicherung|insurance|krankenkasse|\bcss\b|helsana|swica|uniqa|allianz|\baxa\b/i, 'Versicherung'],
+    [/miete|strom|\bvkw\b|illwerke|swisscom|sunrise|\bsalt\b|a1 telekom|magenta/i, 'Wohnen'],
+    [/hotel|booking|airbnb|swiss air|austrian|ryanair|easyjet/i, 'Reisen'],
+    [/fitness|\bgym\b|\bsport|kino|ticket/i, 'Freizeit & Sport'],
+    [/amazon|zalando|digitec|galaxus|ikea|h&m|zara|mediamarkt/i, 'Shopping'],
+    [/steuer|gebühr|gebuehr|finanzamt|spesen/i, 'Steuern & Gebühren']];
+  function guessCat(text, t) {
+    if (t === 'in') return /lohn|gehalt|salär|salaer|salary/i.test(text) ? 'Gehalt' : 'Sonstige Einnahme';
+    for (const [re, c] of KEYS) if (re.test(text)) return c; return 'Sonstiges'; }
+  function decode(buf) { const u = new Uint8Array(buf); let t;
+    if (u[0] === 0xFF && u[1] === 0xFE) t = new TextDecoder('utf-16le').decode(u);
+    else if (u[0] === 0xFE && u[1] === 0xFF) t = new TextDecoder('utf-16be').decode(u);
+    else { try { t = new TextDecoder('utf-8', { fatal: true }).decode(u); } catch (e) { t = new TextDecoder('windows-1252').decode(u); } }
+    return t.replace(/^﻿/, ''); }
+  function parseCSV(text) {
+    const cnt = { ';': 0, ',': 0, '\t': 0 };
+    for (const l of text.split(/\r?\n/).slice(0, 40)) for (const ch of l) if (ch in cnt) cnt[ch]++;
+    const del = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+    const rows = []; let row = [], cell = '', q = false;
+    for (let i = 0; i < text.length; i++) { const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+      else if (ch === '"') q = true;
+      else if (ch === del) { row.push(cell); cell = ''; }
+      else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (ch !== '\r') cell += ch; }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c)); }
+  function parseDate(s) { let m = /(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s), y, mo, d;
+    if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+    else if ((m = /(\d{1,2})[./](\d{1,2})[./](\d{4}|\d{2})\b/.exec(s))) { d = +m[1]; mo = +m[2]; y = +m[3]; if (y < 100) y += 2000; }
+    else return null;
+    if (mo < 1 || mo > 12 || d < 1 || d > 31 || y < 2000 || y > 2100) return null;
+    return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+  function parseNum(s) { s = String(s || ''); const neg = /^\s*[-−(]|[-−]\s*$/.test(s); s = s.replace(/[^\d,.]/g, ''); if (!s) return NaN;
+    const lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
+    if (lc >= 0 && ld >= 0) s = lc > ld ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+    else if (lc >= 0) s = s.slice(0, lc).replace(/,/g, '') + '.' + s.slice(lc + 1);
+    const n = Number(s); return neg ? -n : n; }
+
+  function closeImport() { imp = null; $('import').hidden = true; $('imp-map').hidden = true; $('imp-file').value = ''; setMsg('imp-msg', ''); }
+  $('btn-import').addEventListener('click', () => { $('import').hidden = false; $('import').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+  $('imp-close').addEventListener('click', closeImport);
+  $('imp-file').addEventListener('change', async () => {
+    const f = $('imp-file').files[0]; imp = null; $('imp-map').hidden = true; setMsg('imp-msg', ''); if (!f) return;
+    if (f.size > 5 * 1024 * 1024) return setMsg('imp-msg', 'Die Datei ist grösser als 5 MB. Exportiere einen kürzeren Zeitraum.', true);
+    let rows; try { rows = parseCSV(decode(await f.arrayBuffer())); } catch (e) { return setMsg('imp-msg', 'Die Datei konnte nicht gelesen werden. Ist es eine CSV-Datei?', true); }
+    let hi = rows.slice(0, 30).findIndex(r => r.filter(c => c).length >= 3 && r.some(c => /dat(um|e)/i.test(c)));
+    if (hi < 0) hi = 0;
+    const head = rows[hi] || [], body = rows.slice(hi + 1).filter(r => r.length >= 2);
+    if (!body.length) return setMsg('imp-msg', 'In der Datei wurden keine Buchungszeilen gefunden.', true);
+    imp = { head, body };
+    const find = (...res) => { for (const re of res) { const i = head.findIndex(c => re.test(c)); if (i >= 0) return String(i); } return ''; };
+    const fill = (id, val, extra) => { const sel = $(id), o0 = h('option', null, '– keine –'); o0.value = '';
+      sel.replaceChildren(o0, ...head.map((n, i) => { const o = h('option', null, n || 'Spalte ' + (i + 1)); o.value = String(i); return o; }),
+        ...(extra || []).map(c => { const o = h('option', null, 'immer ' + c); o.value = c; return o; })); sel.value = val; };
+    const hs = head.join(' | ');
+    const acc = /abschlussdat|valutadat/i.test(hs) ? 'UBS' : /completed date|started date/i.test(hs) ? 'Revolut' : /partnername|buchungs-?info/i.test(hs) ? 'Sparkasse' : 'UBS';
+    fillSelect($('imp-acc'), ACCS.map(a => a.n), acc);
+    let am = find(/^betrag/i, /^amount/i, /einzelbetrag/i, /betrag|amount/i);
+    const de = find(/belastung/i, /^debit/i, /^soll/i), cr = find(/gutschrift/i, /^credit/i, /^haben/i);
+    if (de && cr) am = '';
+    fill('imp-date', find(/abschlussdat/i, /completed date/i, /buchungsdat/i, /buchungstag/i, /dat(um|e)/i));
+    fill('imp-amount', am); fill('imp-debit', am ? '' : de); fill('imp-credit', am ? '' : cr);
+    fill('imp-cur', find(/währung|waehrung|currency|whrg/i) || ((ACCS.find(a => a.n === acc) || {}).c || 'CHF'), ['CHF', 'EUR']);
+    fill('imp-text', find(/beschreibung1/i, /^description/i, /partnername/i, /buchungstext/i, /verwendungszweck/i, /buchungs-?info/i, /beschreibung|text|empf/i));
+    $('imp-flip').checked = false; $('imp-map').hidden = false; preview();
+  });
+  function impRows() {
+    const g = id => $(id).value, col = (r, v) => v === '' ? '' : (r[Number(v)] || '');
+    const flip = $('imp-flip').checked, acc = g('imp-acc'), si = imp.head.findIndex(c => /^(state|status)$/i.test(c));
+    const items = []; let skipped = 0;
+    for (const r of imp.body) {
+      const d = parseDate(col(r, g('imp-date'))); let n;
+      if (g('imp-amount') !== '') n = parseNum(col(r, g('imp-amount')));
+      else { const de = parseNum(col(r, g('imp-debit'))), cr = parseNum(col(r, g('imp-credit'))); n = (cr ? Math.abs(cr) : 0) - (de ? Math.abs(de) : 0); }
+      if (flip) n = -n;
+      const cv = g('imp-cur'), c = (cv === 'CHF' || cv === 'EUR') ? cv : col(r, cv).toUpperCase().trim();
+      const a = Math.round(Math.abs(n) * 100);
+      if (!d || !isFinite(n) || !a || (c !== 'CHF' && c !== 'EUR') || (si >= 0 && /revert|declin|fail|pending/i.test(r[si] || ''))) { skipped++; continue; }
+      const t = n > 0 ? 'in' : 'out', note = col(r, g('imp-text')).replace(/\s+/g, ' ').slice(0, 120);
+      items.push({ d, a, c, t, cat: guessCat(note, t), acc, note });
+    }
+    return { items, skipped };
+  }
+  function preview() {
+    if (!imp) return; const { items, skipped } = impRows(), tb = $('imp-prev');
+    const hr = h('tr'); ['Datum', 'Betrag', 'Kategorie', 'Text'].forEach(t => hr.append(h('th', null, t)));
+    tb.replaceChildren(hr, ...items.slice(0, 6).map(e => { const tr = h('tr');
+      tr.append(h('td', null, e.d.split('-').reverse().join('.')), h('td', 'r', (e.t === 'in' ? '+' : '−') + fmt(e.a, e.c)), h('td', null, e.cat), h('td', null, e.note || '–')); return tr; }));
+    $('imp-go').disabled = !items.length;
+    $('imp-go').textContent = items.length ? items.length + (items.length === 1 ? ' Eintrag importieren' : ' Einträge importieren') : 'Importieren';
+    setMsg('imp-msg', items.length ? (skipped ? skipped + ' Zeilen ohne Datum, Betrag oder mit anderer Währung werden übersprungen. ' : '') + 'Kategorien sind geschätzt und lassen sich danach ändern.'
+      : 'Mit dieser Zuordnung wurde keine Buchung erkannt. Wähle oben die passenden Spalten.', !items.length);
+  }
+  ['imp-acc', 'imp-date', 'imp-amount', 'imp-debit', 'imp-credit', 'imp-cur', 'imp-text', 'imp-flip'].forEach(id => $(id).addEventListener('change', preview));
+  $('imp-go').addEventListener('click', () => {
+    if (!imp || !key) return; const { items } = impRows();
+    const sig = e => [e.d, e.a, e.c, e.t, e.note || ''].join('|'), have = new Set();
+    for (const m in months) for (const e of months[m]) have.add(sig(e));
+    const touched = new Set(); let n = 0, dup = 0, last = '';
+    for (const it of items) { if (have.has(sig(it))) { dup++; continue; }
+      const m = it.d.slice(0, 7); it.id = newId(); (months[m] = months[m] || []).push(it); touched.add(m); n++; if (m > last) last = m; }
+    if (last) view = last; closeImport(); render(); touched.forEach(m => flush('m-' + m));
+    toast(n + (n === 1 ? ' Eintrag' : ' Einträge') + ' importiert' + (dup ? ', ' + dup + ' schon vorhanden' : ''));
+  });
+
+  /* ---------- Doppelte ---------- */
+  function dupGroups() { const g = {};
+    for (const m in months) for (const e of months[m]) { const k = [e.d, e.a, e.c, e.t].join('|'); (g[k] = g[k] || []).push(e); }
+    return Object.values(g).filter(x => x.length > 1).sort((a, b) => a[0].d < b[0].d ? 1 : -1); }
+  function renderDups() {
+    if ($('dups').hidden || !key) return; const gs = dupGroups(), extra = gs.reduce((n, x) => n + x.length - 1, 0), all = $('dup-all');
+    $('dup-note').textContent = gs.length ? gs.length + (gs.length === 1 ? ' Gruppe' : ' Gruppen') + ' mit gleichem Datum, Betrag und gleicher Währung. Zwei gleiche Käufe am selben Tag sind möglich, schau also kurz auf Konto und Text.'
+      : 'Keine Einträge mit gleichem Datum, Betrag und gleicher Währung gefunden.';
+    all.hidden = !gs.length; delete all.dataset.sure; all.textContent = extra + (extra === 1 ? ' überzähligen Eintrag' : ' überzählige Einträge') + ' löschen';
+    const frag = document.createDocumentFragment();
+    for (const grp of gs) { const e0 = grp[0];
+      frag.append(h('div', 'day', e0.d.split('-').reverse().join('.') + ' · ' + (e0.t === 'in' ? '+' : '−') + fmt(e0.a, e0.c) + ' · ' + grp.length + '×'));
+      for (const e of grp) { const row = h('div', 'duprow'), what = h('div'), bd = h('button', 'btn warn', 'Löschen'); bd.type = 'button';
+        what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : '')));
+        bd.addEventListener('click', () => remove(e)); row.append(what, bd); frag.append(row); } }
+    $('dup-list').replaceChildren(frag);
+  }
+  $('btn-dups').addEventListener('click', () => { $('dups').hidden = false; renderDups(); $('dups').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+  $('dup-close').addEventListener('click', () => { $('dups').hidden = true; });
+  $('dup-all').addEventListener('click', () => { const all = $('dup-all');
+    if (!all.dataset.sure) { all.dataset.sure = '1'; all.textContent = 'Wirklich löschen? Das lässt sich nicht rückgängig machen.'; return; }
+    const drop = new Set(), touched = new Set(); for (const grp of dupGroups()) grp.slice(1).forEach(e => { drop.add(e.id); touched.add(e.d.slice(0, 7)); });
+    touched.forEach(m => { months[m] = (months[m] || []).filter(e => !drop.has(e.id)); });
+    if (editing && drop.has(editing)) { resetForm(); setForm(false); } render(); touched.forEach(m => flush('m-' + m)); toast(drop.size + (drop.size === 1 ? ' Eintrag' : ' Einträge') + ' gelöscht');
+  });
+
+  $('app').addEventListener('click', ev => { if (ev.target === $('app') && formOpen && !wide()) { resetForm(); setForm(false); } });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && formOpen && !wide()) { resetForm(); setForm(false); } });
+
+  boot();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
