@@ -127,7 +127,7 @@ button { cursor: pointer; }
 
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > span { font-size: 13px; color: var(--muted); letter-spacing: -0.005em; padding-left: 6px; }
-input[type="text"], input[type="password"], input[type="email"], input[type="date"], select {
+input[type="text"], input[type="password"], input[type="email"], input[type="search"], input[type="date"], textarea, select {
   width: 100%; min-width: 0; min-height: 48px; padding: 8px 16px; border-radius: 16px;
   border: 1px solid var(--line); background: var(--fill); font-size: 17px; -webkit-appearance: none; appearance: none;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); }
@@ -271,6 +271,29 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 .duprow small { color: var(--muted); font-size: 13px; display: block; overflow-wrap: anywhere; }
 .duprow .btn { min-height: 36px; padding: 6px 14px; font-size: 15px; }
 
+/* Planung, Konten, Listen, Sicherung */
+textarea { min-height: 96px; padding: 12px 16px; resize: vertical; font-size: 13px; line-height: 1.4; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0; }
+input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
+#q { margin-bottom: 12px; }
+.clip { overflow: hidden; }
+.box { background: var(--fill); border: 1px solid var(--line); border-radius: 22px; padding: 14px; }
+.free { border-top: 1px solid var(--line); padding-top: 14px; }
+.free .num { font-size: 24px; font-weight: 700; display: block; overflow-wrap: anywhere; }
+.row small.neg, .bar .val.neg { color: var(--danger); }
+.track.over i { background: var(--out); }
+.row .track { display: block; margin-top: 8px; }
+.budrow { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 10px; align-items: center; font-size: 15px; }
+.budrow span { overflow-wrap: anywhere; }
+.budrow input { text-align: right; min-height: 44px; font-variant-numeric: tabular-nums; }
+.listrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.listrow.acc { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.listrow.acc .btn.warn { grid-column: 1 / -1; justify-self: start; }
+.listrow .btn { min-height: 40px; padding: 6px 14px; font-size: 15px; }
+.accrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.accrow:first-child { border-top: 0; padding-top: 0; }
+.accrow.total { font-weight: 600; font-size: 17px; }
+.accrow .num { text-align: right; overflow-wrap: anywhere; }
+
 .fab { border: 0; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); z-index: 40;
   background: var(--toast-bg); color: var(--toast-ink); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
@@ -338,6 +361,10 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
           <button class="btn grow" id="btn-import" type="button">CSV importieren</button>
           <button class="btn grow" id="btn-dups" type="button">Doppelte suchen</button>
         </div>
+        <div class="actions">
+          <button class="btn grow" id="btn-lists" type="button">Kategorien &amp; Konten</button>
+          <button class="btn grow" id="btn-backup" type="button">Sicherung</button>
+        </div>
         <button class="btn" id="btn-logout" type="button" hidden>Abmelden</button>
         <button class="btn warn" id="btn-wipe" type="button">Alle Einträge löschen</button>
         <p class="hint" id="store-note"></p>
@@ -369,6 +396,27 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
         <p class="hint" id="dup-note"></p>
         <div id="dup-list"></div>
         <button class="btn warn" id="dup-all" type="button" hidden></button>
+      </section>
+
+      <section class="panel stack" id="lists" hidden>
+        <div class="head"><h2>Kategorien &amp; Konten</h2><button class="btn" id="lists-close" type="button">Schliessen</button></div>
+        <p class="hint">Umbenennen gilt auch für bestehende Einträge. Der Startsaldo ist der Kontostand vor deinem ersten Eintrag.</p>
+        <div id="lists-body" class="stack"></div>
+      </section>
+
+      <section class="panel stack" id="backup" hidden>
+        <div class="head"><h2>Sicherung</h2><button class="btn" id="bk-close" type="button">Schliessen</button></div>
+        <p class="hint">Die Sicherung enthält alle Einträge und Einstellungen unverschlüsselt. Bewahre sie sicher auf.</p>
+        <div class="actions">
+          <button class="btn grow" id="bk-down" type="button">Als Datei sichern</button>
+          <button class="btn grow" id="bk-copy" type="button">Kopieren</button>
+        </div>
+        <h2>Sicherung einlesen</h2>
+        <p class="hint">Einträge, die schon vorhanden sind, werden nicht doppelt angelegt.</p>
+        <label class="field"><span>Datei wählen</span><input type="file" id="bk-file" accept=".json,application/json,text/plain"></label>
+        <label class="field"><span>oder kopierte Sicherung einfügen</span><textarea id="bk-text" spellcheck="false" autocomplete="off"></textarea></label>
+        <button class="btn primary" id="bk-go" type="button">Einlesen</button>
+        <div class="msg" id="bk-msg" role="status"></div>
       </section>
     </div>
 
@@ -413,14 +461,17 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
             <div><span class="lab">Einnahmen</span><span class="num" id="s-in"></span></div>
             <div><span class="lab">Saldo</span><span class="num" id="s-saldo"></span></div>
           </div>
+          <div class="free" id="s-free-wrap" hidden><span class="lab" id="s-free-lab">Noch frei bis Monatsende</span><span class="num" id="s-free"></span><span class="lab" id="s-free-sub"></span></div>
         </section>
 
         <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
           <input type="radio" name="tab" id="tab-a" value="list" checked><label for="tab-a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor"/></svg><span>Einträge</span></label>
           <input type="radio" name="tab" id="tab-b" value="stats"><label for="tab-b"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.4" height="8.5" rx="1.6"/><rect x="9.8" y="7.5" width="4.4" height="13" rx="1.6"/><rect x="16.1" y="3.5" width="4.4" height="17" rx="1.6"/></svg><span>Auswertung</span></label>
+          <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
         </div>
 
         <section class="panel" id="tab-list">
+          <input type="search" id="q" placeholder="Suchen in allen Monaten" aria-label="Einträge suchen" autocomplete="off" enterkeyhint="search">
           <div class="seg wide" role="radiogroup" aria-label="Einträge filtern">
             <input type="radio" name="lf" id="lf-all" value="all" checked><label for="lf-all">Alle</label>
             <input type="radio" name="lf" id="lf-out" value="out"><label for="lf-out">Ausgaben</label>
@@ -438,6 +489,68 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
             <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
             <div id="chart-year" class="chart"></div>
             <p class="hint" id="year-note"></p>
+          </section>
+          <section class="panel stack">
+            <h2>Konten</h2>
+            <div id="acc-list"></div>
+            <p class="hint" id="acc-note"></p>
+          </section>
+        </div>
+
+        <div class="stack" id="tab-plan" hidden>
+          <section class="panel stack clip">
+            <div class="head"><h2>Fixkosten &amp; Verträge</h2><button class="btn" id="fx-add" type="button">Hinzufügen</button></div>
+            <p class="hint" id="fx-sum"></p>
+            <form id="fx-form" class="stack box" autocomplete="off" hidden>
+              <h2 id="fx-title">Neuer Fixposten</h2>
+              <label class="field"><span>Name</span><input type="text" id="fx-name" maxlength="60" placeholder="z. B. Miete"></label>
+              <div class="seg wide" role="radiogroup" aria-label="Art">
+                <input type="radio" name="fxtype" id="fx-type-out" value="out" checked><label for="fx-type-out">Ausgabe</label>
+                <input type="radio" name="fxtype" id="fx-type-in" value="in"><label for="fx-type-in">Einnahme</label>
+              </div>
+              <div class="amountrow"><input type="text" id="fx-amount" inputmode="decimal" placeholder="0.00" aria-label="Betrag"><div class="seg" role="radiogroup" aria-label="Währung"><input type="radio" name="fx-cur" id="fx-cur-chf" value="CHF" checked><label for="fx-cur-chf">CHF</label><input type="radio" name="fx-cur" id="fx-cur-eur" value="EUR"><label for="fx-cur-eur">EUR</label></div></div>
+              <div class="two">
+                <label class="field"><span>Kategorie</span><select id="fx-cat"></select></label>
+                <label class="field"><span>Konto</span><select id="fx-acc"></select></label>
+              </div>
+              <div class="two">
+                <label class="field"><span>Tag im Monat</span><input type="text" id="fx-day" inputmode="numeric" maxlength="2"></label>
+                <label class="field"><span>Rhythmus</span><select id="fx-every"><option value="1">monatlich</option><option value="3">alle 3 Monate</option><option value="6">alle 6 Monate</option><option value="12">jährlich</option></select></label>
+              </div>
+              <label class="field" id="fx-from-wrap"><span>Erste Buchung</span><select id="fx-from"></select></label>
+              <label class="field"><span>Kündbar bis (optional)</span><input type="date" id="fx-notice"></label>
+              <p class="hint">Der Posten wird am gewählten Tag automatisch eingetragen. Liegt der Tag im Startmonat schon zurück, geschieht das sofort.</p>
+              <div class="actions">
+                <button class="btn primary grow" id="fx-save" type="submit">Speichern</button>
+                <button class="btn" id="fx-cancel" type="button" style="min-height:52px">Abbrechen</button>
+              </div>
+              <button class="btn warn" id="fx-delete" type="button" hidden>Fixposten löschen</button>
+              <div class="msg" id="fx-msg" role="status"></div>
+            </form>
+            <div id="fx-list"></div>
+          </section>
+          <section class="panel stack">
+            <h2>Budgets</h2>
+            <p class="hint" id="bud-hint"></p>
+            <div id="bud-list" class="stack"></div>
+          </section>
+          <section class="panel stack clip">
+            <div class="head"><h2>Sparziele</h2><button class="btn" id="goal-add" type="button">Hinzufügen</button></div>
+            <p class="hint" id="goal-hint">Lege ein Ziel mit Betrag an, z. B. Ferien oder Notgroschen, und halte fest, wie viel du schon gespart hast.</p>
+            <form id="goal-form" class="stack box" autocomplete="off" hidden>
+              <h2 id="goal-title">Neues Sparziel</h2>
+              <label class="field"><span>Name</span><input type="text" id="goal-name" maxlength="60" placeholder="z. B. Ferien"></label>
+              <div class="field"><span>Zielbetrag</span><div class="amountrow"><input type="text" id="goal-target" inputmode="decimal" placeholder="0.00" aria-label="Zielbetrag"><div class="seg" role="radiogroup" aria-label="Währung"><input type="radio" name="goal-cur" id="goal-cur-chf" value="CHF" checked><label for="goal-cur-chf">CHF</label><input type="radio" name="goal-cur" id="goal-cur-eur" value="EUR"><label for="goal-cur-eur">EUR</label></div></div></div>
+              <label class="field"><span>Schon gespart</span><input type="text" id="goal-saved" inputmode="decimal" placeholder="0.00"></label>
+              <label class="field" id="goal-dep-wrap" hidden><span>Einzahlung hinzufügen</span><input type="text" id="goal-dep" inputmode="decimal" placeholder="0.00"></label>
+              <div class="actions">
+                <button class="btn primary grow" id="goal-save" type="submit">Speichern</button>
+                <button class="btn" id="goal-cancel" type="button" style="min-height:52px">Abbrechen</button>
+              </div>
+              <button class="btn warn" id="goal-delete" type="button" hidden>Sparziel löschen</button>
+              <div class="msg" id="goal-msg" role="status"></div>
+            </form>
+            <div id="goal-list"></div>
           </section>
         </div>
       </div>
@@ -457,7 +570,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   const INCATS = ['Gehalt', 'Rückerstattung', 'Sonstige Einnahme'];
   const ACCS = [{ n: 'UBS', c: 'CHF' }, { n: 'Revolut', c: null }, { n: 'Sparkasse', c: 'EUR' }, { n: 'Bar', c: null }];
   const ITER = 600000, LOCAL = 'grenzbuch:', IDLE_MS = 10 * 60 * 1000;
-  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF' });
+  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF', cats: null, incats: null, accs: null, start: {}, fixed: [], budgets: {}, goals: [] });
 
   const CFG = window.JUMA_CONFIG || {};
   let backend = null, meta = null, key = null, unsub = null, sb = null, user = null, mode = 'loading', pending = {};
@@ -465,6 +578,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   let seen = {}, busy = {}, dirty = {}, applyChain = Promise.resolve();
   let view = ym(new Date()), editing = null, idleTimer = null, loadTimer = null;
   let tab = 'list', listFilter = 'all', formOpen = false, imp = null, resizeT;
+  let searchQ = '', synced = false, noticed = false, listSig = '', listsSig = '', budSig = '', fxEdit = null, goalEdit = null;
 
   /* ---------- Hilfen ---------- */
   function ym(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
@@ -658,9 +772,9 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
       pending = backend.pendingIds();
       loadTimer = setTimeout(() => toast('Keine Verbindung. Du siehst den letzten Stand dieses Geräts.'), 10000);
       unsub = backend.watch((docs, md) => { if (!md.fromCache) clearTimeout(loadTimer);
-        applyChain = applyChain.then(() => apply(docs, md.fromCache)).then(() => { if (!md.fromCache) retryPending(); }).catch(() => {}); },
+        applyChain = applyChain.then(() => apply(docs, md.fromCache)).then(() => { if (!md.fromCache) { retryPending(); afterSync(); } }).catch(() => {}); },
         () => { clearTimeout(loadTimer); toast('Die Verbindung zum Speicher wurde beendet. Lade die Seite neu, um weiterzuarbeiten.'); });
-    } else { apply(backend.all()); }
+    } else { apply(backend.all()).then(afterSync); }
   }
   async function apply(docs, cached) {
     if (!key) return; let changed = false;
@@ -690,8 +804,11 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 
   function lock() {
     key = null; months = {}; seen = {}; editing = null; settings = DEF();
+    synced = false; noticed = false; searchQ = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
+    $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true;
+    $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
-    ['list', 'cats', 'chart-year', 'dup-list'].forEach(id => $(id).replaceChildren());
+    ['list', 'cats', 'chart-year', 'dup-list', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
     $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
     $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
   }
@@ -708,19 +825,19 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   function typeVal() { return $('f-type-in').checked ? 'in' : 'out'; }
   function curVal() { return $('f-cur-eur').checked ? 'EUR' : 'CHF'; }
   function setCur(c) { $('f-cur-eur').checked = c === 'EUR'; $('f-cur-chf').checked = c !== 'EUR'; }
-  function syncCats(keep) { fillSelect($('f-cat'), typeVal() === 'in' ? INCATS : CATS, keep); }
+  function syncCats(keep) { fillSelect($('f-cat'), withKeep(typeVal() === 'in' ? incats() : cats(), keep), keep); }
   function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key || open;
     if (open) { if (!wide()) $('entry-form').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('f-amount').focus({ preventScroll: true }); } }
   function resetForm() {
     editing = null; $('entry-form').reset();
-    fillSelect($('f-acc'), ACCS.map(a => a.n)); syncCats();
+    fillSelect($('f-acc'), accNames()); syncCats();
     $('f-date').value = view === ym(new Date()) ? today() : view + '-01';
-    setCur(ACCS[0].c); $('form-title').textContent = 'Neuer Eintrag'; $('f-delete').hidden = true; delete $('f-delete').dataset.sure;
+    setCur(accs()[0].c); $('form-title').textContent = 'Neuer Eintrag'; $('f-delete').hidden = true; delete $('f-delete').dataset.sure;
     $('f-delete').textContent = 'Eintrag löschen'; setMsg('form-msg', '');
   }
   $('fab').addEventListener('click', () => { resetForm(); setForm(true); });
   $('f-type-out').addEventListener('change', () => syncCats()); $('f-type-in').addEventListener('change', () => syncCats());
-  $('f-acc').addEventListener('change', () => { const a = ACCS.find(x => x.n === $('f-acc').value); if (a && a.c) setCur(a.c); });
+  $('f-acc').addEventListener('change', () => { const a = accs().find(x => x.n === $('f-acc').value); if (a && a.c) setCur(a.c); });
   $('f-cancel').addEventListener('click', () => { resetForm(); setForm(false); });
 
   $('entry-form').addEventListener('submit', ev => {
@@ -738,7 +855,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   });
   function edit(e) {
     editing = e.id; $('f-type-in').checked = e.t === 'in'; $('f-type-out').checked = e.t !== 'in'; syncCats(e.cat);
-    $('f-amount').value = (e.a / 100).toFixed(2); setCur(e.c); $('f-date').value = e.d; $('f-acc').value = e.acc; $('f-note').value = e.note || '';
+    $('f-amount').value = (e.a / 100).toFixed(2); setCur(e.c); $('f-date').value = e.d; fillSelect($('f-acc'), accNames(e.acc), e.acc); $('f-note').value = e.note || '';
     $('form-title').textContent = 'Eintrag ändern'; $('f-delete').hidden = false; setForm(true);
   }
   function remove(e) { const m = e.d.slice(0, 7); months[m] = (months[m] || []).filter(x => x.id !== e.id);
@@ -749,7 +866,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   /* ---------- Monat, Ansicht, Einstellungen ---------- */
   $('m-prev').addEventListener('click', () => { view = shift(view, -1); render(); });
   $('m-next').addEventListener('click', () => { view = shift(view, 1); render(); });
-  ['tab-a', 'tab-b'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
+  ['tab-a', 'tab-b', 'tab-c'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
   ['lf-all', 'lf-out', 'lf-in'].forEach(id => $(id).addEventListener('change', () => { listFilter = $(id).value; render(); }));
   window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && tab === 'stats') drawYear(baseCur()); }, 150); });
   $('rate').addEventListener('change', () => {
@@ -784,33 +901,44 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
     $('base-eur').checked = base === 'EUR'; $('base-chf').checked = base === 'CHF';
-    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats';
+    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan';
+    syncLists(); renderFree(base, t); renderLists();
     renderDups();
+    if (tab === 'plan') { renderPlan(); return; }
 
     if (tab === 'stats') {
       const cg = {}; for (const e of list) if (e.t !== 'in') cg[e.cat] = (cg[e.cat] || 0) + conv(e.a, e.c, view, base);
-      const rows = Object.entries(cg).sort((a, b) => b[1] - a[1]), host = $('cats');
+      const names = new Set(Object.keys(cg)); cats().forEach(c => { if (budgetOf(c, base)) names.add(c); });
+      const rows = Array.from(names, n => [n, cg[n] || 0, budgetOf(n, base)]).sort((a, b) => b[1] - a[1]), host = $('cats'), max = rows.length ? Math.max(rows[0][1], 1) : 1;
       if (!rows.length) host.replaceChildren(h('div', 'empty', 'Noch keine Ausgaben im ' + monthName(view) + '.'));
-      else host.replaceChildren(...rows.map(([n, v]) => { const el = h('div', 'bar'), tr = h('div', 'track'), i = h('i');
-        i.style.width = (v / rows[0][1] * 100) + '%'; tr.append(i); el.append(h('span', 'name', n), h('span', 'val num', fmt(Math.round(v), base)), tr); return el; }));
+      else host.replaceChildren(...rows.map(([n, v, b]) => { const over = b && v > b, el = h('div', 'bar'), tr = h('div', 'track' + (over ? ' over' : '')), i = h('i');
+        i.style.width = Math.min(100, v / (b || max) * 100) + '%'; tr.append(i);
+        el.append(h('span', 'name', n), h('span', 'val num' + (over ? ' neg' : ''), fmt(Math.round(v), base) + (b ? ' von ' + (base === 'CHF' ? nfCH : nfAT).format(b / 100) : '')), tr); return el; }));
+      renderAccounts(base);
       drawYear(base); return;
     }
 
-    const host = $('list'), shown = listFilter === 'all' ? list : list.filter(e => (e.t === 'in') === (listFilter === 'in'));
-    if (!shown.length) { host.replaceChildren(h('div', 'empty', list.length ? 'Keine ' + (listFilter === 'in' ? 'Einnahmen' : 'Ausgaben') + ' im ' + monthName(view) + '.'
+    const host = $('list'), q = searchQ; let pool = list;
+    if (q) { const q2 = q.replace(',', '.'); pool = [];
+      for (const m in months) for (const e of months[m]) {
+        const hay = (e.cat + ' ' + e.acc + ' ' + (e.note || '') + ' ' + (e.a / 100).toFixed(2) + ' ' + de(e.d)).toLowerCase();
+        if (hay.includes(q) || hay.includes(q2)) pool.push(e); } }
+    const shown = listFilter === 'all' ? pool.slice() : pool.filter(e => (e.t === 'in') === (listFilter === 'in'));
+    if (!shown.length) { host.replaceChildren(h('div', 'empty', q ? 'Keine Treffer für „' + $('q').value.trim() + '“ in allen Monaten.'
+      : list.length ? 'Keine ' + (listFilter === 'in' ? 'Einnahmen' : 'Ausgaben') + ' im ' + monthName(view) + '.'
       : 'Noch keine Einträge im ' + monthName(view) + '. Erfasse den ersten Betrag über das Plus.')); return; }
     shown.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
+    const more = shown.length > 300 ? shown.length - 300 : 0; if (more) shown.length = 300;
     const frag = document.createDocumentFragment(); let lastDay = '';
-    const dayFmt = new Intl.DateTimeFormat('de-CH', { weekday: 'short', day: 'numeric', month: 'long' });
+    const dayFmt = new Intl.DateTimeFormat('de-CH', q ? { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' } : { weekday: 'short', day: 'numeric', month: 'long' });
     for (const e of shown) {
       if (e.d !== lastDay) { lastDay = e.d; const [y, mo, d] = e.d.split('-').map(Number); frag.append(h('div', 'day', dayFmt.format(new Date(y, mo - 1, d)))); }
       const row = h('button', 'row'), what = h('span'); row.type = 'button';
       row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
       what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : '')));
-      const amt = h('span', 'amt num' + (e.t === 'in' ? ' pos' : ''), (e.t === 'in' ? '+' : '') + (e.c === 'CHF' ? nfCH : nfAT).format(e.a / 100));
-      amt.append(h('span', 'tag ' + (e.c === 'EUR' ? 'eur' : 'chf'), e.c));
-      row.append(what, amt); row.addEventListener('click', () => edit(e)); frag.append(row);
+      row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); frag.append(row);
     }
+    if (more) frag.append(h('div', 'empty', more + ' weitere Treffer. Verfeinere die Suche.'));
     host.replaceChildren(frag);
   }
 
@@ -854,8 +982,9 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
     [/amazon|zalando|digitec|galaxus|ikea|h&m|zara|mediamarkt/i, 'Shopping'],
     [/steuer|gebühr|gebuehr|finanzamt|spesen/i, 'Steuern & Gebühren']];
   function guessCat(text, t) {
-    if (t === 'in') return /lohn|gehalt|salär|salaer|salary/i.test(text) ? 'Gehalt' : 'Sonstige Einnahme';
-    for (const [re, c] of KEYS) if (re.test(text)) return c; return 'Sonstiges'; }
+    const own = (n, l) => l.includes(n) ? n : l.includes('Sonstiges') ? 'Sonstiges' : l[l.length - 1];
+    if (t === 'in') return own(/lohn|gehalt|salär|salaer|salary/i.test(text) ? 'Gehalt' : 'Sonstige Einnahme', incats());
+    for (const [re, c] of KEYS) if (re.test(text)) return own(c, cats()); return own('Sonstiges', cats()); }
   function decode(buf) { const u = new Uint8Array(buf); let t;
     if (u[0] === 0xFF && u[1] === 0xFE) t = new TextDecoder('utf-16le').decode(u);
     else if (u[0] === 0xFE && u[1] === 0xFF) t = new TextDecoder('utf-16be').decode(u);
@@ -904,13 +1033,13 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
         ...(extra || []).map(c => { const o = h('option', null, 'immer ' + c); o.value = c; return o; })); sel.value = val; };
     const hs = head.join(' | ');
     const acc = /abschlussdat|valutadat/i.test(hs) ? 'UBS' : /completed date|started date/i.test(hs) ? 'Revolut' : /partnername|buchungs-?info/i.test(hs) ? 'Sparkasse' : 'UBS';
-    fillSelect($('imp-acc'), ACCS.map(a => a.n), acc);
+    fillSelect($('imp-acc'), accNames(), acc);
     let am = find(/^betrag/i, /^amount/i, /einzelbetrag/i, /betrag|amount/i);
     const de = find(/belastung/i, /^debit/i, /^soll/i), cr = find(/gutschrift/i, /^credit/i, /^haben/i);
     if (de && cr) am = '';
     fill('imp-date', find(/abschlussdat/i, /completed date/i, /buchungsdat/i, /buchungstag/i, /dat(um|e)/i));
     fill('imp-amount', am); fill('imp-debit', am ? '' : de); fill('imp-credit', am ? '' : cr);
-    fill('imp-cur', find(/währung|waehrung|currency|whrg/i) || ((ACCS.find(a => a.n === acc) || {}).c || 'CHF'), ['CHF', 'EUR']);
+    fill('imp-cur', find(/währung|waehrung|currency|whrg/i) || ((accs().find(a => a.n === $('imp-acc').value) || {}).c || 'CHF'), ['CHF', 'EUR']);
     fill('imp-text', find(/beschreibung1/i, /^description/i, /partnername/i, /buchungstext/i, /verwendungszweck/i, /buchungs-?info/i, /beschreibung|text|empf/i));
     $('imp-flip').checked = false; $('imp-map').hidden = false; preview();
   });
@@ -981,6 +1110,277 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 
   $('app').addEventListener('click', ev => { if (ev.target === $('app') && formOpen && !wide()) { resetForm(); setForm(false); } });
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && formOpen && !wide()) { resetForm(); setForm(false); } });
+
+  /* ---------- Listen: eigene Kategorien und Konten ---------- */
+  function cats() { return Array.isArray(settings.cats) && settings.cats.length ? settings.cats : CATS; }
+  function incats() { return Array.isArray(settings.incats) && settings.incats.length ? settings.incats : INCATS; }
+  function accs() { return Array.isArray(settings.accs) && settings.accs.length ? settings.accs : ACCS; }
+  function withKeep(l, k) { return k && !l.includes(k) ? l.concat(k) : l; }
+  function accNames(k) { return withKeep(accs().map(a => a.n), k); }
+  function syncLists() { const sig = JSON.stringify([cats(), incats(), accs()]); if (sig === listSig) return; listSig = sig;
+    const a = $('f-acc').value, c = $('f-cat').value; fillSelect($('f-acc'), accNames(a), a); syncCats(c); }
+  function de(d) { return d.split('-').reverse().join('.'); }
+  function sfmt(c, cur) { return (c < 0 ? '−' : '') + fmt(Math.abs(c), cur); }
+  function amtEl(e) { const amt = h('span', 'amt num' + (e.t === 'in' ? ' pos' : ''), (e.t === 'in' ? '+' : '') + (e.c === 'CHF' ? nfCH : nfAT).format(e.a / 100));
+    amt.append(h('span', 'tag ' + (e.c === 'EUR' ? 'eur' : 'chf'), e.c)); return amt; }
+  function resetSure(btn, label) { delete btn.dataset.sure; btn.textContent = label; }
+  function uniq(base, names) { let n = base, i = 2; while (names.includes(n)) n = base + ' ' + i++; return n; }
+
+  function ensureLists() { settings.cats = cats().slice(); settings.incats = incats().slice();
+    settings.accs = accs().map(a => ({ n: a.n, c: a.c || null })); settings.start = Object.assign({}, settings.start); }
+  function saveLists(msg, rebuild) { listSig = ''; budSig = ''; flush('settings'); if (rebuild) renderLists(true); render(); if (msg) toast(msg); }
+  function renameAll(kind, old, nw) { const touched = new Set(), isAcc = kind === 'acc', inc = kind === 'incats';
+    const hit = e => isAcc ? e.acc === old : (e.cat === old && (e.t === 'in') === inc);
+    for (const m in months) for (const e of months[m]) if (hit(e)) { if (isAcc) e.acc = nw; else e.cat = nw; touched.add(m); }
+    (settings.fixed || []).forEach(f => { if (hit(f)) { if (isAcc) f.acc = nw; else f.cat = nw; } });
+    if (isAcc && settings.start[old]) { settings.start[nw] = settings.start[old]; delete settings.start[old]; }
+    if (kind === 'cats' && settings.budgets && settings.budgets[old]) { settings.budgets = Object.assign({}, settings.budgets); settings.budgets[nw] = settings.budgets[old]; delete settings.budgets[old]; }
+    touched.forEach(m => flush('m-' + m)); }
+  function delBtn(fn) { const b = h('button', 'btn warn', 'Entfernen'); b.type = 'button'; b.addEventListener('click', fn); return b; }
+  function nameInput(value, max, onName) { const inp = h('input', 'nm'); inp.type = 'text'; inp.maxLength = max; inp.value = value; inp.setAttribute('aria-label', 'Name');
+    inp.addEventListener('change', () => onName(inp)); return inp; }
+  function catRow(kind, name, i) { const row = h('div', 'listrow');
+    row.append(nameInput(name, 40, inp => { ensureLists(); const l = settings[kind], old = l[i], nw = inp.value.trim();
+      if (!nw || (nw !== old && l.includes(nw))) { inp.value = old; return toast(nw ? 'Diesen Namen gibt es schon.' : 'Der Name darf nicht leer sein.'); }
+      if (nw === old) return; l[i] = nw; renameAll(kind, old, nw); saveLists('Umbenannt in ' + nw); }),
+      delBtn(() => { ensureLists(); if (settings[kind].length < 2) return toast('Mindestens eine Kategorie muss bleiben.');
+        settings[kind].splice(i, 1); saveLists('Entfernt. Bestehende Einträge behalten den Namen.', true); }));
+    return row; }
+  function accRow(a, i) { const row = h('div', 'listrow acc'), sel = h('select'), s = (settings.start || {})[a.n] || {};
+    [['CHF', 'CHF'], ['EUR', 'EUR'], ['', 'CHF und EUR']].forEach(([v, t]) => { const o = h('option', null, t); o.value = v; sel.append(o); });
+    sel.value = a.c || ''; sel.setAttribute('aria-label', 'Währung');
+    sel.addEventListener('change', () => { ensureLists(); settings.accs[i].c = sel.value || null; saveLists('Währung gespeichert', true); });
+    const st = cur => { const l = h('label', 'field'), x = h('input'); x.type = 'text'; x.inputMode = 'decimal'; x.placeholder = '0.00'; x.value = s[cur] ? (s[cur] / 100).toFixed(2) : '';
+      x.addEventListener('change', () => { ensureLists(); const n = x.value.trim() ? parseNum(x.value) : 0;
+        if (!isFinite(n)) { x.value = ''; return toast('Gib einen Betrag ein, z. B. 2500.'); }
+        const nm = settings.accs[i].n, cur0 = Object.assign({}, settings.start[nm]); cur0[cur] = Math.round(n * 100); settings.start[nm] = cur0; saveLists('Startsaldo gespeichert'); });
+      l.append(h('span', null, 'Startsaldo ' + cur), x); l.hidden = !!a.c && a.c !== cur; return l; };
+    row.append(nameInput(a.n, 30, inp => { ensureLists(); const l = settings.accs, old = l[i].n, nw = inp.value.trim();
+      if (!nw || (nw !== old && l.some(x => x.n === nw))) { inp.value = old; return toast(nw ? 'Diesen Namen gibt es schon.' : 'Der Name darf nicht leer sein.'); }
+      if (nw === old) return; l[i].n = nw; renameAll('acc', old, nw); saveLists('Umbenannt in ' + nw); }),
+      sel, st('CHF'), st('EUR'),
+      delBtn(() => { ensureLists(); if (settings.accs.length < 2) return toast('Mindestens ein Konto muss bleiben.');
+        settings.accs.splice(i, 1); saveLists('Entfernt. Bestehende Einträge behalten den Namen.', true); }));
+    return row; }
+  function renderLists(force) { const host = $('lists-body'); if ($('lists').hidden) return;
+    const sig = JSON.stringify([cats(), incats(), accs(), settings.start]);
+    if (!force && (host.contains(document.activeElement) || (sig === listsSig && host.childElementCount))) return; listsSig = sig;
+    const mk = (title, kind, items) => { const box = h('div', 'stack box'); box.dataset.k = kind; box.append(h('h2', null, title));
+      items.forEach((it, i) => box.append(kind === 'acc' ? accRow(it, i) : catRow(kind, it, i)));
+      const add = h('button', 'btn', kind === 'acc' ? 'Konto hinzufügen' : 'Kategorie hinzufügen'); add.type = 'button';
+      add.addEventListener('click', () => { ensureLists();
+        if (kind === 'acc') settings.accs.push({ n: uniq('Neues Konto', settings.accs.map(a => a.n)), c: 'CHF' }); else settings[kind].push(uniq('Neue Kategorie', settings[kind]));
+        saveLists('', true); const ins = $('lists-body').querySelectorAll('[data-k="' + kind + '"] input.nm'), last = ins[ins.length - 1]; if (last) { last.focus(); last.select(); } });
+      box.append(add); return box; };
+    host.replaceChildren(mk('Konten', 'acc', accs()), mk('Kategorien für Ausgaben', 'cats', cats()), mk('Kategorien für Einnahmen', 'incats', incats()));
+  }
+  $('btn-lists').addEventListener('click', () => { $('lists').hidden = false; renderLists(true); $('lists').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+  $('lists-close').addEventListener('click', () => { $('lists').hidden = true; });
+
+  /* ---------- Fixkosten und Verträge ---------- */
+  const EVERY = { 1: 'monatlich', 3: 'alle 3 Monate', 6: 'alle 6 Monate', 12: 'jährlich' };
+  function mdiff(a, b) { const [ya, ma] = a.split('-').map(Number), [yb, mb] = b.split('-').map(Number); return (yb - ya) * 12 + (mb - ma); }
+  function dueIn(f, m) { return m >= f.from && mdiff(f.from, m) % (f.every || 1) === 0; }
+  function fxId(f, m) { return 'fx-' + f.id + '-' + m; }
+  function fxBooked(f, m) { return (!!f.last && m <= f.last) || (months[m] || []).some(e => e.id === fxId(f, m)); }
+  function pendingFixed(m) { return (settings.fixed || []).filter(f => dueIn(f, m) && !fxBooked(f, m)); }
+  function daysTo(d) { const [y, m, dd] = d.split('-').map(Number), n = new Date(); return Math.round((new Date(y, m - 1, dd) - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000); }
+  // Trägt fällige Fixposten ein. Die Kennung ist pro Posten und Monat fest, damit zwei Geräte nichts doppelt buchen.
+  function bookFixed() {
+    if (!key || !synced) return; const now = ym(new Date()), td = today(), touched = new Set(); let n = 0, ch = false;
+    for (const f of settings.fixed || []) {
+      let m = f.last ? shift(f.last, 1) : f.from, guard = 0; if (m < f.from) m = f.from;
+      while (m <= now && guard++ < 60) {
+        if (dueIn(f, m)) {
+          const [y, mo] = m.split('-').map(Number), d = m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0');
+          if (d > td) break;
+          if (!(months[m] || []).some(e => e.id === fxId(f, m))) {
+            (months[m] = months[m] || []).push({ id: fxId(f, m), d, a: f.a, c: f.c, t: f.t, cat: f.cat, acc: f.acc, note: f.name, fx: f.id }); touched.add(m); n++; }
+        }
+        f.last = m; ch = true; m = shift(m, 1);
+      }
+    }
+    if (!ch) return;
+    touched.forEach(m => flush('m-' + m)); flush('settings'); render();
+    if (n) toast(n === 1 ? '1 Fixposten eingetragen' : n + ' Fixposten eingetragen');
+  }
+  function noticeToast() { if (noticed) return; noticed = true;
+    const f = (settings.fixed || []).filter(x => x.notice && daysTo(x.notice) >= 0 && daysTo(x.notice) <= 14).sort((a, b) => a.notice < b.notice ? -1 : 1)[0];
+    if (f) { const n = daysTo(f.notice); toast('Kündigungsfrist für ' + f.name + (n === 0 ? ' endet heute' : ' endet in ' + n + (n === 1 ? ' Tag' : ' Tagen'))); } }
+  function afterSync() { synced = true; bookFixed(); noticeToast(); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) bookFixed(); });
+
+  function renderFree(base, t) {
+    const now = ym(new Date()), wrap = $('s-free-wrap'), fx = settings.fixed || [];
+    if (view < now || !fx.length) { wrap.hidden = true; return; }
+    let pin = 0, pout = 0; pendingFixed(view).forEach(f => { const b = conv(f.a, f.c, view, base); if (f.t === 'in') pin += b; else pout += b; });
+    const free = Math.round(t.inB + pin - t.outB - pout), el = $('s-free');
+    wrap.hidden = false; $('s-free-lab').textContent = view === now ? 'Noch frei bis Monatsende' : 'Voraussichtlich frei';
+    el.textContent = sfmt(free, base); el.className = 'num ' + (free < 0 ? 'neg' : 'pos');
+    $('s-free-sub').textContent = pout || pin ? 'nach ' + fmt(Math.round(pout), base) + ' ausstehenden Fixkosten' + (pin ? ' und mit ' + fmt(Math.round(pin), base) + ' erwarteten Einnahmen' : '')
+      : 'Alle Fixposten dieses Monats sind eingetragen.';
+  }
+
+  function fxCats(keep) { fillSelect($('fx-cat'), withKeep($('fx-type-in').checked ? incats() : cats(), keep), keep); }
+  function fxClose() { fxEdit = null; $('fx-form').hidden = true; }
+  function fxOpen(f) {
+    fxEdit = f ? f.id : 'new'; $('fx-form').hidden = false; $('fx-title').textContent = f ? 'Fixposten ändern' : 'Neuer Fixposten';
+    $('fx-name').value = f ? f.name : ''; $('fx-type-in').checked = !!f && f.t === 'in'; $('fx-type-out').checked = !f || f.t !== 'in';
+    fxCats(f && f.cat); fillSelect($('fx-acc'), accNames(f && f.acc), f ? f.acc : undefined);
+    $('fx-amount').value = f ? (f.a / 100).toFixed(2) : ''; $('fx-cur-eur').checked = !!f && f.c === 'EUR'; $('fx-cur-chf').checked = !f || f.c !== 'EUR';
+    $('fx-day').value = f ? (f.day || 1) : 1; $('fx-every').value = String(f ? (f.every || 1) : 1); $('fx-notice').value = f && f.notice ? f.notice : '';
+    const cur = ym(new Date()), nxt = shift(cur, 1), o = (v, t) => { const e = h('option', null, t); e.value = v; return e; };
+    $('fx-from').replaceChildren(o(cur, 'ab ' + monthName(cur)), o(nxt, 'ab ' + monthName(nxt))); $('fx-from-wrap').hidden = !!f;
+    $('fx-delete').hidden = !f; resetSure($('fx-delete'), 'Fixposten löschen'); setMsg('fx-msg', '');
+    $('fx-form').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if (!f) $('fx-name').focus({ preventScroll: true });
+  }
+  $('fx-add').addEventListener('click', () => fxOpen(null));
+  $('fx-cancel').addEventListener('click', fxClose);
+  $('fx-type-out').addEventListener('change', () => fxCats()); $('fx-type-in').addEventListener('change', () => fxCats());
+  $('fx-acc').addEventListener('change', () => { const a = accs().find(x => x.n === $('fx-acc').value); if (a && a.c) { $('fx-cur-eur').checked = a.c === 'EUR'; $('fx-cur-chf').checked = a.c !== 'EUR'; } });
+  $('fx-form').addEventListener('submit', ev => { ev.preventDefault(); if (!key || !fxEdit) return;
+    const name = $('fx-name').value.trim(), a = parseAmt($('fx-amount').value), day = Math.round(Number($('fx-day').value));
+    if (!name) { $('fx-name').focus(); return setMsg('fx-msg', 'Gib einen Namen ein, z. B. Miete.', true); }
+    if (a == null) { $('fx-amount').focus(); return setMsg('fx-msg', 'Gib einen Betrag grösser als 0 ein, z. B. 1450.', true); }
+    if (!(day >= 1 && day <= 31)) { $('fx-day').focus(); return setMsg('fx-msg', 'Der Tag muss zwischen 1 und 31 liegen.', true); }
+    const list = (settings.fixed || []).slice(), old = list.find(x => x.id === fxEdit);
+    const f = Object.assign(old ? Object.assign({}, old) : { id: newId(), from: $('fx-from').value, last: '' },
+      { name, a, c: $('fx-cur-eur').checked ? 'EUR' : 'CHF', t: $('fx-type-in').checked ? 'in' : 'out', cat: $('fx-cat').value, acc: $('fx-acc').value,
+        day, every: Number($('fx-every').value) || 1, notice: $('fx-notice').value || '' });
+    settings.fixed = old ? list.map(x => x.id === f.id ? f : x) : list.concat(f);
+    fxClose(); flush('settings'); render(); toast(old ? 'Fixposten geändert' : 'Fixposten angelegt'); bookFixed();
+  });
+  $('fx-delete').addEventListener('click', () => { if (!fxEdit || !confirmTwice($('fx-delete'), 'Fixposten löschen', 'Wirklich löschen? Bereits eingetragene Buchungen bleiben.')) return;
+    settings.fixed = (settings.fixed || []).filter(x => x.id !== fxEdit); fxClose(); flush('settings'); render(); toast('Fixposten gelöscht'); });
+
+  /* ---------- Budgets ---------- */
+  function budgetOf(cat, base) { const b = (settings.budgets || {})[cat]; return b && b.a ? Math.round(conv(b.a, b.c, view, base)) : 0; }
+  function renderBudgets(base) {
+    const sig = JSON.stringify([cats(), settings.budgets, base, rateFor(view)]), host = $('bud-list');
+    if (host.contains(document.activeElement) || (sig === budSig && host.childElementCount)) return; budSig = sig;
+    $('bud-hint').textContent = 'Monatliche Grenze je Kategorie in ' + base + '. Leer lassen für kein Budget. Den Stand siehst du in der Auswertung.';
+    host.replaceChildren(...cats().map(c => { const lab = h('label', 'budrow'), inp = h('input'), b = budgetOf(c, base);
+      inp.type = 'text'; inp.inputMode = 'decimal'; inp.placeholder = 'kein Budget'; inp.value = b ? (b / 100).toFixed(2) : ''; inp.setAttribute('aria-label', 'Budget ' + c);
+      inp.addEventListener('change', () => { const v = inp.value.trim(), a = v ? parseAmt(v) : 0;
+        if (v && a == null) { inp.value = ''; return toast('Gib einen Betrag ein, z. B. 600.'); }
+        settings.budgets = Object.assign({}, settings.budgets); if (a) settings.budgets[c] = { a, c: baseCur() }; else delete settings.budgets[c];
+        budSig = ''; flush('settings'); toast(a ? 'Budget für ' + c + ' gespeichert' : 'Budget für ' + c + ' entfernt'); });
+      lab.append(h('span', null, c), inp); return lab; }));
+  }
+
+  /* ---------- Sparziele ---------- */
+  function renderGoals() { const gs = settings.goals || [];
+    $('goal-hint').hidden = !!gs.length;
+    $('goal-list').replaceChildren(...gs.map(g => { const row = h('button', 'row'), what = h('span'), tr = h('span', 'track'), i = h('i');
+      const pct = g.target ? Math.min(100, Math.round(g.saved / g.target * 100)) : 0; row.type = 'button';
+      i.style.width = pct + '%'; tr.append(i); what.append(h('b', null, g.name), h('small', null, fmt(g.saved, g.c) + ' von ' + fmt(g.target, g.c)), tr);
+      row.append(what, h('span', 'amt num' + (pct >= 100 ? ' pos' : ''), pct + ' %')); row.addEventListener('click', () => goalOpen(g)); return row; }));
+  }
+  function goalClose() { goalEdit = null; $('goal-form').hidden = true; }
+  function goalOpen(g) {
+    goalEdit = g ? g.id : 'new'; $('goal-form').hidden = false; $('goal-title').textContent = g ? 'Sparziel ändern' : 'Neues Sparziel';
+    $('goal-name').value = g ? g.name : ''; $('goal-target').value = g ? (g.target / 100).toFixed(2) : ''; $('goal-saved').value = g && g.saved ? (g.saved / 100).toFixed(2) : '';
+    $('goal-cur-eur').checked = !!g && g.c === 'EUR'; $('goal-cur-chf').checked = !g || g.c !== 'EUR'; $('goal-dep').value = ''; $('goal-dep-wrap').hidden = !g;
+    $('goal-delete').hidden = !g; resetSure($('goal-delete'), 'Sparziel löschen'); setMsg('goal-msg', '');
+    $('goal-form').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if (!g) $('goal-name').focus({ preventScroll: true });
+  }
+  $('goal-add').addEventListener('click', () => goalOpen(null));
+  $('goal-cancel').addEventListener('click', goalClose);
+  $('goal-form').addEventListener('submit', ev => { ev.preventDefault(); if (!key || !goalEdit) return;
+    const name = $('goal-name').value.trim(), target = parseAmt($('goal-target').value);
+    const cents = id => { const v = $(id).value.trim(); if (!v) return 0; const n = parseNum(v); return isFinite(n) && n >= 0 ? Math.round(n * 100) : null; };
+    const saved = cents('goal-saved'), dep = cents('goal-dep');
+    if (!name) { $('goal-name').focus(); return setMsg('goal-msg', 'Gib einen Namen ein, z. B. Ferien.', true); }
+    if (target == null) { $('goal-target').focus(); return setMsg('goal-msg', 'Gib einen Zielbetrag grösser als 0 ein.', true); }
+    if (saved == null || dep == null) return setMsg('goal-msg', 'Gespart und Einzahlung müssen Beträge ab 0 sein.', true);
+    const list = (settings.goals || []).slice(), old = list.find(x => x.id === goalEdit);
+    const g = { id: old ? old.id : newId(), name, target, c: $('goal-cur-eur').checked ? 'EUR' : 'CHF', saved: saved + dep };
+    settings.goals = old ? list.map(x => x.id === g.id ? g : x) : list.concat(g);
+    goalClose(); flush('settings'); render(); toast(g.saved >= g.target ? 'Ziel erreicht: ' + name : old ? 'Sparziel gespeichert' : 'Sparziel angelegt');
+  });
+  $('goal-delete').addEventListener('click', () => { if (!goalEdit || !confirmTwice($('goal-delete'), 'Sparziel löschen', 'Wirklich löschen?')) return;
+    settings.goals = (settings.goals || []).filter(x => x.id !== goalEdit); goalClose(); flush('settings'); render(); toast('Sparziel gelöscht'); });
+
+  function renderPlan() {
+    const base = baseCur(), fx = settings.fixed || [], now = ym(new Date());
+    let out = 0, inc = 0; fx.forEach(f => { const v = conv(f.a, f.c, now, base) / (f.every || 1); if (f.t === 'in') inc += v; else out += v; });
+    $('fx-sum').textContent = fx.length ? 'Fixkosten pro Monat: ' + fmt(Math.round(out), base) + (inc ? ' · Fixe Einnahmen: ' + fmt(Math.round(inc), base) : '')
+      : 'Lege Miete, Versicherungen, Abos oder das Gehalt einmal an. Sie werden am gewählten Tag automatisch eingetragen und in der Prognose berücksichtigt.';
+    $('fx-list').replaceChildren(...fx.slice().sort((a, b) => (a.day || 1) - (b.day || 1)).map(f => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
+      what.append(h('b', null, f.name), h('small', null, f.cat + ' · ' + f.acc + ' · ' + EVERY[f.every || 1] + ' am ' + (f.day || 1) + '.'));
+      if (f.notice) { const n = daysTo(f.notice);
+        what.append(h('small', n <= 30 ? 'neg' : null, n < 0 ? 'Kündigungsfrist am ' + de(f.notice) + ' abgelaufen' : 'Kündbar bis ' + de(f.notice) + (n <= 30 ? (n === 0 ? ' (heute)' : ' (noch ' + n + (n === 1 ? ' Tag)' : ' Tage)')) : ''))); }
+      row.append(what, amtEl(f)); row.addEventListener('click', () => fxOpen(f)); return row; }));
+    renderBudgets(base); renderGoals();
+  }
+
+  /* ---------- Kontostände ---------- */
+  function balances() { const b = {}, get = n => b[n] || (b[n] = { CHF: 0, EUR: 0 });
+    accs().forEach(a => { const s = (settings.start || {})[a.n] || {}, g = get(a.n); g.CHF += s.CHF || 0; g.EUR += s.EUR || 0; });
+    for (const m in months) for (const e of months[m]) get(e.acc)[e.c === 'EUR' ? 'EUR' : 'CHF'] += e.t === 'in' ? e.a : -e.a;
+    return b; }
+  function renderAccounts(base) { const b = balances(), now = ym(new Date()); let tot = 0;
+    const rows = Object.keys(b).map(n => { const v = b[n], a = accs().find(x => x.n === n), row = h('div', 'accrow'), parts = [];
+      tot += conv(v.CHF, 'CHF', now, base) + conv(v.EUR, 'EUR', now, base);
+      if (v.CHF || (a && a.c === 'CHF')) parts.push(sfmt(v.CHF, 'CHF')); if (v.EUR || (a && a.c === 'EUR')) parts.push(sfmt(v.EUR, 'EUR')); if (!parts.length) parts.push(sfmt(0, base));
+      row.append(h('span', null, n), h('span', 'num', parts.join(' · '))); return row; });
+    const total = h('div', 'accrow total'); total.append(h('span', null, 'Gesamt'), h('span', 'num' + (tot < 0 ? ' neg' : ''), sfmt(Math.round(tot), base)));
+    $('acc-list').replaceChildren(...rows, total);
+    $('acc-note').textContent = 'Startsaldo plus alle erfassten Einträge. Den Startsaldo legst du unter Mehr > Kategorien & Konten fest. Gesamt umgerechnet in ' + base + '.';
+  }
+
+  /* ---------- Suche ---------- */
+  $('q').addEventListener('input', () => { searchQ = $('q').value.trim().toLowerCase(); render(); });
+
+  /* ---------- Sicherung ---------- */
+  function backupText() { return JSON.stringify({ app: 'juma-finance', v: 1, at: new Date().toISOString(), settings, months }); }
+  $('btn-backup').addEventListener('click', () => { $('backup').hidden = false; setMsg('bk-msg', ''); $('backup').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+  $('bk-close').addEventListener('click', () => { $('backup').hidden = true; $('bk-text').value = ''; $('bk-file').value = ''; });
+  $('bk-down').addEventListener('click', () => { if (!key) return;
+    try { const url = URL.createObjectURL(new Blob([backupText()], { type: 'application/json' })), a = h('a'); a.href = url; a.download = 'juma-finance-sicherung-' + today() + '.json';
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 15000);
+      setMsg('bk-msg', 'Sicherung erstellt. Sie ist nicht verschlüsselt, bewahre sie sicher auf.');
+    } catch (e) { setMsg('bk-msg', 'Die Datei konnte nicht erstellt werden. Nutze stattdessen Kopieren.', true); } });
+  $('bk-copy').addEventListener('click', () => { if (!key) return; const text = backupText();
+    const fallback = () => { $('bk-text').value = text; $('bk-text').focus(); $('bk-text').select(); setMsg('bk-msg', 'Kopieren ist hier nicht erlaubt. Der Text steht unten, markiert zum Kopieren.'); };
+    try { navigator.clipboard.writeText(text).then(() => setMsg('bk-msg', 'Sicherung kopiert. Sie ist nicht verschlüsselt.'), fallback); } catch (e) { fallback(); } });
+  $('bk-file').addEventListener('change', async () => { const f = $('bk-file').files[0]; if (!f) return;
+    if (f.size > 20 * 1024 * 1024) return setMsg('bk-msg', 'Die Datei ist grösser als 20 MB.', true);
+    try { $('bk-text').value = await f.text(); setMsg('bk-msg', 'Datei geladen. Tippe auf Einlesen.'); } catch (e) { setMsg('bk-msg', 'Die Datei konnte nicht gelesen werden.', true); } });
+  $('bk-go').addEventListener('click', () => { if (!key) return; let o;
+    try { o = JSON.parse($('bk-text').value); } catch (e) { return setMsg('bk-msg', 'Das ist keine gültige Sicherung. Füge den ganzen kopierten Text ein oder wähle die Datei.', true); }
+    if (!o || typeof o !== 'object' || !o.months || typeof o.months !== 'object') return setMsg('bk-msg', 'In dieser Sicherung sind keine Einträge.', true);
+    const S = (v, max) => String(v == null ? '' : v).slice(0, max), isYm = v => /^\d{4}-\d{2}$/.test(v || ''), isD = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
+    const have = new Set(), touched = new Set(); let n = 0, dup = 0, bad = 0;
+    for (const m in months) for (const e of months[m]) have.add(e.id);
+    for (const k in o.months) { if (!Array.isArray(o.months[k])) continue;
+      for (const r of o.months[k]) {
+        if (!r || !isD(r.d) || !Number.isInteger(r.a) || r.a <= 0 || (r.c !== 'CHF' && r.c !== 'EUR')) { bad++; continue; }
+        const id = S(r.id, 60) || newId(); if (have.has(id)) { dup++; continue; }
+        const e = { id, d: r.d, a: r.a, c: r.c, t: r.t === 'in' ? 'in' : 'out', cat: S(r.cat, 60) || 'Sonstiges', acc: S(r.acc, 40) || accs()[0].n, note: S(r.note, 120) };
+        if (r.fx) e.fx = S(r.fx, 40);
+        const m = e.d.slice(0, 7); (months[m] = months[m] || []).push(e); have.add(id); touched.add(m); n++; } }
+    const s = o.settings;
+    if (s && typeof s === 'object') {
+      const strs = a => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim().slice(0, 40)) : [];
+      if (s.rates && typeof s.rates === 'object') { const r = {}; for (const k in s.rates) if (isYm(k) && s.rates[k] >= 0.5 && s.rates[k] <= 2) r[k] = Number(s.rates[k]); settings.rates = Object.assign(r, settings.rates); }
+      if (!settings.cats && strs(s.cats).length) settings.cats = strs(s.cats);
+      if (!settings.incats && strs(s.incats).length) settings.incats = strs(s.incats);
+      if (!settings.accs && Array.isArray(s.accs)) { const a = s.accs.filter(x => x && typeof x.n === 'string' && x.n.trim()).map(x => ({ n: x.n.trim().slice(0, 30), c: x.c === 'CHF' || x.c === 'EUR' ? x.c : null })); if (a.length) settings.accs = a; }
+      if (!(settings.fixed || []).length && Array.isArray(s.fixed)) settings.fixed = s.fixed.filter(f => f && typeof f.name === 'string' && Number.isInteger(f.a) && f.a > 0 && isYm(f.from))
+        .map(f => ({ id: S(f.id, 40) || newId(), name: S(f.name, 60), a: f.a, c: f.c === 'EUR' ? 'EUR' : 'CHF', t: f.t === 'in' ? 'in' : 'out', cat: S(f.cat, 60), acc: S(f.acc, 40),
+          day: Math.min(31, Math.max(1, Math.round(Number(f.day)) || 1)), every: [1, 3, 6, 12].includes(f.every) ? f.every : 1, from: f.from, last: isYm(f.last) ? f.last : '', notice: isD(f.notice) ? f.notice : '' }));
+      if (!(settings.goals || []).length && Array.isArray(s.goals)) settings.goals = s.goals.filter(g => g && typeof g.name === 'string' && Number.isInteger(g.target) && g.target > 0)
+        .map(g => ({ id: S(g.id, 40) || newId(), name: S(g.name, 60), target: g.target, c: g.c === 'EUR' ? 'EUR' : 'CHF', saved: Number.isInteger(g.saved) && g.saved > 0 ? g.saved : 0 }));
+      if (!Object.keys(settings.budgets || {}).length && s.budgets && typeof s.budgets === 'object') { const b = {};
+        for (const k in s.budgets) { const v = s.budgets[k]; if (v && Number.isInteger(v.a) && v.a > 0) b[S(k, 60)] = { a: v.a, c: v.c === 'EUR' ? 'EUR' : 'CHF' }; } settings.budgets = b; }
+      if (!Object.keys(settings.start || {}).length && s.start && typeof s.start === 'object') { const st = {};
+        for (const k in s.start) { const v = s.start[k] || {}; st[S(k, 40)] = { CHF: Number.isInteger(v.CHF) ? v.CHF : 0, EUR: Number.isInteger(v.EUR) ? v.EUR : 0 }; } settings.start = st; }
+    }
+    listSig = ''; budSig = ''; touched.forEach(m => flush('m-' + m)); flush('settings'); render(); renderLists(true);
+    $('bk-text').value = ''; $('bk-file').value = '';
+    setMsg('bk-msg', (n === 1 ? '1 Eintrag' : n + ' Einträge') + ' übernommen' + (dup ? ', ' + dup + ' schon vorhanden' : '') + (bad ? ', ' + bad + ' ungültige übersprungen' : '') + '.');
+  });
 
   boot();
 })();

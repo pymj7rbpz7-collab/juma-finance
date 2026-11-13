@@ -38,6 +38,14 @@ Haushaltsbuch für CHF und EUR. Läuft als Web-App auf iPhone, iPad und Mac und 
 
 Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App nur noch nach dem Passwort.
 
+## Funktionen
+
+- **Einträge:** Ausgaben und Einnahmen in CHF und EUR, CSV-Import von der Bank, Suche über alle Monate.
+- **Planung:** Fixkosten und Verträge werden am gewählten Tag automatisch eingetragen, mit optionaler Kündigungsfrist. Dazu Budgets je Kategorie und Sparziele.
+- **Prognose:** Die Übersicht zeigt, was nach den noch ausstehenden Fixkosten bis Monatsende frei bleibt.
+- **Auswertung:** Ausgaben je Kategorie mit Budget, Verlauf über zwölf Monate, Kontostände je Konto.
+- **Mehr:** Wechselkurs, eigene Kategorien und Konten mit Startsaldo, Sicherung als Datei oder Text.
+
 ## Gut zu wissen
 
 - **Ein Passwort für alles.** Es meldet dich an und verschlüsselt deine Einträge. An den Server geht nur ein daraus abgeleiteter Wert, nie das Passwort selbst. Es lässt sich nicht zurücksetzen: Ohne Passwort sind die Einträge nicht wiederherstellbar.
