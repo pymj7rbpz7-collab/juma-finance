@@ -202,7 +202,7 @@ html:has(#app.form-open) { overflow: hidden; }
 }
 @media (max-width: 359.98px) {
   .top .actions { flex-wrap: wrap; }
-  .seg.tabs label span { display: none; }
+  .seg.tabs input:checked + label span { display: none; }
 }
 @media (max-width: 999.98px) {
   .side { display: contents; }
@@ -213,8 +213,10 @@ html:has(#app.form-open) { overflow: hidden; }
   .seg.tabs { left: max(16px, env(safe-area-inset-left, 0px)); right: calc(max(16px, env(safe-area-inset-right, 0px)) + 74px);
     padding: 4px; background: var(--glass); box-shadow: var(--shine), var(--shadow-float); }
   .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; min-width: 0; padding: 4px 1px; font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: var(--muted); }
-  .seg.tabs label { flex: 1 1 auto; }
-  .seg.tabs label span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .seg.tabs label { flex: 1 1 0; }
+  .seg.tabs label span { display: none; white-space: nowrap; }
+  .seg.tabs input:checked + label { flex: 0 0 auto; padding-inline: 10px; }
+  .seg.tabs input:checked + label span { display: block; }
   .seg.tabs svg { width: 24px; height: 24px; }
   .seg.tabs input:checked + label { color: var(--accent); background: var(--fill); box-shadow: inset 0 1px 0 var(--edge); }
   .fab { right: max(16px, env(safe-area-inset-right, 0px)); width: 64px; padding: 0; border-radius: 50%; color: var(--on-accent);
@@ -504,6 +506,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <input type="radio" name="tab" id="tab-b" value="stats"><label for="tab-b"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.4" height="8.5" rx="1.6"/><rect x="9.8" y="7.5" width="4.4" height="13" rx="1.6"/><rect x="16.1" y="3.5" width="4.4" height="17" rx="1.6"/></svg><span>Auswertung</span></label>
       <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
       <input type="radio" name="tab" id="tab-e" value="worth"><label for="tab-e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 17.5 9 12l4 4 7.5-8"/><path d="M15 8h5.5v5.5"/></svg><span>Vermögen</span></label>
+      <input type="radio" name="tab" id="tab-f" value="way"><label for="tab-f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5v-4l1.8-4.6A2 2 0 0 1 8.2 6.5h7.6a2 2 0 0 1 1.9 1.4l1.8 4.6v4"/><path d="M3.5 12.5h17M4.5 16.5h15M6.5 16.5v2M17.5 16.5v2"/><circle cx="7.6" cy="14.5" r=".6" fill="currentColor"/><circle cx="16.4" cy="14.5" r=".6" fill="currentColor"/></svg><span>Arbeitsweg</span></label>
     </div>
     </aside>
 
@@ -642,7 +645,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="head"><div><h2>Heute noch nichts erfasst</h2><p class="hint">Kurz nachtragen, solange du dich erinnerst.</p></div><button class="btn primary" id="nudge-add" type="button">Jetzt erfassen</button></div>
           </section>
           <section class="panel stack" id="dash-way">
-            <div class="head"><h2>Arbeitsweg</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div class="head"><h2>Arbeitsweg</h2><button class="btn" type="button" data-go="tab-f">Öffnen</button></div>
             <div id="way-dash"></div>
           </section>
           <section class="panel stack">
@@ -725,39 +728,6 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="tablewrap"><table class="cmp" id="st-cmp"></table></div>
             <p class="hint" id="st-cmp-note"></p>
           </section>
-          <section class="panel stack full">
-            <div class="head"><h2 id="way-title">Arbeitsweg</h2><div id="tx-actions"><button class="btn" id="way-edit" type="button">Strecke</button><button class="btn" id="way-csv" type="button">Als CSV exportieren</button></div></div>
-            <p class="hint" id="way-route"></p>
-            <form id="way-form" class="stack box" autocomplete="off" hidden>
-              <div class="two">
-                <label class="field"><span>Von (Wohnung)</span><input type="text" id="way-from" maxlength="40" placeholder="z. B. Buchs SG"></label>
-                <label class="field"><span>Nach (Arbeit)</span><input type="text" id="way-to" maxlength="40" placeholder="z. B. Götzis"></label>
-              </div>
-              <div class="two">
-                <label class="field"><span>Einfache Strecke in km</span><input type="text" id="way-km" inputmode="decimal" placeholder="z. B. 26"></label>
-                <label class="field"><span>Kilometergeld € pro km</span><input type="text" id="way-rate" inputmode="decimal" placeholder="0,50"></label>
-              </div>
-              <div class="field"><span>Öffentlicher Verkehr zumutbar?</span>
-                <div class="seg wide" role="radiogroup" aria-label="Öffentlicher Verkehr zumutbar">
-                  <input type="radio" name="waypt" id="way-pt-no" value="no" checked><label for="way-pt-no">Nein</label>
-                  <input type="radio" name="waypt" id="way-pt-yes" value="yes"><label for="way-pt-yes">Ja</label>
-                </div>
-              </div>
-              <p class="hint">Die Strecke ist die kürzeste Strassenverbindung in eine Richtung. „Zumutbar“ entscheidet zwischen kleinem und grossem Pendlerpauschale; im Zweifel gilt das Ergebnis des Pendlerrechners oder des Formulars L 33.</p>
-              <div class="actions">
-                <button class="btn primary grow" id="way-save" type="submit">Speichern</button>
-                <button class="btn" id="way-cancel" type="button" style="min-height:52px">Abbrechen</button>
-              </div>
-              <div class="msg" id="way-msg" role="status"></div>
-            </form>
-            <div class="daystats" id="way-tiles"></div>
-            <div class="tablewrap" id="way-tablewrap"><table class="cmp" id="way-table"></table></div>
-            <p class="hint" id="way-days-lab"></p>
-            <div class="chips" id="way-days"></div>
-            <div class="wayadd"><input type="date" id="way-date" aria-label="Datum der Fahrt"><button class="btn" id="way-add" type="button">Fahrt eintragen</button></div>
-            <div class="msg" id="way-msg2" role="status"></div>
-            <p class="hint">Schätzung nach den österreichischen Sätzen 2026: volles Pendlerpauschale ab 11 Fahrten im Monat, zwei Drittel ab 8, ein Drittel ab 4. Der Pendlereuro beträgt 6 € pro km einfacher Strecke und Jahr. Kilometergeld gibt es für den Arbeitsweg in der Regel nicht. Keine Steuerberatung.</p>
-          </section>
           <section class="panel stack clip full">
             <div class="head"><h2 id="tx-title">Steuern</h2><div id="tx-actions"><button class="btn" id="tx-csv" type="button">Als CSV exportieren</button></div></div>
             <div class="tablewrap" id="tx-tablewrap"><table class="cmp" id="tx-table"></table></div>
@@ -807,6 +777,42 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <section class="panel stack clip">
             <div class="head"><h2>Schulden & Kredite</h2><button class="btn" id="db-add" type="button">Hinzufügen</button></div>
             <div id="db-list"></div>
+          </section>
+        </div>
+
+        <div class="stack" id="tab-way" hidden>
+          <section class="panel stack">
+            <div class="head"><h2 id="way-title">Arbeitsweg</h2><div id="tx-actions"><button class="btn" id="way-edit" type="button">Strecke</button><button class="btn" id="way-csv" type="button">Als CSV exportieren</button></div></div>
+            <p class="hint" id="way-route"></p>
+            <form id="way-form" class="stack box" autocomplete="off" hidden>
+              <div class="two">
+                <label class="field"><span>Von (Wohnung)</span><input type="text" id="way-from" maxlength="40" placeholder="z. B. Buchs SG"></label>
+                <label class="field"><span>Nach (Arbeit)</span><input type="text" id="way-to" maxlength="40" placeholder="z. B. Götzis"></label>
+              </div>
+              <div class="two">
+                <label class="field"><span>Einfache Strecke in km</span><input type="text" id="way-km" inputmode="decimal" placeholder="z. B. 26"></label>
+                <label class="field"><span>Kilometergeld € pro km</span><input type="text" id="way-rate" inputmode="decimal" placeholder="0,50"></label>
+              </div>
+              <div class="field"><span>Öffentlicher Verkehr zumutbar?</span>
+                <div class="seg wide" role="radiogroup" aria-label="Öffentlicher Verkehr zumutbar">
+                  <input type="radio" name="waypt" id="way-pt-no" value="no" checked><label for="way-pt-no">Nein</label>
+                  <input type="radio" name="waypt" id="way-pt-yes" value="yes"><label for="way-pt-yes">Ja</label>
+                </div>
+              </div>
+              <p class="hint">Die Strecke ist die kürzeste Strassenverbindung in eine Richtung. „Zumutbar“ entscheidet zwischen kleinem und grossem Pendlerpauschale; im Zweifel gilt das Ergebnis des Pendlerrechners oder des Formulars L 33.</p>
+              <div class="actions">
+                <button class="btn primary grow" id="way-save" type="submit">Speichern</button>
+                <button class="btn" id="way-cancel" type="button" style="min-height:52px">Abbrechen</button>
+              </div>
+              <div class="msg" id="way-msg" role="status"></div>
+            </form>
+            <div class="daystats" id="way-tiles"></div>
+            <div class="tablewrap" id="way-tablewrap"><table class="cmp" id="way-table"></table></div>
+            <p class="hint" id="way-days-lab"></p>
+            <div class="chips" id="way-days"></div>
+            <div class="wayadd"><input type="date" id="way-date" aria-label="Datum der Fahrt"><button class="btn" id="way-add" type="button">Fahrt eintragen</button></div>
+            <div class="msg" id="way-msg2" role="status"></div>
+            <p class="hint">Schätzung nach den österreichischen Sätzen 2026: volles Pendlerpauschale ab 11 Fahrten im Monat, zwei Drittel ab 8, ein Drittel ab 4. Der Pendlereuro beträgt 6 € pro km einfacher Strecke und Jahr. Kilometergeld gibt es für den Arbeitsweg in der Regel nicht. Keine Steuerberatung.</p>
           </section>
         </div>
 
@@ -1192,7 +1198,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   /* ---------- Monat, Ansicht, Einstellungen ---------- */
   $('m-prev').addEventListener('click', () => { view = shift(view, -1); render(); });
   $('m-next').addEventListener('click', () => { view = shift(view, 1); render(); });
-  ['tab-d', 'tab-a', 'tab-b', 'tab-c', 'tab-e'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
+  ['tab-d', 'tab-a', 'tab-b', 'tab-c', 'tab-e', 'tab-f'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
   ['lf-all', 'lf-out', 'lf-in'].forEach(id => $(id).addEventListener('change', () => { listFilter = $(id).value; render(); }));
   window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && (tab === 'stats' || tab === 'dash' || tab === 'worth')) render(); }, 150); });
   $('rate').addEventListener('change', () => {
@@ -1238,16 +1244,17 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('show-' + show().toLowerCase()).checked = true;
     const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
     else { rt.textContent = ''; rt.className = 'lab rate'; }
-    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth';
-    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen' }[tab];
+    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth'; $('tab-way').hidden = tab !== 'way';
+    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen', way: 'Arbeitsweg' }[tab];
     syncLists(); renderFree(base, t); renderLists();
     renderDups();
     if (tab === 'dash') { renderDash(base, list); return; }
     if (tab === 'plan') { renderPlan(); return; }
     if (tab === 'worth') { renderWorth(base); return; }
+    if (tab === 'way') { renderWay(); return; }
 
     if (tab === 'stats') {
-      renderDays('st', base); renderCompare(base); renderWay(); renderTax();
+      renderDays('st', base); renderCompare(base); renderTax();
       catBars('cats', list, base, 0);
       renderAccounts(base);
       drawYear(base); return;
@@ -2121,7 +2128,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function waySet(d, on) { const s = new Set(wdays()); if (on) s.add(d); else s.delete(d); settings.wdays = Array.from(s).sort(); flush('settings'); render(); }
   function wayRoute(w) { return w.from + ' → ' + w.to + ' · ' + nfKm.format(w.km) + ' km einfach'; }
   function renderWayDash() { const host = $('way-dash'), w = wayCfg();
-    if (!w) { const b = h('button', 'btn', 'Strecke einrichten'); b.type = 'button'; b.addEventListener('click', () => { go('tab-b'); wayEdit(true); });
+    if (!w) { const b = h('button', 'btn', 'Strecke einrichten'); b.type = 'button'; b.addEventListener('click', () => { go('tab-f'); wayEdit(true); });
       return host.replaceChildren(h('p', 'hint', 'Trage deine Strecke ein, dann erfasst du jede Fahrt zur Arbeit mit einem Tipp und siehst, was dir fürs Pendeln zusteht.'), b); }
     const td = today(), on = wdays().includes(td), y = td.slice(0, 4), ys = wayYear(y), mo = ys[Number(td.slice(5, 7)) - 1], yn = ys.reduce((s, x) => s + x.n, 0);
     const btn = h('button', 'btn ' + (on ? '' : 'primary'), on ? 'Heute eingetragen · Rückgängig' : 'Heute zur Arbeit gefahren'); btn.type = 'button';
