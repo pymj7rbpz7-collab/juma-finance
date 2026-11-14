@@ -416,6 +416,14 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 }
 
 /* Vermögen, Steuern, Wochen-Rückblick */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chipbtn { border: 0; border-radius: 999px; min-height: 38px; padding: 6px 14px; background: var(--fill); font-size: 14px; font-weight: 500; white-space: pre; transition: transform 100ms ease-out; }
+.chipbtn:active { transform: scale(0.95); }
+.wayadd { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.wayadd input { flex: 1; min-width: 150px; }
+#way-dash { display: flex; flex-direction: column; gap: 12px; }
+#way-dash .btn { min-height: 52px; font-size: 17px; }
+@media (min-width: 1000px) { #way-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } #dash-way .daystats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .lab.rate { margin-top: 4px; font-weight: 600; }
 .lab.sub.neg { color: var(--danger); } .lab.sub.pos { color: var(--pos); }
 .nudge { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
@@ -633,7 +641,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <section class="panel nudge d-full" id="dash-nudge" hidden>
             <div class="head"><div><h2>Heute noch nichts erfasst</h2><p class="hint">Kurz nachtragen, solange du dich erinnerst.</p></div><button class="btn primary" id="nudge-add" type="button">Jetzt erfassen</button></div>
           </section>
-          <section class="panel stack d-full">
+          <section class="panel stack" id="dash-way">
+            <div class="head"><h2>Arbeitsweg</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div id="way-dash"></div>
+          </section>
+          <section class="panel stack">
             <h2 id="dash-week-title">Letzte Woche</h2>
             <div class="daystats" id="dash-week"></div>
             <p class="hint" id="dash-week-top"></p>
@@ -712,6 +724,39 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <h2>Monatsvergleich</h2>
             <div class="tablewrap"><table class="cmp" id="st-cmp"></table></div>
             <p class="hint" id="st-cmp-note"></p>
+          </section>
+          <section class="panel stack full">
+            <div class="head"><h2 id="way-title">Arbeitsweg</h2><div id="tx-actions"><button class="btn" id="way-edit" type="button">Strecke</button><button class="btn" id="way-csv" type="button">Als CSV exportieren</button></div></div>
+            <p class="hint" id="way-route"></p>
+            <form id="way-form" class="stack box" autocomplete="off" hidden>
+              <div class="two">
+                <label class="field"><span>Von (Wohnung)</span><input type="text" id="way-from" maxlength="40" placeholder="z. B. Buchs SG"></label>
+                <label class="field"><span>Nach (Arbeit)</span><input type="text" id="way-to" maxlength="40" placeholder="z. B. Götzis"></label>
+              </div>
+              <div class="two">
+                <label class="field"><span>Einfache Strecke in km</span><input type="text" id="way-km" inputmode="decimal" placeholder="z. B. 26"></label>
+                <label class="field"><span>Kilometergeld € pro km</span><input type="text" id="way-rate" inputmode="decimal" placeholder="0,50"></label>
+              </div>
+              <div class="field"><span>Öffentlicher Verkehr zumutbar?</span>
+                <div class="seg wide" role="radiogroup" aria-label="Öffentlicher Verkehr zumutbar">
+                  <input type="radio" name="waypt" id="way-pt-no" value="no" checked><label for="way-pt-no">Nein</label>
+                  <input type="radio" name="waypt" id="way-pt-yes" value="yes"><label for="way-pt-yes">Ja</label>
+                </div>
+              </div>
+              <p class="hint">Die Strecke ist die kürzeste Strassenverbindung in eine Richtung. „Zumutbar“ entscheidet zwischen kleinem und grossem Pendlerpauschale; im Zweifel gilt das Ergebnis des Pendlerrechners oder des Formulars L 33.</p>
+              <div class="actions">
+                <button class="btn primary grow" id="way-save" type="submit">Speichern</button>
+                <button class="btn" id="way-cancel" type="button" style="min-height:52px">Abbrechen</button>
+              </div>
+              <div class="msg" id="way-msg" role="status"></div>
+            </form>
+            <div class="daystats" id="way-tiles"></div>
+            <div class="tablewrap" id="way-tablewrap"><table class="cmp" id="way-table"></table></div>
+            <p class="hint" id="way-days-lab"></p>
+            <div class="chips" id="way-days"></div>
+            <div class="wayadd"><input type="date" id="way-date" aria-label="Datum der Fahrt"><button class="btn" id="way-add" type="button">Fahrt eintragen</button></div>
+            <div class="msg" id="way-msg2" role="status"></div>
+            <p class="hint">Schätzung nach den österreichischen Sätzen 2026: volles Pendlerpauschale ab 11 Fahrten im Monat, zwei Drittel ab 8, ein Drittel ab 4. Der Pendlereuro beträgt 6 € pro km einfacher Strecke und Jahr. Kilometergeld gibt es für den Arbeitsweg in der Regel nicht. Keine Steuerberatung.</p>
           </section>
           <section class="panel stack clip full">
             <div class="head"><h2 id="tx-title">Steuern</h2><div id="tx-actions"><button class="btn" id="tx-csv" type="button">Als CSV exportieren</button></div></div>
@@ -839,7 +884,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   const INCATS = ['Gehalt', 'Rückerstattung', 'Sonstige Einnahme'];
   const ACCS = [{ n: 'UBS', c: 'CHF' }, { n: 'Revolut', c: null }, { n: 'Sparkasse', c: 'EUR' }, { n: 'Bar', c: null }];
   const ITER = 600000, LOCAL = 'grenzbuch:', IDLE_MS = 10 * 60 * 1000;
-  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF', cats: null, incats: null, accs: null, start: {}, fixed: [], budgets: {}, goals: [], assets: [] });
+  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF', cats: null, incats: null, accs: null, start: {}, fixed: [], budgets: {}, goals: [], assets: [], way: null, wdays: [] });
 
   const CFG = window.JUMA_CONFIG || {};
   let backend = null, meta = null, key = null, unsub = null, sb = null, user = null, mode = 'loading', pending = {};
@@ -1086,10 +1131,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function lock() {
     key = null; months = {}; seen = {}; editing = null; settings = DEF(); selDay = '';
     synced = false; noticed = false; searchQ = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
-    $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true; $('as-form').hidden = true; $('dash-nudge').hidden = true;
+    $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true; $('as-form').hidden = true; $('dash-nudge').hidden = true; $('way-form').hidden = true; $('way-date').value = '';
     $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
-    ['w-tiles', 'w-chart', 'w-acc', 'w-emergency', 'as-list', 'db-list', 'tx-table', 'tx-list', 'dash-week', 'list', 'cats', 'chart-year', 'dup-list', 'dash-days', 'dash-daystats', 'dash-dayinfo', 'dash-cmp', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
+    ['way-dash', 'way-tiles', 'way-table', 'way-days', 'w-tiles', 'w-chart', 'w-acc', 'w-emergency', 'as-list', 'db-list', 'tx-table', 'tx-list', 'dash-week', 'list', 'cats', 'chart-year', 'dup-list', 'dash-days', 'dash-daystats', 'dash-dayinfo', 'dash-cmp', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
     $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
     $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
   }
@@ -1202,7 +1247,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (tab === 'worth') { renderWorth(base); return; }
 
     if (tab === 'stats') {
-      renderDays('st', base); renderCompare(base); renderTax();
+      renderDays('st', base); renderCompare(base); renderWay(); renderTax();
       catBars('cats', list, base, 0);
       renderAccounts(base);
       drawYear(base); return;
@@ -1677,6 +1722,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       if (!(settings.fixed || []).length && Array.isArray(s.fixed)) settings.fixed = s.fixed.filter(f => f && typeof f.name === 'string' && Number.isInteger(f.a) && f.a > 0 && isYm(f.from))
         .map(f => ({ id: S(f.id, 40) || newId(), name: S(f.name, 60), a: f.a, c: f.c === 'EUR' ? 'EUR' : 'CHF', t: f.t === 'in' ? 'in' : 'out', cat: S(f.cat, 60), acc: S(f.acc, 40),
           day: Math.min(31, Math.max(1, Math.round(Number(f.day)) || 1)), every: [1, 3, 6, 12].includes(f.every) ? f.every : 1, from: f.from, last: isYm(f.last) ? f.last : '', notice: isD(f.notice) ? f.notice : '', tax: TAXN[f.tax] ? f.tax : '' }));
+      if (!settings.way && s.way && typeof s.way.from === 'string' && typeof s.way.to === 'string' && s.way.km > 0 && s.way.km <= 500)
+        settings.way = { from: S(s.way.from, 40), to: S(s.way.to, 40), km: Math.round(s.way.km * 10) / 10, pt: !!s.way.pt, rate: s.way.rate >= 0 && s.way.rate <= 5 ? Number(s.way.rate) : 0.5 };
+      if (!wdays().length && Array.isArray(s.wdays)) settings.wdays = Array.from(new Set(s.wdays.filter(isD))).sort();
       if (!assetsAll().length && Array.isArray(s.assets)) settings.assets = s.assets.filter(x => x && typeof x.name === 'string' && KINDS[x.kind] && Array.isArray(x.vals))
         .map(x => ({ id: S(x.id, 40) || newId(), name: S(x.name, 60), kind: x.kind, c: x.c === 'EUR' ? 'EUR' : 'CHF', ...(x.fx ? { fx: S(x.fx, 40) } : {}),
           vals: x.vals.filter(v => v && isD(v.d) && Number.isInteger(v.a) && v.a >= 0).map(v => ({ d: v.d, a: v.a })) }));
@@ -1715,7 +1763,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         return m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0'); } m = shift(m, 1); }
     return null; }
   function renderDash(base, list) {
-    renderNudge(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
+    renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
     drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); dashWorth(base); renderGoals('dash-goals');
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
@@ -2057,6 +2105,84 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   }
   function renderNudge() { const td = today(); $('dash-nudge').hidden = !key || new Date().getHours() < 17 || (months[td.slice(0, 7)] || []).some(e => e.d === td); }
   $('nudge-add').addEventListener('click', () => { resetForm(); setForm(true); });
+
+  /* ---------- Arbeitsweg: Fahrten, Pendlerpauschale, Pendlereuro ---------- */
+  // Jahresbeträge in Cent, Stand 2026 (Österreich). Grosses Pauschale: Öffis unzumutbar, kleines: Öffis zumutbar.
+  const PP = { big: [367200, 256800, 147600, 37200], small: [201600, 135600, 69600, 0] }, PEURO = 600;
+  const nfKm = new Intl.NumberFormat('de-CH', { maximumFractionDigits: 1 });
+  function wayCfg() { const w = settings.way; return w && w.km > 0 ? w : null; }
+  function wdays() { return Array.isArray(settings.wdays) ? settings.wdays : []; }
+  function ppYear(w) { const t = w.pt ? PP.small : PP.big; return w.km > 60 ? t[0] : w.km > 40 ? t[1] : w.km >= 20 ? t[2] : w.km >= 2 ? t[3] : 0; }
+  function wayFactor(n) { return n >= 11 ? 1 : n >= 8 ? 2 / 3 : n >= 4 ? 1 / 3 : 0; }
+  function wayYear(y) { const w = wayCfg(), all = wdays(), ms = [];
+    for (let i = 1; i <= 12; i++) { const m = y + '-' + String(i).padStart(2, '0'), n = all.filter(d => d.slice(0, 7) === m).length, f = wayFactor(n);
+      ms.push({ m, n, f, km: w ? n * w.km * 2 : 0, pp: w ? ppYear(w) / 12 * f : 0, pe: w ? PEURO * w.km / 12 * f : 0 }); }
+    return ms; }
+  function waySet(d, on) { const s = new Set(wdays()); if (on) s.add(d); else s.delete(d); settings.wdays = Array.from(s).sort(); flush('settings'); render(); }
+  function wayRoute(w) { return w.from + ' → ' + w.to + ' · ' + nfKm.format(w.km) + ' km einfach'; }
+  function renderWayDash() { const host = $('way-dash'), w = wayCfg();
+    if (!w) { const b = h('button', 'btn', 'Strecke einrichten'); b.type = 'button'; b.addEventListener('click', () => { go('tab-b'); wayEdit(true); });
+      return host.replaceChildren(h('p', 'hint', 'Trage deine Strecke ein, dann erfasst du jede Fahrt zur Arbeit mit einem Tipp und siehst, was dir fürs Pendeln zusteht.'), b); }
+    const td = today(), on = wdays().includes(td), y = td.slice(0, 4), ys = wayYear(y), mo = ys[Number(td.slice(5, 7)) - 1], yn = ys.reduce((s, x) => s + x.n, 0);
+    const btn = h('button', 'btn ' + (on ? '' : 'primary'), on ? 'Heute eingetragen · Rückgängig' : 'Heute zur Arbeit gefahren'); btn.type = 'button';
+    btn.addEventListener('click', () => { waySet(td, !on); toast(on ? 'Fahrt von heute entfernt' : 'Fahrt eingetragen: ' + nfKm.format(w.km * 2) + ' km'); });
+    const tiles = h('div', 'daystats');
+    tiles.append(mkTile('Diesen Monat', txt(mo.n + (mo.n === 1 ? ' Tag' : ' Tage')), nfKm.format(mo.km) + ' km' + (mo.n < 11 ? ' · ab 11 Tagen volles Pendlerpauschale' : ' · volles Pendlerpauschale')),
+      mkTile('Dieses Jahr', txt(yn + (yn === 1 ? ' Tag' : ' Tage')), nfKm.format(yn * w.km * 2) + ' km'));
+    host.replaceChildren(h('p', 'hint', wayRoute(w)), btn, tiles);
+  }
+  function wayEdit(open) { const w = settings.way || {}; $('way-form').hidden = !open; if (!open) return;
+    $('way-from').value = w.from || ''; $('way-to').value = w.to || ''; $('way-km').value = w.km ? String(w.km).replace('.', ',') : '';
+    $('way-pt-yes').checked = !!w.pt; $('way-pt-no').checked = !w.pt; $('way-rate').value = (w.rate != null ? w.rate : 0.5).toFixed(2); setMsg('way-msg', '');
+    $('way-form').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  $('way-edit').addEventListener('click', () => wayEdit($('way-form').hidden));
+  $('way-cancel').addEventListener('click', () => wayEdit(false));
+  $('way-form').addEventListener('submit', ev => { ev.preventDefault(); if (!key) return;
+    const from = $('way-from').value.trim(), to = $('way-to').value.trim(), km = parseNum($('way-km').value), rate = parseNum($('way-rate').value);
+    if (!from || !to) return setMsg('way-msg', 'Gib Start und Ziel ein, z. B. Buchs SG und Götzis.', true);
+    if (!(km >= 0.5 && km <= 500)) { $('way-km').focus(); return setMsg('way-msg', 'Gib die einfache Strecke in km ein, z. B. 26.', true); }
+    if (!(rate >= 0 && rate <= 5)) { $('way-rate').focus(); return setMsg('way-msg', 'Der Satz muss zwischen 0 und 5 Euro pro km liegen.', true); }
+    settings.way = { from, to, km: Math.round(km * 10) / 10, pt: $('way-pt-yes').checked, rate: Math.round(rate * 100) / 100 };
+    wayEdit(false); flush('settings'); render(); toast('Strecke gespeichert'); });
+  $('way-add').addEventListener('click', () => { const d = $('way-date').value; if (!key) return;
+    if (!wayCfg()) return setMsg('way-msg2', 'Richte zuerst die Strecke ein.', true);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return setMsg('way-msg2', 'Wähle ein Datum.', true);
+    if (wdays().includes(d)) return setMsg('way-msg2', 'Der ' + de(d) + ' ist schon eingetragen.', true);
+    setMsg('way-msg2', ''); waySet(d, true); toast('Fahrt am ' + de(d) + ' eingetragen'); });
+  function renderWay() { const y = view.slice(0, 4), w = wayCfg(); $('way-title').textContent = 'Arbeitsweg ' + y;
+    if (!$('way-date').value) $('way-date').value = today();
+    if (!w) { $('way-tiles').replaceChildren(); $('way-tablewrap').hidden = true; $('way-days').replaceChildren();
+      $('way-route').textContent = 'Noch keine Strecke eingerichtet. Tippe auf „Strecke“, um Start, Ziel und Kilometer einzutragen.'; return; }
+    const ys = wayYear(y), n = ys.reduce((s, x) => s + x.n, 0), km = n * w.km * 2, pp = ys.reduce((s, x) => s + x.pp, 0), pe = ys.reduce((s, x) => s + x.pe, 0), full = ppYear(w);
+    $('way-route').textContent = wayRoute(w) + ' · öffentlicher Verkehr ' + (w.pt ? 'zumutbar (kleines Pendlerpauschale)' : 'nicht zumutbar (grosses Pendlerpauschale)');
+    $('way-tiles').replaceChildren(
+      mkTile('Fahrten ' + y, txt(n + (n === 1 ? ' Tag' : ' Tage')), nfKm.format(km) + ' km hin und zurück'),
+      mkTile('Pendlerpauschale', txt(fmt(Math.round(pp), 'EUR')), full ? 'volles Jahr ' + fmt(full, 'EUR') + ' · mindert das steuerpflichtige Einkommen' : 'für diese Strecke kein Anspruch'),
+      mkTile('Pendlereuro', txt(fmt(Math.round(pe), 'EUR')), 'volles Jahr ' + fmt(Math.round(PEURO * w.km), 'EUR') + ' · wird direkt von der Steuer abgezogen'),
+      mkTile('Kilometer × Satz', txt(fmt(Math.round(km * w.rate * 100), 'EUR')), w.rate.toFixed(2).replace('.', ',') + ' € pro km · nur falls dein Arbeitgeber Kilometergeld zahlt'));
+    const used = ys.filter(x => x.n); $('way-tablewrap').hidden = !used.length;
+    const hr = h('tr'); ['Monat', 'Tage', 'km', 'Anspruch', 'Pendlerpauschale', 'Pendlereuro'].forEach((t, i) => hr.append(h('th', i ? 'r' : null, t)));
+    const fx = f => f === 1 ? 'voll' : f > 0.5 ? '2/3' : f > 0 ? '1/3' : 'keiner';
+    $('way-table').replaceChildren(hr, ...used.map(x => { const tr = h('tr', x.m === view ? 'on' : null);
+      tr.append(h('td', null, monthName(x.m)), h('td', 'r', String(x.n)), h('td', 'r', nfKm.format(x.km)), h('td', 'r', fx(x.f)), h('td', 'r', fmt(Math.round(x.pp), 'EUR')), h('td', 'r', fmt(Math.round(x.pe), 'EUR')));
+      tr.addEventListener('click', () => { view = x.m; render(); }); return tr; }));
+    const wf = new Intl.DateTimeFormat('de-CH', { weekday: 'short', day: 'numeric' }), md = wdays().filter(d => d.slice(0, 7) === view);
+    $('way-days-lab').textContent = md.length ? 'Fahrten im ' + monthName(view) + ' (antippen zum Entfernen)' : 'Im ' + monthName(view) + ' noch keine Fahrt eingetragen.';
+    $('way-days').replaceChildren(...md.map(d => { const [yy, mo, dd] = d.split('-').map(Number), b = h('button', 'chipbtn', wf.format(new Date(yy, mo - 1, dd)) + '  ×'); b.type = 'button';
+      b.setAttribute('aria-label', 'Fahrt am ' + de(d) + ' entfernen'); b.addEventListener('click', () => { waySet(d, false); toast('Fahrt am ' + de(d) + ' entfernt'); }); return b; }));
+  }
+  $('way-csv').addEventListener('click', () => { if (!key) return; const y = view.slice(0, 4), w = wayCfg(), ds = wdays().filter(d => d.slice(0, 4) === y);
+    if (!w || !ds.length) return setMsg('way-msg2', 'Für ' + y + ' gibt es noch keine Fahrten.', true);
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', n = v => String(Math.round(v * 100) / 100).replace('.', ','), eur = c => (Math.round(c) / 100).toFixed(2).replace('.', ',');
+    const wd = new Intl.DateTimeFormat('de-CH', { weekday: 'long' }), ys = wayYear(y).filter(x => x.n), L = [];
+    L.push([q('Fahrten Wohnung – Arbeitsstätte ' + y)].join(';'), [q('Strecke'), q(w.from + ' – ' + w.to)].join(';'), [q('Einfache Strecke in km'), n(w.km)].join(';'),
+      [q('Öffentlicher Verkehr zumutbar'), q(w.pt ? 'ja' : 'nein')].join(';'), '',
+      ['Datum', 'Wochentag', 'Von', 'Nach', 'km einfach', 'km hin und zurück'].map(q).join(';'));
+    ds.forEach(d => { const [yy, mo, dd] = d.split('-').map(Number); L.push([q(de(d)), q(wd.format(new Date(yy, mo - 1, dd))), q(w.from), q(w.to), n(w.km), n(w.km * 2)].join(';')); });
+    L.push('', ['Monat', 'Tage mit Fahrt', 'km', 'Anspruch', 'Pendlerpauschale EUR (Schätzung)', 'Pendlereuro EUR (Schätzung)'].map(q).join(';'));
+    ys.forEach(x => L.push([q(monthName(x.m)), x.n, n(x.km), q(x.f === 1 ? 'voll' : x.f > 0.5 ? '2/3' : x.f > 0 ? '1/3' : 'keiner'), eur(x.pp), eur(x.pe)].join(';')));
+    L.push([q('Summe'), ds.length, n(ds.length * w.km * 2), '', eur(ys.reduce((s, x) => s + x.pp, 0)), eur(ys.reduce((s, x) => s + x.pe, 0))].join(';'));
+    saveFile('pairo-arbeitsweg-' + y + '.csv', '﻿' + L.join('\r\n') + '\r\n', 'text/csv;charset=utf-8', 'way-msg2', ds.length + (ds.length === 1 ? ' Fahrt' : ' Fahrten') + ' exportiert.'); });
 
   boot();
 })();
