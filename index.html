@@ -436,7 +436,12 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 <div class="wrap">
 
   <section id="lock" class="lock">
-    <svg class="appicon" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-g)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>
+    <svg class="appicon" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fb0ff"/><stop offset=".55" stop-color="#1a7bf0"/><stop offset="1" stop-color="#0050c8"/></linearGradient>
+<radialGradient id="jf-gs" cx=".3" cy=".18" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+<rect width="120" height="120" fill="url(#jf-g)"/><rect width="120" height="120" fill="url(#jf-gs)"/>
+    <rect x="31" y="34" width="14" height="62" rx="7" fill="#fff"/>
+    <circle cx="58" cy="55" r="19" fill="none" stroke="#fff" stroke-width="14"/>
+    <circle cx="86" cy="76" r="12" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="9"/></svg>
     <h1>pairo</h1>
     <form id="lock-form" class="panel stack" autocomplete="off" action="javascript:void(0)" onsubmit="return false">
       <p class="hint" id="lock-intro">Lade …</p>
@@ -457,7 +462,12 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   <div id="app" hidden>
     <aside class="side">
     <header class="top">
-      <h1><svg class="brand" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3aa0ff"/><stop offset="1" stop-color="#0060df"/></linearGradient></defs><rect width="120" height="120" fill="url(#jf-b)"/><rect x="30" y="62" width="14" height="28" rx="7" fill="#fff" opacity=".7"/><rect x="53" y="44" width="14" height="46" rx="7" fill="#fff" opacity=".85"/><rect x="76" y="30" width="14" height="60" rx="7" fill="#fff"/></svg>pairo</h1>
+      <h1><svg class="brand" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="jf-b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fb0ff"/><stop offset=".55" stop-color="#1a7bf0"/><stop offset="1" stop-color="#0050c8"/></linearGradient>
+<radialGradient id="jf-bs" cx=".3" cy=".18" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+<rect width="120" height="120" fill="url(#jf-b)"/><rect width="120" height="120" fill="url(#jf-bs)"/>
+    <rect x="31" y="34" width="14" height="62" rx="7" fill="#fff"/>
+    <circle cx="58" cy="55" r="19" fill="none" stroke="#fff" stroke-width="14"/>
+    <circle cx="86" cy="76" r="12" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="9"/></svg>pairo</h1>
       <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button><div class="seg themeseg" role="radiogroup" aria-label="Darstellung"><input type="radio" name="themequick" id="tq-light" value="light"><label for="tq-light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"/></svg>Hell</label><input type="radio" name="themequick" id="tq-dark" value="dark"><label for="tq-dark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>Dunkel</label></div></div>
     </header>
     <button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Neuer Eintrag</span></button>
