@@ -210,6 +210,8 @@ html:has(#app.form-open) { overflow: hidden; }
   #extras { margin-bottom: 16px; }
   .seg.tabs, .fab { position: fixed; z-index: 15; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); height: 64px;
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--edge); }
+  /* Falt-Geräte: meldet der Browser nach dem Aufklappen eine veraltete Höhe, setzt das Skript die sichtbare Unterkante */
+  .dockfix .seg.tabs, .dockfix .fab { top: calc(var(--dock-bottom) - 78px - env(safe-area-inset-bottom, 0px)); bottom: auto; }
   .seg.tabs { left: max(16px, env(safe-area-inset-left, 0px)); right: calc(max(16px, env(safe-area-inset-right, 0px)) + 74px);
     padding: 4px; background: var(--glass); box-shadow: var(--shine), var(--shadow-float); }
   .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; min-width: 0; padding: 4px 1px; font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: var(--muted); }
@@ -2190,6 +2192,19 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     ys.forEach(x => L.push([q(monthName(x.m)), x.n, n(x.km), q(x.f === 1 ? 'voll' : x.f > 0.5 ? '2/3' : x.f > 0 ? '1/3' : 'keiner'), eur(x.pp), eur(x.pe)].join(';')));
     L.push([q('Summe'), ds.length, n(ds.length * w.km * 2), '', eur(ys.reduce((s, x) => s + x.pp, 0)), eur(ys.reduce((s, x) => s + x.pe, 0))].join(';'));
     saveFile('pairo-arbeitsweg-' + y + '.csv', '﻿' + L.join('\r\n') + '\r\n', 'text/csv;charset=utf-8', 'way-msg2', ds.length + (ds.length === 1 ? ' Fahrt' : ' Fahrten') + ' exportiert.'); });
+
+  /* ---------- Leiste unten bleibt unten ---------- */
+  // Nach dem Auf- oder Zuklappen und nach dem Drehen kann die gemeldete Fensterhöhe veraltet sein; dann hängt die Leiste mitten im Bild.
+  // Massgebend ist die tatsächlich sichtbare Fläche. Bei offener Tastatur oder Zoom bleibt die normale Platzierung.
+  function dockFix() { const vv = window.visualViewport, el = document.documentElement;
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '');
+    if (!vv || typing || Math.abs(vv.scale - 1) > 0.01 || Math.abs(vv.height - window.innerHeight) < 2) { el.classList.remove('dockfix'); return; }
+    el.style.setProperty('--dock-bottom', Math.round(vv.offsetTop + vv.height) + 'px'); el.classList.add('dockfix'); }
+  function dockSoon() { dockFix(); setTimeout(dockFix, 250); setTimeout(dockFix, 800); }
+  if (window.visualViewport) { window.visualViewport.addEventListener('resize', dockSoon); window.visualViewport.addEventListener('scroll', dockFix); }
+  ['resize', 'orientationchange', 'pageshow'].forEach(t => window.addEventListener(t, dockSoon));
+  document.addEventListener('visibilitychange', dockSoon); document.addEventListener('focusout', dockSoon);
+  dockSoon();
 
   boot();
 })();
