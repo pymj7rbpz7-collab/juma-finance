@@ -202,6 +202,7 @@ html:has(#app.form-open) { overflow: hidden; }
 }
 @media (max-width: 359.98px) {
   .top .actions { flex-wrap: wrap; }
+  .seg.tabs label span { display: none; }
 }
 @media (max-width: 999.98px) {
   .side { display: contents; }
@@ -211,7 +212,9 @@ html:has(#app.form-open) { overflow: hidden; }
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--edge); }
   .seg.tabs { left: max(16px, env(safe-area-inset-left, 0px)); right: calc(max(16px, env(safe-area-inset-right, 0px)) + 74px);
     padding: 4px; background: var(--glass); box-shadow: var(--shine), var(--shadow-float); }
-  .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; min-width: 0; padding: 4px 2px; font-size: 10.5px; font-weight: 600; letter-spacing: 0; color: var(--muted); }
+  .seg.tabs label { flex-direction: column; gap: 2px; min-height: 0; min-width: 0; padding: 4px 1px; font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: var(--muted); }
+  .seg.tabs label { flex: 1 1 auto; }
+  .seg.tabs label span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .seg.tabs svg { width: 24px; height: 24px; }
   .seg.tabs input:checked + label { color: var(--accent); background: var(--fill); box-shadow: inset 0 1px 0 var(--edge); }
   .fab { right: max(16px, env(safe-area-inset-right, 0px)); width: 64px; padding: 0; border-radius: 50%; color: var(--on-accent);
@@ -412,6 +415,22 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .dash > .d-wide { grid-column: 1 / -1; }
 }
 
+/* Vermögen, Steuern, Wochen-Rückblick */
+.lab.rate { margin-top: 4px; font-weight: 600; }
+.lab.sub.neg { color: var(--danger); } .lab.sub.pos { color: var(--pos); }
+.nudge { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.nudge .head > div { min-width: 0; }
+.nudge .btn.primary { min-height: 44px; }
+.emnum { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.emnum .num { font-size: 28px; font-weight: 700; }
+.accrow .chip { margin: 0 0 0 6px; vertical-align: 1px; }
+#tx-actions { display: flex; gap: 8px; align-items: center; }
+@media (min-width: 600px) { .dash > .d-full { grid-column: 1 / -1; } }
+@media (min-width: 1000px) {
+  #tab-worth { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  #tab-worth > .full { grid-column: 1 / -1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entry, .toast { animation: scrim-in 200ms ease both; }
   .btn, .fab, .seg label, .row { transition: none; }
@@ -476,6 +495,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <input type="radio" name="tab" id="tab-a" value="list"><label for="tab-a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor"/></svg><span>Einträge</span></label>
       <input type="radio" name="tab" id="tab-b" value="stats"><label for="tab-b"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.4" height="8.5" rx="1.6"/><rect x="9.8" y="7.5" width="4.4" height="13" rx="1.6"/><rect x="16.1" y="3.5" width="4.4" height="17" rx="1.6"/></svg><span>Auswertung</span></label>
       <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
+      <input type="radio" name="tab" id="tab-e" value="worth"><label for="tab-e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 17.5 9 12l4 4 7.5-8"/><path d="M15 8h5.5v5.5"/></svg><span>Vermögen</span></label>
     </div>
     </aside>
 
@@ -574,6 +594,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <label class="field"><span>Konto</span><select id="f-acc"></select></label>
         </div>
         <label class="field"><span>Datum</span><input type="date" id="f-date" required></label>
+        <label class="field"><span>Steuer (optional)</span><select id="f-tax"></select></label>
         <label class="field"><span>Notiz (optional)</span><input type="text" id="f-note" maxlength="120" placeholder="z. B. Spar Dornbirn"></label>
         <div class="actions">
           <button class="btn primary grow" id="f-save" type="submit">Speichern</button>
@@ -602,13 +623,21 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <div class="hero"><span class="lab">Ausgaben</span><span class="num" id="s-total"></span><span class="sub" id="s-split"></span></div>
           <div class="pair">
             <div><span class="lab">Einnahmen</span><span class="num" id="s-in"></span></div>
-            <div><span class="lab">Saldo</span><span class="num" id="s-saldo"></span></div>
+            <div><span class="lab">Saldo</span><span class="num" id="s-saldo"></span><span class="lab rate" id="s-rate"></span></div>
           </div>
           <div class="free" id="s-free-wrap" hidden><span class="lab" id="s-free-lab">Noch frei bis Monatsende</span><span class="num" id="s-free"></span><span class="lab" id="s-free-sub"></span></div>
         </section>
 
 
         <div class="dash" id="tab-dash">
+          <section class="panel nudge d-full" id="dash-nudge" hidden>
+            <div class="head"><div><h2>Heute noch nichts erfasst</h2><p class="hint">Kurz nachtragen, solange du dich erinnerst.</p></div><button class="btn primary" id="nudge-add" type="button">Jetzt erfassen</button></div>
+          </section>
+          <section class="panel stack d-full">
+            <h2 id="dash-week-title">Letzte Woche</h2>
+            <div class="daystats" id="dash-week"></div>
+            <p class="hint" id="dash-week-top"></p>
+          </section>
           <section class="panel stack clip d-wide">
             <div class="head"><h2>Ausgaben pro Tag</h2><span class="legendrow" id="dash-days-legend"></span></div>
             <div class="daystats" id="dash-daystats"></div>
@@ -638,7 +667,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div id="dash-fx"></div>
           </section>
           <section class="panel stack">
-            <div class="head"><h2>Konten</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
+            <div class="head"><h2>Vermögen</h2><button class="btn" type="button" data-go="tab-e">Vermögen</button></div>
             <div id="dash-acc"></div>
           </section>
           <section class="panel stack clip">
@@ -684,6 +713,56 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="tablewrap"><table class="cmp" id="st-cmp"></table></div>
             <p class="hint" id="st-cmp-note"></p>
           </section>
+          <section class="panel stack clip full">
+            <div class="head"><h2 id="tx-title">Steuern</h2><div id="tx-actions"><button class="btn" id="tx-csv" type="button">Als CSV exportieren</button></div></div>
+            <div class="tablewrap" id="tx-tablewrap"><table class="cmp" id="tx-table"></table></div>
+            <div id="tx-list"></div>
+            <div class="msg" id="tx-msg" role="status"></div>
+            <p class="hint">Markiere Einträge beim Erfassen unter „Steuer“, auch Fixposten wie Pendelkosten. Euro-Beträge sind zum Monatskurs der App umgerechnet; für die Veranlagung gelten die amtlichen Kurse. Das ist eine Sammelhilfe, keine Steuerberatung.</p>
+          </section>
+        </div>
+
+        <div class="stack" id="tab-worth" hidden>
+          <section class="panel stack full">
+            <h2>Nettovermögen</h2>
+            <div class="daystats" id="w-tiles"></div>
+            <div id="w-chart" class="chart"></div>
+            <p class="hint" id="w-note"></p>
+          </section>
+          <form id="as-form" class="panel stack full" autocomplete="off" hidden>
+            <h2 id="as-title">Neue Anlage</h2>
+            <label class="field"><span>Name</span><input type="text" id="as-name" maxlength="60"></label>
+            <div class="two">
+              <label class="field" id="as-kind-wrap"><span>Art</span><select id="as-kind"></select></label>
+              <label class="field"><span>Stand am</span><input type="date" id="as-date"></label>
+            </div>
+            <div class="field"><span id="as-val-lab">Wert</span><div class="amountrow"><input type="text" id="as-val" inputmode="decimal" placeholder="0.00" aria-label="Betrag"><div class="seg" role="radiogroup" aria-label="Währung"><input type="radio" name="as-cur" id="as-cur-chf" value="CHF" checked><label for="as-cur-chf">CHF</label><input type="radio" name="as-cur" id="as-cur-eur" value="EUR"><label for="as-cur-eur">EUR</label></div></div></div>
+            <label class="field" id="as-fx-wrap" hidden><span>Rate als Fixposten (optional)</span><select id="as-fx"></select></label>
+            <p class="hint" id="as-form-hint"></p>
+            <div class="actions">
+              <button class="btn primary grow" id="as-save" type="submit">Speichern</button>
+              <button class="btn" id="as-cancel" type="button" style="min-height:52px">Abbrechen</button>
+            </div>
+            <button class="btn warn" id="as-delete" type="button" hidden>Löschen</button>
+            <div class="msg" id="as-msg" role="status"></div>
+          </form>
+          <section class="panel stack">
+            <h2>Konten</h2>
+            <div id="w-acc"></div>
+            <p class="hint">Aus Startsaldo und Einträgen berechnet. Den Startsaldo legst du unter Mehr > Kategorien & Konten fest.</p>
+          </section>
+          <section class="panel stack">
+            <h2>Notgroschen</h2>
+            <div id="w-emergency"></div>
+          </section>
+          <section class="panel stack clip">
+            <div class="head"><h2>Anlagen</h2><button class="btn" id="as-add" type="button">Hinzufügen</button></div>
+            <div id="as-list"></div>
+          </section>
+          <section class="panel stack clip">
+            <div class="head"><h2>Schulden & Kredite</h2><button class="btn" id="db-add" type="button">Hinzufügen</button></div>
+            <div id="db-list"></div>
+          </section>
         </div>
 
         <div class="stack" id="tab-plan" hidden>
@@ -708,6 +787,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
               </div>
               <label class="field" id="fx-from-wrap"><span>Erste Buchung</span><select id="fx-from"></select></label>
               <label class="field"><span>Kündbar bis (optional)</span><input type="date" id="fx-notice"></label>
+              <label class="field"><span>Steuer (optional)</span><select id="fx-tax"></select></label>
               <p class="hint">Der Posten wird am gewählten Tag automatisch eingetragen. Liegt der Tag im Startmonat schon zurück, geschieht das sofort.</p>
               <div class="actions">
                 <button class="btn primary grow" id="fx-save" type="submit">Speichern</button>
@@ -759,7 +839,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   const INCATS = ['Gehalt', 'Rückerstattung', 'Sonstige Einnahme'];
   const ACCS = [{ n: 'UBS', c: 'CHF' }, { n: 'Revolut', c: null }, { n: 'Sparkasse', c: 'EUR' }, { n: 'Bar', c: null }];
   const ITER = 600000, LOCAL = 'grenzbuch:', IDLE_MS = 10 * 60 * 1000;
-  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF', cats: null, incats: null, accs: null, start: {}, fixed: [], budgets: {}, goals: [] });
+  const DEF = () => ({ rate: 0.925, rates: {}, base: 'CHF', cats: null, incats: null, accs: null, start: {}, fixed: [], budgets: {}, goals: [], assets: [] });
 
   const CFG = window.JUMA_CONFIG || {};
   let backend = null, meta = null, key = null, unsub = null, sb = null, user = null, mode = 'loading', pending = {};
@@ -1006,10 +1086,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function lock() {
     key = null; months = {}; seen = {}; editing = null; settings = DEF(); selDay = '';
     synced = false; noticed = false; searchQ = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
-    $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true;
+    $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true; $('as-form').hidden = true; $('dash-nudge').hidden = true;
     $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
-    ['list', 'cats', 'chart-year', 'dup-list', 'dash-days', 'dash-daystats', 'dash-dayinfo', 'dash-cmp', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
+    ['w-tiles', 'w-chart', 'w-acc', 'w-emergency', 'as-list', 'db-list', 'tx-table', 'tx-list', 'dash-week', 'list', 'cats', 'chart-year', 'dup-list', 'dash-days', 'dash-daystats', 'dash-dayinfo', 'dash-cmp', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
     $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
     $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
   }
@@ -1046,7 +1126,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const a = parseAmt($('f-amount').value), d = $('f-date').value;
     if (a == null) { setMsg('form-msg', 'Gib einen Betrag grösser als 0 ein, z. B. 24.90.', true); $('f-amount').focus(); return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { setMsg('form-msg', 'Wähle ein Datum.', true); return; }
-    const e = { id: editing || newId(), d, a, c: curVal(), t: typeVal(), cat: $('f-cat').value, acc: $('f-acc').value, note: $('f-note').value.trim() };
+    const e = { id: editing || newId(), d, a, c: curVal(), t: typeVal(), cat: $('f-cat').value, acc: $('f-acc').value, note: $('f-note').value.trim() }; if ($('f-tax').value) e.tax = $('f-tax').value;
     const touched = new Set();
     if (editing) for (const m in months) { if (months[m].some(x => x.id === editing)) { months[m] = months[m].filter(x => x.id !== editing); touched.add(m); } }
     const m = d.slice(0, 7); months[m] = (months[m] || []).concat(e); touched.add(m);
@@ -1056,7 +1136,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   });
   function edit(e) {
     editing = e.id; $('f-type-in').checked = e.t === 'in'; $('f-type-out').checked = e.t !== 'in'; syncCats(e.cat);
-    $('f-amount').value = (e.a / 100).toFixed(2); setCur(e.c); $('f-date').value = e.d; fillSelect($('f-acc'), accNames(e.acc), e.acc); $('f-note').value = e.note || '';
+    $('f-amount').value = (e.a / 100).toFixed(2); setCur(e.c); $('f-date').value = e.d; fillSelect($('f-acc'), accNames(e.acc), e.acc); $('f-note').value = e.note || ''; $('f-tax').value = e.tax && TAXN[e.tax] ? e.tax : '';
     $('form-title').textContent = 'Eintrag ändern'; $('f-delete').hidden = false; setForm(true);
   }
   function remove(e) { const m = e.d.slice(0, 7); months[m] = (months[m] || []).filter(x => x.id !== e.id);
@@ -1067,9 +1147,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   /* ---------- Monat, Ansicht, Einstellungen ---------- */
   $('m-prev').addEventListener('click', () => { view = shift(view, -1); render(); });
   $('m-next').addEventListener('click', () => { view = shift(view, 1); render(); });
-  ['tab-d', 'tab-a', 'tab-b', 'tab-c'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
+  ['tab-d', 'tab-a', 'tab-b', 'tab-c', 'tab-e'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
   ['lf-all', 'lf-out', 'lf-in'].forEach(id => $(id).addEventListener('change', () => { listFilter = $(id).value; render(); }));
-  window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && (tab === 'stats' || tab === 'dash')) render(); }, 150); });
+  window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && (tab === 'stats' || tab === 'dash' || tab === 'worth')) render(); }, 150); });
   $('rate').addEventListener('change', () => {
     const r = Number($('rate').value.trim().replace(',', '.'));
     if (!isFinite(r) || r < 0.5 || r > 2) { toast('Der Kurs muss zwischen 0.5 und 2 liegen.'); $('rate').value = rateFor(view).toFixed(4); return; }
@@ -1111,15 +1191,18 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
     $('show-' + show().toLowerCase()).checked = true;
-    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash';
-    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung' }[tab];
+    const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
+    else { rt.textContent = ''; rt.className = 'lab rate'; }
+    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth';
+    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen' }[tab];
     syncLists(); renderFree(base, t); renderLists();
     renderDups();
     if (tab === 'dash') { renderDash(base, list); return; }
     if (tab === 'plan') { renderPlan(); return; }
+    if (tab === 'worth') { renderWorth(base); return; }
 
     if (tab === 'stats') {
-      renderDays('st', base); renderCompare(base);
+      renderDays('st', base); renderCompare(base); renderTax();
       catBars('cats', list, base, 0);
       renderAccounts(base);
       drawYear(base); return;
@@ -1128,7 +1211,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const host = $('list'), q = searchQ; let pool = list;
     if (q) { const q2 = q.replace(',', '.'); pool = [];
       for (const m in months) for (const e of months[m]) {
-        const hay = (e.cat + ' ' + e.acc + ' ' + (e.note || '') + ' ' + (e.a / 100).toFixed(2) + ' ' + de(e.d)).toLowerCase();
+        const hay = (e.cat + ' ' + e.acc + ' ' + (e.note || '') + ' ' + (e.tax ? TAXN[e.tax] || '' : '') + ' ' + (e.a / 100).toFixed(2) + ' ' + de(e.d)).toLowerCase();
         if (hay.includes(q) || hay.includes(q2)) pool.push(e); } }
     const shown = listFilter === 'all' ? pool.slice() : pool.filter(e => (e.t === 'in') === (listFilter === 'in'));
     if (!shown.length) { host.replaceChildren(h('div', 'empty', q ? 'Keine Treffer für „' + $('q').value.trim() + '“ in allen Monaten.'
@@ -1149,7 +1232,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         hd.append(h('span', null, dayFmt.format(new Date(y, mo - 1, d))), h('span', 'dt', dayTot(e.d))); frag.append(hd); }
       const row = h('button', 'row'), what = h('span'); row.type = 'button';
       row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
-      what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : '')));
+      what.append(h('b', null, e.cat), h('small', null, sub(e)));
       row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); frag.append(row);
     }
     if (more) frag.append(h('div', 'empty', more + ' weitere Treffer. Verfeinere die Suche.'));
@@ -1310,7 +1393,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     for (const grp of gs) { const e0 = grp[0];
       frag.append(h('div', 'day', e0.d.split('-').reverse().join('.') + ' · ' + (e0.t === 'in' ? '+' : '−') + fmt(e0.a, e0.c) + ' · ' + grp.length + '×'));
       for (const e of grp) { const row = h('div', 'duprow'), what = h('div'), bd = h('button', 'btn warn', 'Löschen'); bd.type = 'button';
-        what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : '')));
+        what.append(h('b', null, e.cat), h('small', null, sub(e)));
         bd.addEventListener('click', () => remove(e)); row.append(what, bd); frag.append(row); } }
     $('dup-list').replaceChildren(frag);
   }
@@ -1410,7 +1493,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           const [y, mo] = m.split('-').map(Number), d = m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0');
           if (d > td) break;
           if (!(months[m] || []).some(e => e.id === fxId(f, m))) {
-            (months[m] = months[m] || []).push({ id: fxId(f, m), d, a: f.a, c: f.c, t: f.t, cat: f.cat, acc: f.acc, note: f.name, fx: f.id }); touched.add(m); n++; }
+            (months[m] = months[m] || []).push({ id: fxId(f, m), d, a: f.a, c: f.c, t: f.t, cat: f.cat, acc: f.acc, note: f.name, fx: f.id, ...(f.tax ? { tax: f.tax } : {}) }); touched.add(m); n++; }
         }
         f.last = m; ch = true; m = shift(m, 1);
       }
@@ -1450,7 +1533,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('fx-name').value = f ? f.name : ''; $('fx-type-in').checked = !!f && f.t === 'in'; $('fx-type-out').checked = !f || f.t !== 'in';
     fxCats(f && f.cat); fillSelect($('fx-acc'), accNames(f && f.acc), f ? f.acc : undefined);
     $('fx-amount').value = f ? (f.a / 100).toFixed(2) : ''; $('fx-cur-eur').checked = !!f && f.c === 'EUR'; $('fx-cur-chf').checked = !f || f.c !== 'EUR';
-    $('fx-day').value = f ? (f.day || 1) : 1; $('fx-every').value = String(f ? (f.every || 1) : 1); $('fx-notice').value = f && f.notice ? f.notice : '';
+    $('fx-day').value = f ? (f.day || 1) : 1; $('fx-every').value = String(f ? (f.every || 1) : 1); $('fx-notice').value = f && f.notice ? f.notice : ''; $('fx-tax').value = f && f.tax ? f.tax : '';
     const cur = ym(new Date()), nxt = shift(cur, 1), o = (v, t) => { const e = h('option', null, t); e.value = v; return e; };
     $('fx-from').replaceChildren(o(cur, 'ab ' + monthName(cur)), o(nxt, 'ab ' + monthName(nxt))); $('fx-from-wrap').hidden = !!f;
     $('fx-delete').hidden = !f; resetSure($('fx-delete'), 'Fixposten löschen'); setMsg('fx-msg', '');
@@ -1468,7 +1551,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const list = (settings.fixed || []).slice(), old = list.find(x => x.id === fxEdit);
     const f = Object.assign(old ? Object.assign({}, old) : { id: newId(), from: $('fx-from').value, last: '' },
       { name, a, c: $('fx-cur-eur').checked ? 'EUR' : 'CHF', t: $('fx-type-in').checked ? 'in' : 'out', cat: $('fx-cat').value, acc: $('fx-acc').value,
-        day, every: Number($('fx-every').value) || 1, notice: $('fx-notice').value || '' });
+        day, every: Number($('fx-every').value) || 1, notice: $('fx-notice').value || '', tax: $('fx-tax').value || '' });
     settings.fixed = old ? list.map(x => x.id === f.id ? f : x) : list.concat(f);
     fxClose(); flush('settings'); render(); toast(old ? 'Fixposten geändert' : 'Fixposten angelegt'); bookFixed();
   });
@@ -1582,6 +1665,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         const id = S(r.id, 60) || newId(); if (have.has(id)) { dup++; continue; }
         const e = { id, d: r.d, a: r.a, c: r.c, t: r.t === 'in' ? 'in' : 'out', cat: S(r.cat, 60) || 'Sonstiges', acc: S(r.acc, 40) || accs()[0].n, note: S(r.note, 120) };
         if (r.fx) e.fx = S(r.fx, 40);
+        if (r.tax && TAXN[r.tax]) e.tax = r.tax;
         const m = e.d.slice(0, 7); (months[m] = months[m] || []).push(e); have.add(id); touched.add(m); n++; } }
     const s = o.settings;
     if (s && typeof s === 'object') {
@@ -1592,7 +1676,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       if (!settings.accs && Array.isArray(s.accs)) { const a = s.accs.filter(x => x && typeof x.n === 'string' && x.n.trim()).map(x => ({ n: x.n.trim().slice(0, 30), c: x.c === 'CHF' || x.c === 'EUR' ? x.c : null })); if (a.length) settings.accs = a; }
       if (!(settings.fixed || []).length && Array.isArray(s.fixed)) settings.fixed = s.fixed.filter(f => f && typeof f.name === 'string' && Number.isInteger(f.a) && f.a > 0 && isYm(f.from))
         .map(f => ({ id: S(f.id, 40) || newId(), name: S(f.name, 60), a: f.a, c: f.c === 'EUR' ? 'EUR' : 'CHF', t: f.t === 'in' ? 'in' : 'out', cat: S(f.cat, 60), acc: S(f.acc, 40),
-          day: Math.min(31, Math.max(1, Math.round(Number(f.day)) || 1)), every: [1, 3, 6, 12].includes(f.every) ? f.every : 1, from: f.from, last: isYm(f.last) ? f.last : '', notice: isD(f.notice) ? f.notice : '' }));
+          day: Math.min(31, Math.max(1, Math.round(Number(f.day)) || 1)), every: [1, 3, 6, 12].includes(f.every) ? f.every : 1, from: f.from, last: isYm(f.last) ? f.last : '', notice: isD(f.notice) ? f.notice : '', tax: TAXN[f.tax] ? f.tax : '' }));
+      if (!assetsAll().length && Array.isArray(s.assets)) settings.assets = s.assets.filter(x => x && typeof x.name === 'string' && KINDS[x.kind] && Array.isArray(x.vals))
+        .map(x => ({ id: S(x.id, 40) || newId(), name: S(x.name, 60), kind: x.kind, c: x.c === 'EUR' ? 'EUR' : 'CHF', ...(x.fx ? { fx: S(x.fx, 40) } : {}),
+          vals: x.vals.filter(v => v && isD(v.d) && Number.isInteger(v.a) && v.a >= 0).map(v => ({ d: v.d, a: v.a })) }));
       if (!(settings.goals || []).length && Array.isArray(s.goals)) settings.goals = s.goals.filter(g => g && typeof g.name === 'string' && Number.isInteger(g.target) && g.target > 0)
         .map(g => ({ id: S(g.id, 40) || newId(), name: S(g.name, 60), target: g.target, c: g.c === 'EUR' ? 'EUR' : 'CHF', saved: Number.isInteger(g.saved) && g.saved > 0 ? g.saved : 0 }));
       if (!Object.keys(settings.budgets || {}).length && s.budgets && typeof s.budgets === 'object') { const b = {};
@@ -1628,13 +1715,13 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         return m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0'); } m = shift(m, 1); }
     return null; }
   function renderDash(base, list) {
-    renderDays('dash', base); renderCompareMini(base);
-    drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); renderGoals('dash-goals');
+    renderNudge(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
+    drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); dashWorth(base); renderGoals('dash-goals');
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
     $('dash-recent').replaceChildren(...(all.length ? all.slice(0, 6).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
       row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
-      what.append(h('b', null, e.cat), h('small', null, de(e.d) + ' · ' + e.acc + (e.note ? ' · ' + e.note : '')));
+      what.append(h('b', null, e.cat), h('small', null, de(e.d) + ' · ' + sub(e)));
       row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; })
       : [h('div', 'empty', 'Noch keine Einträge. Erfasse den ersten über „Neuer Eintrag“.')]));
     const due = (settings.fixed || []).map(f => [f, nextDue(f)]).filter(x => x[1]).sort((a, b) => a[1] < b[1] ? -1 : 1).slice(0, 6);
@@ -1647,7 +1734,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
   /* ---------- Beträge je Währung ---------- */
   // mode 0: ohne Vorzeichen, 1: mit + und − (farbig), 2: nur − (farbig)
-  function money(c, e, mode) { const out = [], ln = (v, cur) => h('span', 'ln' + (mode ? (v < 0 ? ' neg' : ' pos') : ''), (v < 0 ? '−' : mode === 1 ? '+' : '') + fmt(Math.abs(v), cur));
+  function money(c, e, mode) { const out = [], ln = (v, cur) => h('span', 'ln' + (mode && v ? (v < 0 ? ' neg' : ' pos') : ''), (v < 0 ? '−' : mode === 1 ? '+' : '') + fmt(Math.abs(v), cur));
     if (c || !e) out.push(ln(c, 'CHF')); if (e) out.push(ln(e, 'EUR')); return out; }
   function moneyText(c, e) { const out = []; if (c || !e) out.push(sfmt(c, 'CHF')); if (e) out.push(sfmt(e, 'EUR')); return out.join(' · '); }
   function fxSum(fx, base, out, inc) {
@@ -1732,7 +1819,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (!es.length) return host.replaceChildren(hd, h('div', 'empty', 'Keine Einträge an diesem Tag.'));
     const lim = pre === 'dash' ? 5 : 12, rows = es.slice(0, lim).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
       row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
-      what.append(h('b', null, e.cat), h('small', null, e.acc + (e.note ? ' · ' + e.note : ''))); row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; });
+      what.append(h('b', null, e.cat), h('small', null, sub(e))); row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; });
     const out = [hd, ...rows];
     if (es.length > lim) { const b = h('button', 'btn dayinfo-more', 'Alle ' + es.length + ' Einträge dieses Tages'); b.type = 'button';
       b.addEventListener('click', () => { $('q').value = de(selDay); searchQ = de(selDay).toLowerCase(); go('tab-a'); }); out.push(b); }
@@ -1779,6 +1866,197 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       cw.append(deltaChip(m, base)); amt.append(cw);
       row.append(what, amt); row.addEventListener('click', () => { view = m; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }); return row; }));
   }
+
+  /* ---------- Hilfen für Kacheln und Dateien ---------- */
+  function mkTile(lab, nodes, sub, subCls) { const t = h('div'), v = h('span', 'num'); v.replaceChildren(...nodes); t.append(h('span', 'lab', lab), v);
+    if (sub) t.append(h('span', 'lab sub' + (subCls ? ' ' + subCls : ''), sub)); return t; }
+  function txt(s) { return [document.createTextNode(s)]; }
+  function saveFile(name, text, type, msgId, okText) {
+    try { const url = URL.createObjectURL(new Blob([text], { type })), a = h('a'); a.href = url; a.download = name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 15000); setMsg(msgId, okText);
+    } catch (e) { setMsg(msgId, 'Die Datei konnte nicht erstellt werden.', true); } }
+  const nf1 = new Intl.NumberFormat('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  /* ---------- Steuern (Grenzgänger AT–CH) ---------- */
+  const TAX = [['wk', 'Werbungskosten'], ['so', 'Sonderausgaben'], ['ab', 'Aussergewöhnliche Belastungen'], ['qs', 'Quellensteuer Schweiz'], ['st', 'Sonstiges für die Steuer']];
+  const TAXN = {}; TAX.forEach(([k, n]) => { TAXN[k] = n; });
+  function taxOpts(sel) { const o0 = h('option', null, 'Keine'); o0.value = ''; sel.replaceChildren(o0, ...TAX.map(([k, n]) => { const o = h('option', null, n); o.value = k; return o; })); }
+  taxOpts($('f-tax')); taxOpts($('fx-tax'));
+  function sub(e) { return e.acc + (e.note ? ' · ' + e.note : '') + (e.tax && TAXN[e.tax] ? ' · Steuer: ' + TAXN[e.tax] : ''); }
+  function taxEntries(y) { const out = []; for (const m in months) if (m.slice(0, 4) === y) for (const e of months[m]) if (e.tax && TAXN[e.tax]) out.push(e);
+    return out.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0); }
+  function renderTax() {
+    const y = view.slice(0, 4), es = taxEntries(y), sum = {}; $('tx-title').textContent = 'Steuern ' + y;
+    for (const e of es) { const s = sum[e.tax] || (sum[e.tax] = { n: 0, CHF: 0, EUR: 0, eur: 0 }), sg = e.t === 'in' ? -1 : 1;
+      s.n++; s[e.c === 'EUR' ? 'EUR' : 'CHF'] += sg * e.a; s.eur += sg * conv(e.a, e.c, e.d.slice(0, 7), 'EUR'); }
+    if (!es.length) { $('tx-table').replaceChildren(); $('tx-tablewrap').hidden = true;
+      $('tx-list').replaceChildren(h('div', 'empty', 'Noch keine Einträge für ' + y + ' markiert. Wähle beim Erfassen unter „Steuer“ die passende Art, zum Beispiel Werbungskosten fürs Pendeln.')); return; }
+    $('tx-tablewrap').hidden = false;
+    const hr = h('tr'); ['Steuerart', 'Einträge', 'CHF', 'EUR', 'Gesamt in EUR'].forEach((t, i) => hr.append(h('th', i ? 'r' : null, t)));
+    let tot = 0; const rows = TAX.filter(([k]) => sum[k]).map(([k, n]) => { const s = sum[k], tr = h('tr'); tot += s.eur;
+      tr.append(h('td', null, n), h('td', 'r', String(s.n)), h('td', 'r', s.CHF ? sfmt(s.CHF, 'CHF') : '–'), h('td', 'r', s.EUR ? sfmt(s.EUR, 'EUR') : '–'), h('td', 'r', sfmt(Math.round(s.eur), 'EUR'))); return tr; });
+    $('tx-table').replaceChildren(hr, ...rows);
+    const lim = 40, list = es.slice(0, lim).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
+      what.append(h('b', null, TAXN[e.tax] + ' · ' + e.cat), h('small', null, de(e.d) + ' · ' + e.acc + (e.note ? ' · ' + e.note : '')));
+      row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; });
+    if (es.length > lim) list.push(h('div', 'empty', 'und ' + (es.length - lim) + ' weitere, alle im Export.'));
+    $('tx-list').replaceChildren(...list);
+  }
+  $('tx-csv').addEventListener('click', () => { if (!key) return; const y = view.slice(0, 4), es = taxEntries(y).slice().reverse();
+    if (!es.length) return setMsg('tx-msg', 'Für ' + y + ' gibt es noch keine markierten Einträge.', true);
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', n2 = (c, neg) => (neg ? '-' : '') + (c / 100).toFixed(2).replace('.', ',');
+    const lines = [['Datum', 'Steuerart', 'Kategorie', 'Konto', 'Notiz', 'Betrag', 'Währung', 'Betrag in EUR (umgerechnet)'].map(q).join(';')]
+      .concat(es.map(e => [q(de(e.d)), q(TAXN[e.tax]), q(e.cat), q(e.acc), q(e.note || ''), n2(e.a, e.t === 'in'), q(e.c), n2(Math.round(conv(e.a, e.c, e.d.slice(0, 7), 'EUR')), e.t === 'in')].join(';')));
+    saveFile('pairo-steuern-' + y + '.csv', '﻿' + lines.join('\r\n') + '\r\n', 'text/csv;charset=utf-8', 'tx-msg', es.length + (es.length === 1 ? ' Eintrag' : ' Einträge') + ' exportiert.'); });
+
+  /* ---------- Vermögen ---------- */
+  const KINDS = { depot: 'Depot & ETFs', krypto: 'Krypto', vorsorge: 'Vorsorge', sonst: 'Sonstiges', debt: 'Kredit / Schulden' };
+  let asEdit = null;
+  function assetsAll() { return Array.isArray(settings.assets) ? settings.assets : []; }
+  function monthEnd(m) { return m + '-' + String(dim(m)).padStart(2, '0'); }
+  function lastVal(x, d) { let v = null; for (const p of x.vals || []) if (p.d <= d && (!v || p.d >= v.d)) v = p; return v; }
+  // Wert an einem Tag: letzter erfasster Stand; bei Krediten mit Rate abzüglich der seither gebuchten Raten
+  function valAt(x, d) { const v = lastVal(x, d); if (!v) return null; let a = v.a;
+    if (x.kind === 'debt' && x.fx) { for (const m in months) if (m >= v.d.slice(0, 7) && m <= d.slice(0, 7)) for (const e of months[m]) if (e.fx === x.fx && e.d > v.d && e.d <= d) a -= e.a; if (a < 0) a = 0; }
+    return a; }
+  function accountsAt(d) { const t = { CHF: 0, EUR: 0 };
+    accs().forEach(a => { const s = (settings.start || {})[a.n] || {}; t.CHF += s.CHF || 0; t.EUR += s.EUR || 0; });
+    for (const m in months) if (m <= d.slice(0, 7)) for (const e of months[m]) if (e.d <= d) t[e.c === 'EUR' ? 'EUR' : 'CHF'] += e.t === 'in' ? e.a : -e.a;
+    return t; }
+  function worthAt(d) { const w = { acc: accountsAt(d), inv: { CHF: 0, EUR: 0 }, debt: { CHF: 0, EUR: 0 } };
+    for (const x of assetsAll()) { const v = valAt(x, d); if (v == null) continue; (x.kind === 'debt' ? w.debt : w.inv)[x.c === 'EUR' ? 'EUR' : 'CHF'] += v; }
+    return w; }
+  function cv(o, m, base) { return conv(o.CHF, 'CHF', m, base) + conv(o.EUR, 'EUR', m, base); }
+  function netOf(w, m, base) { return cv(w.acc, m, base) + cv(w.inv, m, base) - cv(w.debt, m, base); }
+  function firstMonth() { let f = ym(new Date());
+    for (const k in months) if ((months[k] || []).length && k < f) f = k;
+    for (const x of assetsAll()) for (const p of x.vals || []) if (p.d.slice(0, 7) < f) f = p.d.slice(0, 7);
+    return f; }
+  function worthSeries(base, n) { const now = ym(new Date()), td = today(), first = firstMonth(), ms = [];
+    for (let m = now, i = 0; i < n && m >= first; i++, m = shift(m, -1)) ms.unshift(m);
+    return ms.map(m => ({ m, v: netOf(worthAt(m === now ? td : monthEnd(m)), m, base) })); }
+  function drawWorth(base) {
+    const host = $('w-chart'), W = Math.max(260, host.clientWidth || 600), H = 210, L = 48, R = 14, T = 16, B = 24;
+    const pts = worthSeries(base, W < 460 ? 6 : 12), n = pts.length;
+    let lo = Math.min(0, ...pts.map(p => p.v)), hi = Math.max(0, ...pts.map(p => p.v));
+    hi = hi > 0 ? niceMax(hi / 100) * 100 : 0; lo = lo < 0 ? -niceMax(-lo / 100) * 100 : 0; if (hi === lo) hi = 100000;
+    const y = v => T + (H - T - B) * (hi - v) / (hi - lo), x = i => n > 1 ? L + (W - L - R) * i / (n - 1) : (L + W - R) / 2;
+    const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': 'Nettovermögen am Monatsende' + (isSplit() ? ', umgerechnet in CHF' : ' in ' + base) });
+    for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4, yy = Math.round(y(v)) + 0.5;
+      svg.append(sv('line', { x1: L, x2: W - R, y1: yy, y2: yy, stroke: 'var(--line)', 'stroke-width': v === 0 && lo < 0 ? 1.5 : 1 }),
+        sv('text', { x: L - 6, y: yy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)' }, (v < 0 ? '−' : '') + tick(Math.abs(v) / 100))); }
+    const P = pts.map((p, i) => [x(i), y(p.v)]), z = y(0);
+    if (n > 1) { svg.append(sv('path', { d: 'M' + P[0][0] + ' ' + z + P.map(q => ' L' + q[0] + ' ' + q[1]).join('') + ' L' + P[n - 1][0] + ' ' + z + ' Z', fill: 'var(--accent)', 'fill-opacity': 0.14 }),
+        sv('polyline', { points: P.map(q => q.join(',')).join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' })); }
+    const every = n > 8 && W < 700 ? 2 : 1;
+    pts.forEach((p, i) => { const last = i === n - 1;
+      svg.append(sv('circle', { cx: P[i][0], cy: P[i][1], r: last ? 5 : 3, fill: 'var(--accent)', stroke: last ? 'var(--surface)' : 'none', 'stroke-width': last ? 2 : 0 }));
+      if (last || (n - 1 - i) % every === 0) svg.append(sv('text', { x: P[i][0], y: H - 6, 'text-anchor': i === 0 && n > 1 ? 'start' : last && n > 1 ? 'end' : 'middle', 'font-size': 11,
+        'font-weight': last ? 600 : 400, fill: last ? 'var(--ink)' : 'var(--muted)' }, last ? 'heute' : monthName(p.m, true).replace('.', ''))); });
+    host.replaceChildren(svg);
+  }
+  function emergency(base) { const now = ym(new Date()); let liq = 0; const b = balances();
+    for (const k in b) liq += conv(b[k].CHF, 'CHF', now, base) + conv(b[k].EUR, 'EUR', now, base);
+    const first = firstMonth(), ms = []; for (let m = shift(now, -1); ms.length < 3 && m >= first; m = shift(m, -1)) ms.push(m);
+    let avg = 0, est = false; if (ms.length) avg = ms.reduce((s, m) => s + totals(m, base).outB, 0) / ms.length;
+    else { const c = daysCounted(now); avg = c ? totals(now, base).outB / c * dim(now) : 0; est = true; }
+    return { liq, avg, mo: avg > 0 ? liq / avg : null, n: ms.length, est }; }
+  function emStatus(mo) { return mo < 3 ? ['neg', 'zu knapp'] : mo <= 6 ? ['pos', 'gut'] : ['pos', 'komfortabel']; }
+  function renderEmergency(base) { const r = emergency(base), host = $('w-emergency');
+    if (r.mo == null) return host.replaceChildren(h('div', 'empty', 'Noch zu wenig Ausgaben erfasst, um das zu berechnen.'));
+    const [cls, word] = emStatus(r.mo), big = h('div', 'emnum'); big.append(h('span', 'num', nf1.format(r.mo) + ' Monate'), h('span', 'chip ' + cls, word));
+    host.replaceChildren(big, h('p', 'hint', 'Deine Konten (' + sfmt(Math.round(r.liq), base) + ') decken ' + nf1.format(r.mo) + ' Monate deiner durchschnittlichen Ausgaben von ' + fmt(Math.round(r.avg), base)
+      + (r.est ? ' (geschätzt aus diesem Monat)' : ' (Schnitt der letzten ' + (r.n === 1 ? 'Monats' : r.n + ' Monate') + ')') + '. Empfohlen sind 3 bis 6 Monate.' + (isSplit() ? ' Umgerechnet in CHF.' : '')));
+  }
+  function assetRow(x) { const d = today(), v = valAt(x, d), lv = lastVal(x, d), debt = x.kind === 'debt', row = h('button', 'row'), what = h('span'); row.type = 'button';
+    const fx = debt && x.fx ? (settings.fixed || []).find(f => f.id === x.fx) : null;
+    what.append(h('b', null, x.name), h('small', null, (debt ? 'Restschuld' : KINDS[x.kind] || 'Anlage') + (lv ? ' · Stand ' + de(lv.d) : ' · noch kein Wert') + (fx ? ' · sinkt mit „' + fx.name + '“' : '')));
+    const amt = h('span', 'amt num' + (debt ? ' neg' : ''), v == null ? '–' : (debt ? '−' : '') + (x.c === 'EUR' ? nfAT : nfCH).format(v / 100));
+    amt.append(h('span', 'tag ' + (x.c === 'EUR' ? 'eur' : 'chf'), x.c)); row.append(what, amt); row.addEventListener('click', () => asOpen(x)); return row; }
+  function renderWorth(base) {
+    const sp = isSplit(), now = ym(new Date()), w = worthAt(today()), net = netOf(w, now, base), pm = shift(now, -1), first = firstMonth();
+    const nc = w.acc.CHF + w.inv.CHF - w.debt.CHF, ne = w.acc.EUR + w.inv.EUR - w.debt.EUR, tiles = [];
+    let chg = ''; if (pm >= first) { const d = Math.round(net - netOf(worthAt(monthEnd(pm)), pm, base)); chg = (d < 0 ? '−' : '+') + fmt(Math.abs(d), base) + ' seit Ende ' + monthName(pm, true).replace('.', ''); }
+    tiles.push(mkTile('Nettovermögen', sp ? money(nc, ne, 2) : txt(sfmt(Math.round(net), base)), (sp && ne ? 'zusammen ca. ' + sfmt(Math.round(net), base) + (chg ? ' · ' : '') : '') + chg));
+    tiles.push(mkTile('Konten und Anlagen', sp ? money(w.acc.CHF + w.inv.CHF, w.acc.EUR + w.inv.EUR) : txt(fmt(Math.round(cv(w.acc, now, base) + cv(w.inv, now, base)), base)),
+      'davon Anlagen ' + (sp ? moneyText(w.inv.CHF, w.inv.EUR) : fmt(Math.round(cv(w.inv, now, base)), base))));
+    tiles.push(mkTile('Schulden', sp ? money(-w.debt.CHF, -w.debt.EUR, 2) : txt(sfmt(-Math.round(cv(w.debt, now, base)), base)), assetsAll().some(x => x.kind === 'debt') ? 'Restschuld aller Kredite' : 'keine erfasst'));
+    $('w-tiles').replaceChildren(...tiles);
+    drawWorth(base);
+    $('w-note').textContent = 'Stand jeweils am Monatsende, rechts heute.' + (sp ? ' Verlauf in CHF umgerechnet.' : '');
+    renderAccounts(base, 'w-acc');
+    const inv = assetsAll().filter(x => x.kind !== 'debt'), dbs = assetsAll().filter(x => x.kind === 'debt');
+    $('as-list').replaceChildren(...(inv.length ? inv.map(assetRow) : [h('div', 'empty', 'Noch keine Anlagen. Füge Depot, ETFs oder Krypto hinzu und trage den Wert ab und zu nach.')]));
+    $('db-list').replaceChildren(...(dbs.length ? dbs.map(assetRow) : [h('div', 'empty', 'Keine Kredite erfasst. Mit Hypothek, Leasing oder Kredit stimmt dein Nettovermögen.')]));
+    renderEmergency(base);
+  }
+  function dashWorth(base) { const host = $('dash-acc'), now = ym(new Date());
+    if (assetsAll().length) { const w = worthAt(today()), sp = isSplit(), line = (lab, c, e, b, cls) => { const r = h('div', 'accrow' + (cls ? ' ' + cls : '')); r.append(h('span', null, lab), h('span', 'num', sp ? moneyText(c, e) : sfmt(Math.round(b), base))); return r; };
+      host.append(line('Anlagen', w.inv.CHF, w.inv.EUR, cv(w.inv, now, base)), line('Schulden', -w.debt.CHF, -w.debt.EUR, -cv(w.debt, now, base)),
+        line('Nettovermögen', w.acc.CHF + w.inv.CHF - w.debt.CHF, w.acc.EUR + w.inv.EUR - w.debt.EUR, netOf(w, now, base), 'total')); }
+    const r = emergency(base); if (r.mo != null) { const [cls, word] = emStatus(r.mo), row = h('div', 'accrow'), v = h('span', 'num');
+      v.append(nf1.format(r.mo) + ' Monate ', h('span', 'chip ' + cls, word)); row.append(h('span', null, 'Notgroschen'), v); host.append(row); }
+  }
+  function asClose() { asEdit = null; $('as-form').hidden = true; }
+  function asOpen(x, debtNew) {
+    const debt = x ? x.kind === 'debt' : !!debtNew; asEdit = x ? x.id : debt ? 'new-debt' : 'new';
+    $('as-form').hidden = false; $('as-title').textContent = x ? (debt ? 'Kredit ändern' : 'Anlage ändern') : (debt ? 'Neuer Kredit' : 'Neue Anlage');
+    $('as-kind').replaceChildren(...Object.keys(KINDS).filter(k => k !== 'debt').map(k => { const o = h('option', null, KINDS[k]); o.value = k; return o; }));
+    $('as-kind-wrap').hidden = debt; if (!debt) $('as-kind').value = x ? x.kind : 'depot';
+    $('as-name').value = x ? x.name : ''; $('as-name').placeholder = debt ? 'z. B. Autoleasing' : 'z. B. ETF-Depot';
+    const cur = x ? valAt(x, today()) : null; $('as-val').value = cur != null ? (cur / 100).toFixed(2) : '';
+    $('as-val-lab').textContent = debt ? 'Restschuld' : x ? 'Aktueller Wert' : 'Wert'; $('as-date').value = today();
+    $('as-cur-eur').checked = !!x && x.c === 'EUR'; $('as-cur-chf').checked = !x || x.c !== 'EUR';
+    $('as-fx-wrap').hidden = !debt;
+    if (debt) { const o0 = h('option', null, 'keine'); o0.value = '';
+      $('as-fx').replaceChildren(o0, ...(settings.fixed || []).filter(f => f.t !== 'in').map(f => { const o = h('option', null, f.name + ' (' + fmt(f.a, f.c) + ')'); o.value = f.id; return o; }));
+      $('as-fx').value = x && x.fx ? x.fx : ''; }
+    $('as-form-hint').textContent = debt ? 'Mit einer Rate als Fixposten sinkt die Restschuld bei jeder Buchung um die Rate, ohne Zinsen. Trage ab und zu den Stand von der Bank nach.'
+      : x ? 'Der neue Wert wird mit Datum gespeichert, so entsteht der Verlauf.' : 'Den Wert kannst du später jederzeit aktualisieren.';
+    $('as-delete').hidden = !x; resetSure($('as-delete'), debt ? 'Kredit löschen' : 'Anlage löschen'); setMsg('as-msg', '');
+    if (tab !== 'worth') go('tab-e');
+    $('as-form').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if (!x) $('as-name').focus({ preventScroll: true });
+  }
+  $('as-add').addEventListener('click', () => asOpen(null, false));
+  $('db-add').addEventListener('click', () => asOpen(null, true));
+  $('as-cancel').addEventListener('click', asClose);
+  $('as-form').addEventListener('submit', ev => { ev.preventDefault(); if (!key || !asEdit) return;
+    const name = $('as-name').value.trim(), d = $('as-date').value, raw = $('as-val').value.trim(), n = raw ? parseNum(raw) : NaN;
+    if (!name) { $('as-name').focus(); return setMsg('as-msg', 'Gib einen Namen ein.', true); }
+    if (!isFinite(n) || n < 0) { $('as-val').focus(); return setMsg('as-msg', 'Gib einen Betrag ab 0 ein, z. B. 12500.', true); }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return setMsg('as-msg', 'Wähle ein Datum.', true);
+    const list = assetsAll().slice(), old = list.find(x => x.id === asEdit), debt = asEdit === 'new-debt' || (!!old && old.kind === 'debt');
+    const vals = (old ? old.vals || [] : []).filter(v => v.d !== d).concat({ d, a: Math.round(n * 100) }).sort((p, q) => p.d < q.d ? -1 : 1);
+    const x = { id: old ? old.id : newId(), name, kind: debt ? 'debt' : $('as-kind').value, c: $('as-cur-eur').checked ? 'EUR' : 'CHF', vals };
+    if (debt && $('as-fx').value) x.fx = $('as-fx').value;
+    settings.assets = old ? list.map(y => y.id === x.id ? x : y) : list.concat(x);
+    asClose(); flush('settings'); render(); toast(old ? 'Gespeichert' : debt ? 'Kredit angelegt' : 'Anlage angelegt'); });
+  $('as-delete').addEventListener('click', () => { if (!asEdit || !confirmTwice($('as-delete'), $('as-delete').textContent, 'Wirklich löschen? Auch der Verlauf geht verloren.')) return;
+    settings.assets = assetsAll().filter(x => x.id !== asEdit); asClose(); flush('settings'); render(); toast('Gelöscht'); });
+
+  /* ---------- Dranbleiben: Wochen-Rückblick und Erinnerung ---------- */
+  function weekStart(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+  function isoD(x) { return ym(x) + '-' + String(x.getDate()).padStart(2, '0'); }
+  function addDays(x, n) { const y = new Date(x); y.setDate(y.getDate() + n); return y; }
+  function weekData(from, base) { const a = isoD(from), b = isoD(addDays(from, 6)), r = { a, b, CHF: 0, EUR: 0, bb: 0, cats: {}, days: new Set() };
+    for (const m of new Set([a.slice(0, 7), b.slice(0, 7)])) for (const e of months[m] || []) if (e.d >= a && e.d <= b) {
+      r.days.add(e.d); if (e.t === 'in') continue; r[e.c === 'EUR' ? 'EUR' : 'CHF'] += e.a; const v = conv(e.a, e.c, m, base); r.bb += v; r.cats[e.cat] = (r.cats[e.cat] || 0) + v; }
+    return r; }
+  function renderWeek(base) {
+    const sp = isSplit(), ws = weekStart(new Date()), last = addDays(ws, -7), w = weekData(last, base), p = weekData(addDays(ws, -14), base);
+    const f = new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long' });
+    $('dash-week-title').textContent = 'Letzte Woche · ' + f.format(last) + ' bis ' + f.format(addDays(last, 6));
+    const tiles = [mkTile('Ausgegeben', val(w.CHF, w.EUR, w.bb, base), 'Ø ' + (sp ? moneyText(Math.round(w.CHF / 7), Math.round(w.EUR / 7)) : fmt(Math.round(w.bb / 7), base)) + ' pro Tag')];
+    if (p.bb > 0) { const d = Math.round((w.bb - p.bb) / p.bb * 100);
+      tiles.push(mkTile('Gegenüber Vorwoche', txt((d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d) + ' %'), d > 0 ? 'mehr ausgegeben' : d < 0 ? 'weniger ausgegeben' : 'gleich viel', d > 0 ? 'neg' : 'pos')); }
+    else tiles.push(mkTile('Gegenüber Vorwoche', txt('–'), 'Vorwoche ohne Ausgaben'));
+    const miss = 7 - w.days.size; tiles.push(mkTile('Tage mit Einträgen', txt(w.days.size + ' von 7'), miss ? 'an ' + miss + (miss === 1 ? ' Tag' : ' Tagen') + ' nichts erfasst' : 'jeden Tag erfasst', miss > 2 ? 'neg' : 'pos'));
+    $('dash-week').replaceChildren(...tiles);
+    const top = Object.entries(w.cats).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    $('dash-week-top').textContent = top.length ? 'Am meisten: ' + top.map(([c, v]) => c + ' ' + fmt(Math.round(v), base)).join(' · ') + (sp ? ' (in CHF)' : '') : 'Letzte Woche keine Ausgaben erfasst.';
+  }
+  function renderNudge() { const td = today(); $('dash-nudge').hidden = !key || new Date().getHours() < 17 || (months[td.slice(0, 7)] || []).some(e => e.d === td); }
+  $('nudge-add').addEventListener('click', () => { resetForm(); setForm(true); });
 
   boot();
 })();
