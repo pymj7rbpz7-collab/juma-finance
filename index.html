@@ -2389,16 +2389,25 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     saveFile('pairo-arbeitsweg-' + y + '.csv', '﻿' + L.join('\r\n') + '\r\n', 'text/csv;charset=utf-8', 'way-msg2', ds.length + (ds.length === 1 ? ' Fahrt' : ' Fahrten') + ' exportiert.'); });
 
   /* ---------- Leiste unten bleibt unten ---------- */
-  // Nach dem Auf- oder Zuklappen und nach dem Drehen kann die gemeldete Fensterhöhe veraltet sein; dann hängt die Leiste mitten im Bild.
-  // Massgebend ist die tatsächlich sichtbare Fläche. Bei offener Tastatur oder Zoom bleibt die normale Platzierung.
+  // Nach dem Auf- oder Zuklappen und nach dem Drehen kann die gemeldete Fensterhöhe veraltet sein; dann rutscht die Leiste
+  // aus dem Bild oder hängt mitten darin. Statt der gemeldeten Höhe zu trauen, wird gemessen, wo die Leiste wirklich steht:
+  // liegt sie nicht am unteren Rand der sichtbaren Fläche, setzt das Skript sie dorthin. Geprüft wird bei jeder Grössenänderung
+  // und zusätzlich laufend, weil manche Geräte nach dem Aufklappen kein Ereignis melden. Bei offener Tastatur oder Zoom bleibt die normale Platzierung.
+  const dockBar = document.querySelector('.seg.tabs');
   function dockFix() { const vv = window.visualViewport, el = document.documentElement;
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '');
-    if (!vv || typing || Math.abs(vv.scale - 1) > 0.01 || Math.abs(vv.height - window.innerHeight) < 2) { el.classList.remove('dockfix'); return; }
-    el.style.setProperty('--dock-bottom', Math.round(vv.offsetTop + vv.height) + 'px'); el.classList.add('dockfix'); }
-  function dockSoon() { dockFix(); setTimeout(dockFix, 250); setTimeout(dockFix, 800); }
+    el.classList.remove('dockfix');
+    if (!vv || typing || Math.abs(vv.scale - 1) > 0.01 || $('app').hidden || getComputedStyle(dockBar).position !== 'fixed') return;
+    const r = dockBar.getBoundingClientRect(), bottom = vv.offsetTop + vv.height;
+    if (!r.height || (r.bottom <= bottom + 2 && r.bottom >= bottom - 90)) return;
+    el.style.setProperty('--dock-bottom', Math.round(bottom) + 'px'); el.classList.add('dockfix'); }
+  function dockSoon() { dockFix(); [120, 400, 900, 1800].forEach(ms => setTimeout(dockFix, ms)); }
   if (window.visualViewport) { window.visualViewport.addEventListener('resize', dockSoon); window.visualViewport.addEventListener('scroll', dockFix); }
-  ['resize', 'orientationchange', 'pageshow'].forEach(t => window.addEventListener(t, dockSoon));
+  ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(t => window.addEventListener(t, dockSoon));
   document.addEventListener('visibilitychange', dockSoon); document.addEventListener('focusout', dockSoon);
+  ['(max-width: 599.98px)', '(max-width: 999.98px)', '(orientation: portrait)'].forEach(q => { try { window.matchMedia(q).addEventListener('change', dockSoon); } catch (e) { /* ältere Browser */ } });
+  if (window.ResizeObserver) new ResizeObserver(dockSoon).observe(document.documentElement);
+  setInterval(() => { if (!document.hidden) dockFix(); }, 700);
   dockSoon();
 
   boot();
