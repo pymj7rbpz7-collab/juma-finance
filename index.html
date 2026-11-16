@@ -194,6 +194,17 @@ html:has(#app.form-open) { overflow: hidden; }
 .seg.themeseg svg { width: 16px; height: 16px; }
 .dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .stack > .bars, .stack > .chart { margin-top: 0; }
+.dash-toggle { display: none; }
+@media (max-width: 599.98px) {
+  .dash-toggle { display: block; order: 1; width: 100%; min-height: 48px; }
+  .dash > .d-more { order: 2; }
+  .dash:not(.all) > .d-more { display: none; }
+}
+@media (max-width: 999.98px) {
+  .pagehead { display: contents; }
+  .main > .pagehead > .monthbar { order: -2; }
+  .main > .summary { order: -1; }
+}
 
 /* Schmal: schwebende Glas-Leiste unten */
 @media (max-width: 999.98px) {
@@ -243,8 +254,16 @@ html:has(#app.form-open) { overflow: hidden; }
 
 .summary { display: flex; flex-direction: column; gap: 16px; padding: 22px; }
 .summary .lab { font-size: 13px; color: var(--muted); display: block; letter-spacing: -0.005em; }
-.hero .num { font-size: 40px; font-weight: 700; line-height: 1.15; display: block; overflow-wrap: anywhere; }
-.hero .sub { font-size: 13px; color: var(--muted); display: block; min-height: 1.4em; letter-spacing: -0.005em; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.hero .fig { min-width: 0; }
+.hero .fig + .fig { border-top: 1px solid var(--line); padding-top: 14px; }
+.hero.solo .fig + .fig { border-top: 0; padding-top: 0; }
+.hero .num { font-size: 36px; font-weight: 700; line-height: 1.15; display: block; overflow-wrap: anywhere; }
+@media (min-width: 520px) and (max-width: 999.98px) {
+  .hero:not(.solo) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .hero:not(.solo) .fig + .fig { border-top: 0; padding-top: 0; border-left: 1px solid var(--line); padding-left: 20px; }
+}
+.hero .sub { font-size: 13px; color: var(--muted); display: block; letter-spacing: -0.005em; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
 .pair .num { font-size: 20px; font-weight: 600; overflow-wrap: anywhere; }
 
@@ -394,6 +413,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .summary .lab { margin-bottom: 4px; }
   .hero .num, .pair .num, .free .num { font-size: 28px; font-weight: 700; line-height: 1.2; display: block; }
   .free .lab + .num + .lab, .hero .sub { margin: 4px 0 0; }
+  .summary > .hero:not(.solo) { grid-column: span 2; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+  .hero:not(.solo) .fig + .fig { border-top: 0; padding-top: 0; border-left: 1px solid var(--line); padding-left: 22px; }
+  .summary > .hero:not(.solo) ~ .pair .num, .summary > .hero:not(.solo) ~ .free .num { font-size: 24px; }
 
   .dash { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
   .dash > .panel { grid-column: span 3; }
@@ -633,7 +655,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         </div>
 
         <section class="panel summary">
-          <div class="hero"><span class="lab">Ausgaben</span><span class="num" id="s-total"></span><span class="sub" id="s-split"></span></div>
+          <div class="hero" id="s-hero">
+            <div class="fig" id="s-today-wrap"><span class="lab">Ausgaben heute</span><span class="num" id="s-today"></span><span class="sub" id="s-today-sub"></span></div>
+            <div class="fig"><span class="lab" id="s-total-lab">Ausgaben im Monat</span><span class="num" id="s-total"></span><span class="sub" id="s-split"></span></div>
+          </div>
           <div class="pair">
             <div><span class="lab">Einnahmen</span><span class="num" id="s-in"></span></div>
             <div><span class="lab">Saldo</span><span class="num" id="s-saldo"></span><span class="lab rate" id="s-rate"></span></div>
@@ -646,32 +671,32 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <section class="panel nudge d-full" id="dash-nudge" hidden>
             <div class="head"><div><h2>Heute noch nichts erfasst</h2><p class="hint">Kurz nachtragen, solange du dich erinnerst.</p></div><button class="btn primary" id="nudge-add" type="button">Jetzt erfassen</button></div>
           </section>
-          <section class="panel stack" id="dash-way">
+          <section class="panel stack d-more" id="dash-way">
             <div class="head"><h2>Arbeitsweg</h2><button class="btn" type="button" data-go="tab-f">Öffnen</button></div>
             <div id="way-dash"></div>
           </section>
-          <section class="panel stack">
+          <section class="panel stack d-more">
             <h2 id="dash-week-title">Letzte Woche</h2>
             <div class="daystats" id="dash-week"></div>
             <p class="hint" id="dash-week-top"></p>
           </section>
-          <section class="panel stack clip d-wide">
+          <section class="panel stack clip d-wide d-more">
             <div class="head"><h2>Ausgaben pro Tag</h2><span class="legendrow" id="dash-days-legend"></span></div>
             <div class="daystats" id="dash-daystats"></div>
             <div id="dash-days" class="chart"></div>
             <p class="hint" id="dash-days-note"></p>
             <div id="dash-dayinfo"></div>
           </section>
-          <section class="panel stack d-side">
+          <section class="panel stack d-side d-more">
             <div class="head"><h2>Grösste Ausgaben</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
             <div class="bars" id="dash-cats"></div>
           </section>
-          <section class="panel stack d-wide">
+          <section class="panel stack d-wide d-more">
             <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
             <div id="dash-chart" class="chart"></div>
             <p class="hint" id="dash-chart-note" hidden>Balken in CHF umgerechnet, damit beide Währungen vergleichbar sind.</p>
           </section>
-          <section class="panel stack clip d-side">
+          <section class="panel stack clip d-side d-more">
             <div class="head"><h2>Monatsvergleich</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
             <div id="dash-cmp"></div>
           </section>
@@ -683,14 +708,15 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="head"><h2>Nächste Fixposten</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
             <div id="dash-fx"></div>
           </section>
-          <section class="panel stack">
+          <section class="panel stack d-more">
             <div class="head"><h2>Vermögen</h2><button class="btn" type="button" data-go="tab-e">Vermögen</button></div>
             <div id="dash-acc"></div>
           </section>
-          <section class="panel stack clip">
+          <section class="panel stack clip d-more">
             <div class="head"><h2>Sparziele</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
             <div id="dash-goals"></div>
           </section>
+          <button class="btn dash-toggle" id="dash-toggle" type="button" aria-expanded="false">Alle Auswertungen anzeigen</button>
         </div>
 
         <section class="panel" id="tab-list" hidden>
@@ -1241,6 +1267,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       const sal = Math.round(t.inB - t.outB);
       se.textContent = (sal < 0 ? '−' : '+') + fmt(Math.abs(sal), base); se.className = 'num ' + (sal < 0 ? 'neg' : 'pos');
     }
+    renderToday(base);
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
     $('show-' + show().toLowerCase()).checked = true;
@@ -1771,6 +1798,25 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     while (g++ < 14) { if (dueIn(f, m) && !fxBooked(f, m)) { const [y, mo] = m.split('-').map(Number);
         return m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0'); } m = shift(m, 1); }
     return null; }
+  // Kennzahlen oben: Ausgaben von heute neben denen des Monats (nur im laufenden Monat)
+  function renderToday(base) {
+    const now = ym(new Date()), td = today(), on = view === now;
+    $('s-today-wrap').hidden = !on; $('s-hero').classList.toggle('solo', !on);
+    $('s-total-lab').textContent = 'Ausgaben im ' + monthName(view);
+    if (!on) return;
+    let c = 0, e = 0, b = 0;
+    for (const x of months[now] || []) { if (x.t === 'in' || x.d !== td) continue; if (x.c === 'EUR') e += x.a; else c += x.a; b += conv(x.a, x.c, now, base); }
+    if (isSplit()) $('s-today').replaceChildren(...money(c, e)); else $('s-today').textContent = fmt(Math.round(b), base);
+    $('s-today-sub').textContent = dayLabel(now, new Date().getDate()) + (b ? '' : ' · noch nichts ausgegeben');
+  }
+  // Startseite am Handy: weitere Auswertungen erst auf Wunsch (pro Gerät gemerkt)
+  let dashAll = false; try { dashAll = localStorage.getItem('juma:dashall') === '1'; } catch (e) { /* bleibt eingeklappt */ }
+  function syncDashAll() { const b = $('dash-toggle'); $('tab-dash').classList.toggle('all', dashAll);
+    b.textContent = dashAll ? 'Weniger anzeigen' : 'Alle Auswertungen anzeigen'; b.setAttribute('aria-expanded', String(dashAll)); }
+  $('dash-toggle').addEventListener('click', () => { dashAll = !dashAll; try { localStorage.setItem('juma:dashall', dashAll ? '1' : '0'); } catch (e) { /* gilt bis zum Schliessen */ }
+    syncDashAll(); render(); });
+  syncDashAll();
+
   function renderDash(base, list) {
     renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
     drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); dashWorth(base); renderGoals('dash-goals');
