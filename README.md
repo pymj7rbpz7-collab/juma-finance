@@ -44,6 +44,7 @@ Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App n
 - **Einträge:** Ausgaben und Einnahmen in CHF und EUR, CSV-Import von der Bank, Suche über alle Monate.
 - **Planung:** Fixkosten und Verträge werden am gewählten Tag automatisch eingetragen, mit optionaler Kündigungsfrist. Dazu Budgets je Kategorie und Sparziele.
 - **Prognose:** Die Übersicht zeigt, was nach den noch ausstehenden Fixkosten bis Monatsende frei bleibt.
+- **Kurse:** Apple, On, SpaceX, Tesla, Palantir, Bitcoin und Fetch.ai auf der Übersicht, bei jedem Öffnen neu geladen. Die Kurse holt die Supabase-Funktion `kurse` (einmalig einspielen: `supabase functions deploy kurse --no-verify-jwt`).
 - **Tage:** Ausgaben pro Tag als Diagramm mit Durchschnitt, heutigen Ausgaben und dem höchsten Tag; ein Tipp auf einen Tag zeigt seine Einträge. Die Eintragsliste zeigt die Summe je Tag.
 - **Auswertung:** Ausgaben je Kategorie mit Budget, Verlauf über zwölf Monate, Monatsvergleich nach Durchschnitt pro Tag, Kontostände je Konto.
 - **Vermögen:** Nettovermögen aus Konten, Anlagen (Depot, ETFs, Krypto, Vorsorge) und Krediten, Verlauf über die Monate, Notgroschen-Check.
@@ -66,5 +67,6 @@ Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App n
 | `index.html` | Die ganze App |
 | `config.js` | Verbindung zu deinem Supabase-Projekt |
 | `supabase/schema.sql` | Tabelle und Zugriffsregeln |
+| `supabase/functions/kurse/index.ts` | Holt die Kurse für die Rubrik „Kurse“ |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Installation und Offline-Betrieb |
 | `vendor/supabase.js` | Supabase-Bibliothek (v2.45.4) |

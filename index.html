@@ -194,6 +194,13 @@ html:has(#app.form-open) { overflow: hidden; }
 .seg.themeseg svg { width: 16px; height: 16px; }
 .dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .stack > .bars, .stack > .chart { margin-top: 0; }
+.qrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); }
+.qrow:first-child { border-top: 0; padding-top: 0; }
+.qrow b { font-weight: 500; overflow-wrap: anywhere; }
+.qrow small { color: var(--muted); font-size: 13px; letter-spacing: -0.005em; }
+.qrow .num { text-align: right; font-size: 17px; font-weight: 600; white-space: nowrap; }
+.qrow .sub { text-align: right; white-space: nowrap; }
+.qrow .chip { margin: 0 0 0 6px; }
 .dash-toggle { display: none; }
 @media (max-width: 599.98px) {
   .dash-toggle { display: block; order: 1; width: 100%; min-height: 48px; }
@@ -710,6 +717,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="head"><h2>Nächste Fixposten</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
             <div id="dash-fx"></div>
           </section>
+          <section class="panel stack" id="dash-quotes">
+            <div class="head"><h2>Kurse</h2><button class="btn" id="q-refresh" type="button">Aktualisieren</button></div>
+            <div id="q-list"></div>
+            <p class="hint" id="q-note"></p>
+          </section>
           <section class="panel stack d-more">
             <div class="head"><h2>Vermögen</h2><button class="btn" type="button" data-go="tab-e">Vermögen</button></div>
             <div id="dash-acc"></div>
@@ -1129,7 +1141,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       : 'Dieser Browser erlaubt kein Speichern. Die Einträge gehen beim Schliessen der Seite verloren.';
     $('btn-logout').hidden = backend.kind !== 'cloud';
     if (backend.kind === 'memory') toast('Dieser Browser erlaubt kein Speichern.');
-    resetForm(); setForm(false); render(); armIdle();
+    resetForm(); setForm(false); render(); armIdle(); loadQuotes(true);
     if (backend.kind === 'cloud') {
       pending = backend.pendingIds();
       loadTimer = setTimeout(() => toast('Keine Verbindung. Du siehst den letzten Stand dieses Geräts.'), 10000);
@@ -1819,8 +1831,49 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     syncDashAll(); render(); });
   syncDashAll();
 
+  /* ---------- Kurse: Aktien und Krypto, bei jedem Öffnen neu geladen ---------- */
+  const QUOTES = [['AAPL', 'Apple', 'AAPL'], ['ONON', 'On', 'ONON'], ['SPCX', 'SpaceX', 'SPCX'], ['TSLA', 'Tesla', 'TSLA'],
+    ['BTC-USD', 'Bitcoin', 'BTC'], ['PLTR', 'Palantir', 'PLTR'], ['FET-USD', 'Fetch.ai', 'FET']];
+  const QK = 'juma:quotes';
+  let quotes = null, qState = 'idle', qLast = 0;
+  try { const v = JSON.parse(localStorage.getItem(QK) || 'null'); if (v && v.q && v.t) quotes = v; } catch (e) { /* ohne gemerkte Kurse */ }
+  function qNum(v) { return new Intl.NumberFormat('de-CH', { minimumFractionDigits: v < 1 ? 4 : 2, maximumFractionDigits: v < 1 ? 4 : 2 }).format(v); }
+  function renderQuotes() {
+    const host = $('q-list'), note = $('q-note'), btn = $('q-refresh'), cloud = !!sb && backend && backend.kind === 'cloud';
+    btn.hidden = !cloud; btn.disabled = qState === 'loading'; btn.textContent = qState === 'loading' ? 'Lädt …' : 'Aktualisieren';
+    if (!cloud) { host.replaceChildren(); note.textContent = 'Kurse gibt es nur mit Anmeldung, weil sie über dein Konto geladen werden.'; return; }
+    if (!quotes) { host.replaceChildren(); note.textContent = qState === 'error' ? 'Kurse gerade nicht erreichbar. Prüfe die Verbindung und tippe auf „Aktualisieren“.' : 'Lade Kurse …'; return; }
+    const q = quotes.q, base = baseCur(), usdchf = q['USDCHF=X'] && q['USDCHF=X'].price, eurchf = q['EURCHF=X'] && q['EURCHF=X'].price;
+    const fx = base === 'CHF' ? usdchf : usdchf && eurchf ? usdchf / eurchf : null;
+    host.replaceChildren(...QUOTES.map(([sym, name, tick]) => { const x = q[sym] || {}, row = h('div', 'qrow'), l = h('span');
+      l.append(h('b', null, name), document.createTextNode(' '), h('small', null, tick));
+      if (typeof x.price !== 'number') { row.append(l, h('span', 'num', '–'), h('small', null, ''), h('small', 'sub', 'kein Kurs')); return row; }
+      const sub = h('small', 'sub', fx ? (base === 'CHF' ? 'CHF ' + qNum(x.price * fx) : qNum(x.price * fx) + ' €') : '');
+      if (x.prev) { const d = (x.price - x.prev) / x.prev * 100, r = Math.round(d * 10) / 10;
+        sub.append(h('span', 'chip ' + (r < 0 ? 'neg' : r > 0 ? 'pos' : ''), (r < 0 ? '−' : r > 0 ? '+' : '±') + Math.abs(r).toFixed(1) + ' %')); }
+      row.append(l, h('span', 'num', 'USD ' + qNum(x.price)), h('small', null, ''), sub); return row; }));
+    const d = new Date(quotes.t), same = d.toDateString() === new Date().toDateString();
+    const when = (same ? '' : new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long' }).format(d) + ', ') + new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit' }).format(d);
+    note.textContent = (qState === 'error' ? 'Aktualisieren hat nicht geklappt. ' : '') + 'Stand ' + when + ' Uhr · Kurs in USD, darunter in ' + base + ' und die Veränderung zum Vortag. Kurse können verzögert sein.';
+  }
+  async function loadQuotes(force) {
+    if (!key || !sb || !backend || backend.kind !== 'cloud' || qState === 'loading') return;
+    if (!force && Date.now() - qLast < 60000) return;
+    qState = 'loading'; qLast = Date.now(); renderQuotes();
+    try {
+      const r = await timeout(sb.functions.invoke('kurse', { method: 'GET' }), 15000);
+      if (r.error || !r.data || !r.data.q) throw new Error('keine Kurse');
+      if (!Object.values(r.data.q).some(x => x && typeof x.price === 'number')) throw new Error('leer');
+      quotes = { t: r.data.t || Date.now(), q: r.data.q }; qState = 'idle';
+      try { localStorage.setItem(QK, JSON.stringify(quotes)); } catch (e) { /* nur bis zum Schliessen */ }
+    } catch (e) { qState = 'error'; }
+    if (key) renderQuotes();
+  }
+  $('q-refresh').addEventListener('click', () => loadQuotes(true));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadQuotes(false); });
+
   function renderDash(base, list) {
-    renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
+    renderQuotes(); renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
     drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); dashWorth(base); renderGoals('dash-goals');
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
