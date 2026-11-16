@@ -474,6 +474,66 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   #tab-worth > .full { grid-column: 1 / -1; }
 }
 
+
+/* Auto-Knopf: trägt die Fahrt von heute mit einem Tipp ein (nur schmale Ansicht, über dem Plus) */
+.fabway { display: none; }
+@media (max-width: 999.98px) {
+  .fabway { display: inline-flex; align-items: center; justify-content: center; position: fixed; z-index: 15; padding: 0; border-radius: 50%; color: var(--ink);
+    right: calc(max(16px, env(safe-area-inset-right, 0px)) + 6px); bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); width: 52px; height: 52px;
+    background: var(--glass); border: 1px solid var(--edge); box-shadow: var(--shine), var(--shadow-float);
+    -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); transition: transform 100ms ease-out; }
+  .fabway:active { transform: scale(0.93); }
+  .fabway svg { width: 26px; height: 26px; }
+  .fabway i { display: none; position: absolute; right: -2px; top: -2px; width: 18px; height: 18px; border-radius: 50%; background: var(--pos); border: 2px solid var(--bg); }
+  .fabway i::after { content: ""; position: absolute; left: 4px; top: 1.5px; width: 4px; height: 8px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .fabway.done { color: var(--pos); } .fabway.done i { display: block; }
+  .dockfix .fabway { top: calc(var(--dock-bottom) - 140px - env(safe-area-inset-bottom, 0px)); bottom: auto; }
+  .form-open .fabway { display: none; }
+}
+@media (min-width: 600px) and (max-width: 999.98px) { .fabway { right: auto; left: calc(50% + 199px); } }
+
+/* Handy: alles eine Stufe kleiner, damit auch auf schmalen Bildschirmen mehr Platz bleibt (Eingabefelder bleiben bei 16px, sonst zoomt iOS) */
+@media (max-width: 599.98px) {
+  :root { --pad: 14px; --r: 22px; }
+  body { font-size: 15px; }
+  .wrap { padding-block: 12px 104px; }
+  h1 { font-size: 26px; } h2 { font-size: 16px; }
+  .top { margin-bottom: 12px; gap: 8px; }
+  .top .btn { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+  .seg.themeseg label { min-height: 30px; padding: 3px 9px; font-size: 13px; }
+  .main, .grid, .dash, .stack { gap: 12px; }
+  .monthbar strong { font-size: 17px; }
+  .monthbar .btn { width: 38px; min-height: 38px; }
+  .summary { padding: 16px; gap: 12px; }
+  .hero { gap: 10px; }
+  .hero .fig + .fig, .pair, .free { padding-top: 10px; }
+  .hero.solo .fig + .fig { padding-top: 0; }
+  .hero .num { font-size: 28px; }
+  .pair .num { font-size: 17px; } .free .num { font-size: 20px; }
+  .btn { min-height: 40px; padding: 8px 14px; font-size: 15px; }
+  .btn.primary { min-height: 46px; font-size: 16px; }
+  .head .btn { min-height: 34px; padding: 5px 12px; font-size: 14px; }
+  .seg label { min-height: 36px; padding: 5px 12px; font-size: 14px; }
+  .seg.show label { min-height: 32px; padding: 4px 8px; font-size: 13px; }
+  input[type="text"], input[type="password"], input[type="email"], input[type="search"], input[type="date"], select { min-height: 44px; padding: 6px 14px; font-size: 16px; border-radius: 14px; }
+  .amountrow input { font-size: 26px; min-height: 52px; border-radius: 16px; }
+  .row { min-height: 50px; padding-block: 8px; gap: 8px; }
+  .row .amt, .qrow .num { font-size: 15px; }
+  .day { padding-top: 12px; }
+  .daystats { gap: 8px; } .daystats > div { padding: 10px 12px; border-radius: 16px; } .daystats .num { font-size: 17px; }
+  .qrow { padding: 8px 0; }
+  .empty { font-size: 14px; padding-top: 14px; }
+  .seg.tabs, .fab { height: 56px; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); }
+  .seg.tabs { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 66px); }
+  .seg.tabs svg { width: 22px; height: 22px; }
+  .fab { width: 56px; } .fab svg { width: 24px; height: 24px; }
+  .dockfix .seg.tabs, .dockfix .fab { top: calc(var(--dock-bottom) - 66px - env(safe-area-inset-bottom, 0px)); }
+  .fabway { width: 46px; height: 46px; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 5px); bottom: calc(env(safe-area-inset-bottom, 0px) + 76px); }
+  .fabway svg { width: 23px; height: 23px; }
+  .dockfix .fabway { top: calc(var(--dock-bottom) - 122px - env(safe-area-inset-bottom, 0px)); }
+  .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 78px); font-size: 14px; padding: 9px 16px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entry, .toast { animation: scrim-in 200ms ease both; }
   .btn, .fab, .seg label, .row { transition: none; }
@@ -533,6 +593,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <div class="actions"><button class="btn" id="btn-more" type="button" aria-expanded="false">Mehr</button><button class="btn" id="btn-lock" type="button">Sperren</button><div class="seg themeseg" role="radiogroup" aria-label="Darstellung"><input type="radio" name="themequick" id="tq-light" value="light"><label for="tq-light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"/></svg>Hell</label><input type="radio" name="themequick" id="tq-dark" value="dark"><label for="tq-dark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>Dunkel</label></div></div>
     </header>
     <button class="fab" id="fab" type="button" aria-label="Neuer Eintrag" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Neuer Eintrag</span></button>
+    <button class="fabway" id="fab-way" type="button" aria-label="Heute zur Arbeit gefahren" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5v-4l1.8-4.6A2 2 0 0 1 8.2 6.5h7.6a2 2 0 0 1 1.9 1.4l1.8 4.6v4"/><path d="M3.5 12.5h17M4.5 16.5h15M6.5 16.5v2M17.5 16.5v2"/><circle cx="7.6" cy="14.5" r=".6" fill="currentColor"/><circle cx="16.4" cy="14.5" r=".6" fill="currentColor"/></svg><i aria-hidden="true"></i></button>
     <div class="seg wide tabs" role="radiogroup" aria-label="Ansicht">
       <input type="radio" name="tab" id="tab-d" value="dash" checked><label for="tab-d"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="7.5" height="9.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="5.5" rx="2.2"/><rect x="3.5" y="15" width="7.5" height="5.5" rx="2.2"/><rect x="13" y="11" width="7.5" height="9.5" rx="2.2"/></svg><span>Übersicht</span></label>
       <input type="radio" name="tab" id="tab-a" value="list"><label for="tab-a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor"/></svg><span>Einträge</span></label>
@@ -550,6 +611,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <section class="panel stack" id="more">
         <h2>Einstellungen</h2>
         <label class="rateline">1 EUR = <input type="text" id="rate" inputmode="decimal" aria-label="Wechselkurs: Franken pro Euro"> CHF <span id="rate-scope"></span></label>
+        <label class="check"><input type="checkbox" id="rate-auto" checked> Kurs täglich automatisch aktualisieren</label>
         <div class="field"><span>Darstellung</span>
           <div class="seg wide" role="radiogroup" aria-label="Darstellung">
             <input type="radio" name="theme" id="theme-auto" value="auto" checked><label for="theme-auto">Automatisch</label>
@@ -1204,7 +1266,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function curVal() { return $('f-cur-eur').checked ? 'EUR' : 'CHF'; }
   function setCur(c) { $('f-cur-eur').checked = c === 'EUR'; $('f-cur-chf').checked = c !== 'EUR'; }
   function syncCats(keep) { fillSelect($('f-cat'), withKeep(typeVal() === 'in' ? incats() : cats(), keep), keep); }
-  function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key;
+  function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key; $('fab-way').hidden = !key;
     if (open) { if (!wide()) $('entry-form').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('f-amount').focus({ preventScroll: true }); } }
   function resetForm() {
     editing = null; $('entry-form').reset();
@@ -1251,6 +1313,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const r = Number($('rate').value.trim().replace(',', '.'));
     if (!isFinite(r) || r < 0.5 || r > 2) { toast('Der Kurs muss zwischen 0.5 und 2 liegen.'); $('rate').value = rateFor(view).toFixed(4); return; }
     settings.rates[view] = r; if (view >= ym(new Date())) settings.rate = r;
+    if (view === ym(new Date())) settings.rateDay = today(); // heute gilt die Eingabe, ab morgen wieder der Tageskurs
     render(); flush('settings'); toast('Kurs für ' + monthName(view) + ' gespeichert');
   });
   ['show-both', 'show-chf', 'show-eur'].forEach(id => $(id).addEventListener('change', () => { const v = $(id).value; settings.show = v; if (v !== 'both') settings.base = v;
@@ -1288,6 +1351,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     renderToday(base);
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
+    $('rate-auto').checked = settings.rateAuto !== false; syncWayFab();
     $('show-' + show().toLowerCase()).checked = true;
     const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
     else { rt.textContent = ''; rt.className = 'lab rate'; }
@@ -1606,7 +1670,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function noticeToast() { if (noticed) return; noticed = true;
     const f = (settings.fixed || []).filter(x => x.notice && daysTo(x.notice) >= 0 && daysTo(x.notice) <= 14).sort((a, b) => a.notice < b.notice ? -1 : 1)[0];
     if (f) { const n = daysTo(f.notice); toast('Kündigungsfrist für ' + f.name + (n === 0 ? ' endet heute' : ' endet in ' + n + (n === 1 ? ' Tag' : ' Tagen'))); } }
-  function afterSync() { synced = true; bookFixed(); noticeToast(); }
+  function afterSync() { synced = true; bookFixed(); noticeToast(); autoRate(); }
   document.addEventListener('visibilitychange', () => { if (!document.hidden) bookFixed(); });
 
   function renderFree(base, t) {
@@ -1873,10 +1937,33 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       if (!Object.values(r.data.q).some(x => x && typeof x.price === 'number')) throw new Error('leer');
       quotes = { t: r.data.t || Date.now(), q: r.data.q }; qState = 'idle';
       try { localStorage.setItem(QK, JSON.stringify(quotes)); } catch (e) { /* nur bis zum Schliessen */ }
+      autoRate();
     } catch (e) { qState = 'error'; }
     if (key) renderQuotes();
   }
   $('q-refresh').addEventListener('click', () => loadQuotes(true));
+
+  // Wechselkurs EUR -> CHF: einmal pro Tag aus den geladenen Kursen übernehmen, für den laufenden Monat und als Standardkurs.
+  // Erst nach dem Abgleich, damit keine Einstellungen eines anderen Geräts überschrieben werden.
+  function autoRate() {
+    if (!key || !synced || settings.rateAuto === false || !quotes || Date.now() - quotes.t > 6 * 3600000) return;
+    const x = quotes.q['EURCHF=X'], td = today(), now = td.slice(0, 7);
+    if (!x || typeof x.price !== 'number' || x.price < 0.5 || x.price > 2 || settings.rateDay === td) return;
+    const r = Math.round(x.price * 10000) / 10000;
+    for (const m in months) if (m < now && !settings.rates[m]) settings.rates[m] = settings.rate; // vergangene Monate behalten ihren bisherigen Kurs
+    settings.rates[now] = r; settings.rate = r; settings.rateDay = td;
+    flush('settings'); render();
+  }
+  $('rate-auto').addEventListener('change', () => { settings.rateAuto = $('rate-auto').checked; if (settings.rateAuto) settings.rateDay = '';
+    flush('settings'); toast(settings.rateAuto ? 'Der Kurs wird täglich aktualisiert' : 'Der Kurs bleibt, wie du ihn einträgst'); if (settings.rateAuto) { autoRate(); loadQuotes(false); } });
+
+  // Auto-Knopf über dem Plus: Fahrt von heute mit einem Tipp
+  function syncWayFab() { const b = $('fab-way'), on = wdays().includes(today()); b.classList.toggle('done', on);
+    b.setAttribute('aria-label', on ? 'Fahrt von heute ist eingetragen' : 'Heute zur Arbeit gefahren'); }
+  $('fab-way').addEventListener('click', () => { const w = wayCfg(), td = today();
+    if (!w) { go('tab-f'); wayEdit(true); toast('Trage zuerst deine Strecke ein'); return; }
+    if (wdays().includes(td)) { toast('Die Fahrt von heute ist schon eingetragen'); return; }
+    waySet(td, true); toast('Fahrt eingetragen: ' + nfKm.format(w.km * 2) + ' km'); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) loadQuotes(false); });
 
   function renderDash(base, list) {

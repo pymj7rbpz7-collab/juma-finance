@@ -50,7 +50,7 @@ Auf jedem Gerät einmal mit E-Mail und Passwort anmelden. Danach fragt die App n
 - **Vermögen:** Nettovermögen aus Konten, Anlagen (Depot, ETFs, Krypto, Vorsorge) und Krediten, Verlauf über die Monate, Notgroschen-Check.
 - **Steuern:** Einträge und Fixposten als Werbungskosten, Sonderausgaben, aussergewöhnliche Belastungen oder Schweizer Quellensteuer markieren; Jahresübersicht und CSV-Export.
 - **Dranbleiben:** Wochen-Rückblick, Hinweis am Abend, wenn heute nichts erfasst ist, und Sparquote.
-- **Mehr:** Wechselkurs, eigene Kategorien und Konten mit Startsaldo, Sicherung als Datei oder Text.
+- **Mehr:** Wechselkurs (wird täglich automatisch aktualisiert, abschaltbar), eigene Kategorien und Konten mit Startsaldo, Sicherung als Datei oder Text.
 
 ## Gut zu wissen
 
