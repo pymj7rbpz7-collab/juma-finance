@@ -199,7 +199,7 @@ html:has(#app.form-open) { overflow: hidden; }
 .qrow b { font-weight: 500; overflow-wrap: anywhere; }
 .qrow small { color: var(--muted); font-size: 13px; letter-spacing: -0.005em; }
 .qrow .num { text-align: right; font-size: 17px; font-weight: 600; white-space: nowrap; }
-.qrow .sub { text-align: right; white-space: nowrap; }
+.qrow .sub { grid-column: 1 / -1; text-align: right; }
 .qrow .chip { margin: 0 0 0 6px; }
 .dash-toggle { display: none; }
 @media (max-width: 599.98px) {
@@ -540,7 +540,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
       <input type="radio" name="tab" id="tab-e" value="worth"><label for="tab-e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 17.5 9 12l4 4 7.5-8"/><path d="M15 8h5.5v5.5"/></svg><span>Vermögen</span></label>
       <input type="radio" name="tab" id="tab-f" value="way"><label for="tab-f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5v-4l1.8-4.6A2 2 0 0 1 8.2 6.5h7.6a2 2 0 0 1 1.9 1.4l1.8 4.6v4"/><path d="M3.5 12.5h17M4.5 16.5h15M6.5 16.5v2M17.5 16.5v2"/><circle cx="7.6" cy="14.5" r=".6" fill="currentColor"/><circle cx="16.4" cy="14.5" r=".6" fill="currentColor"/></svg><span>Arbeitsweg</span></label>
-      <input type="radio" name="tab" id="tab-g" value="quotes"><label for="tab-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5v3M7 15.5v4M17 4.5v4M17 15.5v5"/><rect x="4.5" y="6.5" width="5" height="9" rx="1.6"/><rect x="14.5" y="8.5" width="5" height="7" rx="1.6" fill="currentColor"/></svg><span>Kurse</span></label>
+      <input type="radio" name="tab" id="tab-g" value="quotes"><label for="tab-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12.5h4l2.6-7 4.6 13.5 2.7-6.5h5.1"/></svg><span>Kurse</span></label>
     </div>
     </aside>
 
@@ -1849,18 +1849,19 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     btn.hidden = !cloud; btn.disabled = qState === 'loading'; btn.textContent = qState === 'loading' ? 'Lädt …' : 'Aktualisieren';
     if (!cloud) { host.replaceChildren(); note.textContent = 'Kurse gibt es nur mit Anmeldung, weil sie über dein Konto geladen werden.'; return; }
     if (!quotes) { host.replaceChildren(); note.textContent = qState === 'error' ? 'Kurse gerade nicht erreichbar. Prüfe die Verbindung und tippe auf „Aktualisieren“.' : 'Lade Kurse …'; return; }
-    const q = quotes.q, base = baseCur(), usdchf = q['USDCHF=X'] && q['USDCHF=X'].price, eurchf = q['EURCHF=X'] && q['EURCHF=X'].price;
-    const fx = base === 'CHF' ? usdchf : usdchf && eurchf ? usdchf / eurchf : null;
+    const q = quotes.q, usdchf = q['USDCHF=X'] && q['USDCHF=X'].price, eurchf = q['EURCHF=X'] && q['EURCHF=X'].price;
+    const toChf = usdchf || null, toEur = usdchf && eurchf ? usdchf / eurchf : null, mode = show();
+    const conv2 = v => { const out = []; if (mode !== 'EUR' && toChf) out.push('CHF ' + qNum(v * toChf)); if (mode !== 'CHF' && toEur) out.push(qNum(v * toEur) + ' €'); return out.join(' · '); };
     host.replaceChildren(...QUOTES.map(([sym, name, tick]) => { const x = q[sym] || {}, row = h('div', 'qrow'), l = h('span');
       l.append(h('b', null, name), document.createTextNode(' '), h('small', null, tick));
-      if (typeof x.price !== 'number') { row.append(l, h('span', 'num', '–'), h('small', null, ''), h('small', 'sub', 'kein Kurs')); return row; }
-      const sub = h('small', 'sub', fx ? (base === 'CHF' ? 'CHF ' + qNum(x.price * fx) : qNum(x.price * fx) + ' €') : '');
+      if (typeof x.price !== 'number') { row.append(l, h('span', 'num', '–'), h('small', 'sub', 'kein Kurs')); return row; }
+      const sub = h('small', 'sub', conv2(x.price));
       if (x.prev) { const d = (x.price - x.prev) / x.prev * 100, r = Math.round(d * 10) / 10;
         sub.append(h('span', 'chip ' + (r < 0 ? 'neg' : r > 0 ? 'pos' : ''), (r < 0 ? '−' : r > 0 ? '+' : '±') + Math.abs(r).toFixed(1) + ' %')); }
-      row.append(l, h('span', 'num', 'USD ' + qNum(x.price)), h('small', null, ''), sub); return row; }));
+      row.append(l, h('span', 'num', 'USD ' + qNum(x.price)), sub); return row; }));
     const d = new Date(quotes.t), same = d.toDateString() === new Date().toDateString();
     const when = (same ? '' : new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long' }).format(d) + ', ') + new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit' }).format(d);
-    note.textContent = (qState === 'error' ? 'Aktualisieren hat nicht geklappt. ' : '') + 'Stand ' + when + ' Uhr · Kurs in USD, darunter in ' + base + ' und die Veränderung zum Vortag. Kurse können verzögert sein.';
+    note.textContent = (qState === 'error' ? 'Aktualisieren hat nicht geklappt. ' : '') + 'Stand ' + when + ' Uhr · Kurs in USD, darunter in ' + (mode === 'both' ? 'CHF und EUR' : mode) + ' und die Veränderung zum Vortag. Kurse können verzögert sein.';
   }
   async function loadQuotes(force) {
     if (!key || !sb || !backend || backend.kind !== 'cloud' || qState === 'loading') return;
