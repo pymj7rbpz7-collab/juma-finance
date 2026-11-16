@@ -367,6 +367,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 .accrow .num { text-align: right; overflow-wrap: anywhere; }
 
 .fab { border: 0; }
+@media (min-width: 1000px) { #quicknav { display: none; } }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); z-index: 40;
   background: var(--toast-bg); color: var(--toast-ink); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
   border: 1px solid rgba(255, 255, 255, 0.18); padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 500; text-align: center;
@@ -488,6 +489,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .fabway i::after { content: ""; position: absolute; left: 4px; top: 1.5px; width: 4px; height: 8px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
   .fabway.done { color: var(--pos); } .fabway.done i { display: block; }
   .dockfix .fabway { top: calc(var(--dock-bottom) - 140px - env(safe-area-inset-bottom, 0px)); bottom: auto; }
+  .dockfix .toast { top: calc(var(--dock-bottom) - 150px - env(safe-area-inset-bottom, 0px)); bottom: auto; }
   .form-open .fabway { display: none; }
 }
 @media (min-width: 600px) and (max-width: 999.98px) { .fabway { right: auto; left: calc(50% + 199px); } }
@@ -608,6 +610,16 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     <div class="content">
 
     <div class="stack" id="extras" hidden>
+      <section class="panel stack" id="quicknav">
+        <h2>Bereiche</h2>
+        <div class="actions">
+          <button class="btn" type="button" data-go="tab-d">Übersicht</button><button class="btn" type="button" data-go="tab-a">Einträge</button>
+          <button class="btn" type="button" data-go="tab-b">Auswertung</button><button class="btn" type="button" data-go="tab-c">Planung</button>
+          <button class="btn" type="button" data-go="tab-e">Vermögen</button><button class="btn" type="button" data-go="tab-f">Arbeitsweg</button>
+          <button class="btn" type="button" data-go="tab-g">Kurse</button>
+        </div>
+        <div class="actions"><button class="btn primary grow" id="qn-add" type="button">Neuer Eintrag</button><button class="btn grow" id="qn-way" type="button">Heute zur Arbeit gefahren</button></div>
+      </section>
       <section class="panel stack" id="more">
         <h2>Einstellungen</h2>
         <label class="rateline">1 EUR = <input type="text" id="rate" inputmode="decimal" aria-label="Wechselkurs: Franken pro Euro"> CHF <span id="rate-scope"></span></label>
@@ -630,6 +642,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         <button class="btn" id="btn-logout" type="button" hidden>Abmelden</button>
         <button class="btn warn" id="btn-wipe" type="button">Alle Einträge löschen</button>
         <p class="hint" id="store-note"></p>
+        <p class="hint" id="dock-info"></p>
       </section>
 
       <section class="panel stack" id="import" hidden>
@@ -2389,25 +2402,48 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     saveFile('pairo-arbeitsweg-' + y + '.csv', '﻿' + L.join('\r\n') + '\r\n', 'text/csv;charset=utf-8', 'way-msg2', ds.length + (ds.length === 1 ? ' Fahrt' : ' Fahrten') + ' exportiert.'); });
 
   /* ---------- Leiste unten bleibt unten ---------- */
-  // Nach dem Auf- oder Zuklappen und nach dem Drehen kann die gemeldete Fensterhöhe veraltet sein; dann rutscht die Leiste
-  // aus dem Bild oder hängt mitten darin. Statt der gemeldeten Höhe zu trauen, wird gemessen, wo die Leiste wirklich steht:
-  // liegt sie nicht am unteren Rand der sichtbaren Fläche, setzt das Skript sie dorthin. Geprüft wird bei jeder Grössenänderung
-  // und zusätzlich laufend, weil manche Geräte nach dem Aufklappen kein Ereignis melden. Bei offener Tastatur oder Zoom bleibt die normale Platzierung.
-  const dockBar = document.querySelector('.seg.tabs');
-  function dockFix() { const vv = window.visualViewport, el = document.documentElement;
+  // Nach dem Auf- oder Zuklappen und nach dem Drehen können die gemeldeten Höhen veraltet sein; dann rutscht die Leiste
+  // aus dem Bild oder hängt mitten darin. Das Skript misst, wo die Leiste steht, und vergleicht mit der sichtbaren Fläche.
+  // Als Home-Bildschirm-App zählen zusätzlich die Bildschirmmasse: ist eine davon deutlich kleiner als die gemeldete Höhe,
+  // gilt die kleinere. Geprüft wird bei Grössenänderungen und laufend. Bei offener Tastatur oder Zoom bleibt die normale Platzierung.
+  const dockBar = document.querySelector('.seg.tabs'), dockEdge = h('div'), dockUnit = h('div');
+  dockEdge.style.cssText = 'position:fixed;left:0;bottom:0;width:0;height:0;visibility:hidden;pointer-events:none';
+  dockUnit.style.cssText = 'position:fixed;left:0;top:0;width:0;height:100vh;height:100dvh;visibility:hidden;pointer-events:none';
+  document.body.append(dockEdge, dockUnit);
+  function dockMeasure() { const vv = window.visualViewport, sc = window.screen || {};
+    let sa = window.navigator.standalone === true; try { sa = sa || window.matchMedia('(display-mode: standalone)').matches; } catch (e) { /* bleibt */ }
+    return { W: window.innerWidth, H: window.innerHeight, vv: vv ? Math.round(vv.offsetTop + vv.height) : null, zoom: vv ? vv.scale : 1,
+      L: Math.round(dockEdge.getBoundingClientRect().bottom), ch: document.documentElement.clientHeight, dvh: Math.round(dockUnit.getBoundingClientRect().height),
+      sw: sc.width || 0, sh: sc.height || 0, sa }; }
+  function dockTarget(m) { let t = m.vv != null ? m.vv : m.L;
+    if (m.sa) { const c = [m.H, m.ch, m.dvh]; if (Math.abs(m.W - m.sw) <= 2) c.push(m.sh); else if (Math.abs(m.W - m.sh) <= 2) c.push(m.sw);
+      const low = Math.min.apply(null, c.filter(x => x > 250)); if (low < t - 20) t = low; }
+    return t; }
+  function dockFix() { const el = document.documentElement;
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '');
     el.classList.remove('dockfix');
-    if (!vv || typing || Math.abs(vv.scale - 1) > 0.01 || $('app').hidden || getComputedStyle(dockBar).position !== 'fixed') return;
-    const r = dockBar.getBoundingClientRect(), bottom = vv.offsetTop + vv.height;
-    if (!r.height || (r.bottom <= bottom + 2 && r.bottom >= bottom - 90)) return;
-    el.style.setProperty('--dock-bottom', Math.round(bottom) + 'px'); el.classList.add('dockfix'); }
+    const m = dockMeasure(), fixed = !$('app').hidden && getComputedStyle(dockBar).position === 'fixed';
+    let on = false;
+    if (fixed && !typing && Math.abs(m.zoom - 1) <= 0.01) { const r = dockBar.getBoundingClientRect(), t = dockTarget(m);
+      if (r.height && (r.bottom > t + 2 || r.bottom < t - 90)) { el.style.setProperty('--dock-bottom', Math.round(t) + 'px'); el.classList.add('dockfix'); on = true; } }
+    const info = $('dock-info'); if (info && !$('extras').hidden) info.textContent = 'Anzeige (für die Fehlersuche): ' + m.W + '×' + m.H + ' · sichtbar ' + m.vv + ' · Rand ' + m.L +
+      ' · ' + m.ch + '/' + m.dvh + ' · Bildschirm ' + m.sw + '×' + m.sh + ' · ' + (m.sa ? 'App' : 'Browser') + ' · Zoom ' + (Math.round(m.zoom * 100) / 100) + ' · Korrektur ' + (on ? 'an' : 'aus'); }
   function dockSoon() { dockFix(); [120, 400, 900, 1800].forEach(ms => setTimeout(dockFix, ms)); }
+  // Nach dem Auf- oder Zuklappen die Seitenmasse neu berechnen lassen: der Browser liest die Anzeige-Vorgabe erneut ein
+  let dockW = window.innerWidth;
+  function dockNudge() { if (Math.abs(window.innerWidth - dockW) < 80) return; dockW = window.innerWidth;
+    const meta = document.querySelector('meta[name="viewport"]'); if (!meta) return; const c = 'width=device-width,initial-scale=1,viewport-fit=cover';
+    setTimeout(() => { meta.setAttribute('content', c + ' '); setTimeout(() => { meta.setAttribute('content', c); dockSoon(); }, 60); }, 250); }
   if (window.visualViewport) { window.visualViewport.addEventListener('resize', dockSoon); window.visualViewport.addEventListener('scroll', dockFix); }
-  ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(t => window.addEventListener(t, dockSoon));
+  ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(t => window.addEventListener(t, () => { dockNudge(); dockSoon(); }));
   document.addEventListener('visibilitychange', dockSoon); document.addEventListener('focusout', dockSoon);
-  ['(max-width: 599.98px)', '(max-width: 999.98px)', '(orientation: portrait)'].forEach(q => { try { window.matchMedia(q).addEventListener('change', dockSoon); } catch (e) { /* ältere Browser */ } });
+  ['(max-width: 599.98px)', '(max-width: 999.98px)', '(orientation: portrait)'].forEach(q => { try { window.matchMedia(q).addEventListener('change', () => { dockNudge(); dockSoon(); }); } catch (e) { /* ältere Browser */ } });
   if (window.ResizeObserver) new ResizeObserver(dockSoon).observe(document.documentElement);
-  setInterval(() => { if (!document.hidden) dockFix(); }, 700);
+  setInterval(() => { if (!document.hidden) { dockNudge(); dockFix(); } }, 700);
+  $('btn-more').addEventListener('click', () => setTimeout(dockFix, 0));
+  $('quicknav').addEventListener('click', e => { if (e.target.closest('button')) setMore(false); });
+  $('qn-add').addEventListener('click', () => $('fab').click());
+  $('qn-way').addEventListener('click', () => $('fab-way').click());
   dockSoon();
 
   boot();
