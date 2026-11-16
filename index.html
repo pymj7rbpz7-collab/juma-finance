@@ -540,6 +540,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <input type="radio" name="tab" id="tab-c" value="plan"><label for="tab-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg><span>Planung</span></label>
       <input type="radio" name="tab" id="tab-e" value="worth"><label for="tab-e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 17.5 9 12l4 4 7.5-8"/><path d="M15 8h5.5v5.5"/></svg><span>Vermögen</span></label>
       <input type="radio" name="tab" id="tab-f" value="way"><label for="tab-f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5v-4l1.8-4.6A2 2 0 0 1 8.2 6.5h7.6a2 2 0 0 1 1.9 1.4l1.8 4.6v4"/><path d="M3.5 12.5h17M4.5 16.5h15M6.5 16.5v2M17.5 16.5v2"/><circle cx="7.6" cy="14.5" r=".6" fill="currentColor"/><circle cx="16.4" cy="14.5" r=".6" fill="currentColor"/></svg><span>Arbeitsweg</span></label>
+      <input type="radio" name="tab" id="tab-g" value="quotes"><label for="tab-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5v3M7 15.5v4M17 4.5v4M17 15.5v5"/><rect x="4.5" y="6.5" width="5" height="9" rx="1.6"/><rect x="14.5" y="8.5" width="5" height="7" rx="1.6" fill="currentColor"/></svg><span>Kurse</span></label>
     </div>
     </aside>
 
@@ -717,11 +718,6 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="head"><h2>Nächste Fixposten</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
             <div id="dash-fx"></div>
           </section>
-          <section class="panel stack" id="dash-quotes">
-            <div class="head"><h2>Kurse</h2><button class="btn" id="q-refresh" type="button">Aktualisieren</button></div>
-            <div id="q-list"></div>
-            <p class="hint" id="q-note"></p>
-          </section>
           <section class="panel stack d-more">
             <div class="head"><h2>Vermögen</h2><button class="btn" type="button" data-go="tab-e">Vermögen</button></div>
             <div id="dash-acc"></div>
@@ -819,6 +815,14 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <section class="panel stack clip">
             <div class="head"><h2>Schulden & Kredite</h2><button class="btn" id="db-add" type="button">Hinzufügen</button></div>
             <div id="db-list"></div>
+          </section>
+        </div>
+
+        <div class="stack" id="tab-quotes" hidden>
+          <section class="panel stack">
+            <div class="head"><h2>Aktien und Krypto</h2><button class="btn" id="q-refresh" type="button">Aktualisieren</button></div>
+            <div id="q-list"></div>
+            <p class="hint" id="q-note"></p>
           </section>
         </div>
 
@@ -1240,7 +1244,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   /* ---------- Monat, Ansicht, Einstellungen ---------- */
   $('m-prev').addEventListener('click', () => { view = shift(view, -1); render(); });
   $('m-next').addEventListener('click', () => { view = shift(view, 1); render(); });
-  ['tab-d', 'tab-a', 'tab-b', 'tab-c', 'tab-e', 'tab-f'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
+  ['tab-d', 'tab-a', 'tab-b', 'tab-c', 'tab-e', 'tab-f', 'tab-g'].forEach(id => $(id).addEventListener('change', () => { tab = $(id).value; render(); }));
   ['lf-all', 'lf-out', 'lf-in'].forEach(id => $(id).addEventListener('change', () => { listFilter = $(id).value; render(); }));
   window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (key && (tab === 'stats' || tab === 'dash' || tab === 'worth')) render(); }, 150); });
   $('rate').addEventListener('change', () => {
@@ -1287,14 +1291,16 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('show-' + show().toLowerCase()).checked = true;
     const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
     else { rt.textContent = ''; rt.className = 'lab rate'; }
-    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth'; $('tab-way').hidden = tab !== 'way';
-    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen', way: 'Arbeitsweg' }[tab];
+    $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth'; $('tab-way').hidden = tab !== 'way'; $('tab-quotes').hidden = tab !== 'quotes';
+    document.querySelector('.summary').hidden = tab === 'quotes'; document.querySelector('.monthbar').hidden = tab === 'quotes'; // Kurse hängen an keinem Monat
+    $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen', way: 'Arbeitsweg', quotes: 'Kurse' }[tab];
     syncLists(); renderFree(base, t); renderLists();
     renderDups();
     if (tab === 'dash') { renderDash(base, list); return; }
     if (tab === 'plan') { renderPlan(); return; }
     if (tab === 'worth') { renderWorth(base); return; }
     if (tab === 'way') { renderWay(); return; }
+    if (tab === 'quotes') { renderQuotes(); return; }
 
     if (tab === 'stats') {
       renderDays('st', base); renderCompare(base); renderTax();
@@ -1831,7 +1837,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     syncDashAll(); render(); });
   syncDashAll();
 
-  /* ---------- Kurse: Aktien und Krypto, bei jedem Öffnen neu geladen ---------- */
+  /* ---------- Kurse: eigene Seite mit Aktien und Krypto, bei jedem Öffnen neu geladen ---------- */
   const QUOTES = [['AAPL', 'Apple', 'AAPL'], ['ONON', 'On', 'ONON'], ['SPCX', 'SpaceX', 'SPCX'], ['TSLA', 'Tesla', 'TSLA'],
     ['BTC-USD', 'Bitcoin', 'BTC'], ['PLTR', 'Palantir', 'PLTR'], ['FET-USD', 'Fetch.ai', 'FET']];
   const QK = 'juma:quotes';
@@ -1873,7 +1879,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   document.addEventListener('visibilitychange', () => { if (!document.hidden) loadQuotes(false); });
 
   function renderDash(base, list) {
-    renderQuotes(); renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
+    renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
     drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); dashWorth(base); renderGoals('dash-goals');
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
