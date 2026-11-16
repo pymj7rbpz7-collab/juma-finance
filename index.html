@@ -199,6 +199,8 @@ html:has(#app.form-open) { overflow: hidden; }
   .dash-toggle { display: block; order: 1; width: 100%; min-height: 48px; }
   .dash > .d-more { order: 2; }
   .dash:not(.all) > .d-more { display: none; }
+  /* Arbeitsweg bleibt als Knopf auf der Startseite; die Zahlen dazu erst aufgeklappt */
+  .dash:not(.all) #way-dash .daystats { display: none; }
 }
 @media (max-width: 999.98px) {
   .pagehead { display: contents; }
@@ -671,7 +673,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
           <section class="panel nudge d-full" id="dash-nudge" hidden>
             <div class="head"><div><h2>Heute noch nichts erfasst</h2><p class="hint">Kurz nachtragen, solange du dich erinnerst.</p></div><button class="btn primary" id="nudge-add" type="button">Jetzt erfassen</button></div>
           </section>
-          <section class="panel stack d-more" id="dash-way">
+          <section class="panel stack" id="dash-way">
             <div class="head"><h2>Arbeitsweg</h2><button class="btn" type="button" data-go="tab-f">Öffnen</button></div>
             <div id="way-dash"></div>
           </section>
