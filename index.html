@@ -201,13 +201,19 @@ html:has(#app.form-open) { overflow: hidden; }
 .qrow .num { text-align: right; font-size: 17px; font-weight: 600; white-space: nowrap; }
 .qrow .sub { grid-column: 1 / -1; text-align: right; }
 .qrow .chip { margin: 0 0 0 6px; }
-.dash-toggle { display: none; }
+/* Übersicht: nur das Tägliche. Die Zahlen zum Arbeitsweg stehen im Reiter Arbeitsweg. */
+#way-dash .daystats { display: none; }
 @media (max-width: 599.98px) {
-  .dash-toggle { display: block; order: 1; width: 100%; min-height: 48px; }
-  .dash > .d-more { order: 2; }
-  .dash:not(.all) > .d-more { display: none; }
-  /* Arbeitsweg bleibt als Knopf auf der Startseite; die Zahlen dazu erst aufgeklappt */
-  .dash:not(.all) #way-dash .daystats { display: none; }
+  /* Heute und Monat als zwei kompakte Zeilen wie auf einem Kontoauszug: Bezeichnung links, Betrag rechts */
+  .hero, .hero:not(.solo) { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .hero .fig { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: start; }
+  .hero .fig .lab { grid-column: 1; grid-row: 1; }
+  .hero .fig .sub { grid-column: 1; grid-row: 2; }
+  .hero .fig .num, .hero:not(.solo) .num { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: clamp(18px, 5.8vw, 23px); white-space: nowrap; }
+  .hero:not(.solo) .fig + .fig { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; }
+  .top .themeseg { display: none; }
+  #way-dash { gap: 10px; }
+  #way-dash .btn { min-height: 46px; font-size: 16px; }
 }
 @media (max-width: 999.98px) {
   .pagehead { display: contents; }
@@ -427,11 +433,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .hero:not(.solo) .fig + .fig { border-top: 0; padding-top: 0; border-left: 1px solid var(--line); padding-left: 22px; }
   .summary > .hero:not(.solo) ~ .pair .num, .summary > .hero:not(.solo) ~ .free .num { font-size: 24px; }
 
-  .dash { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
+  .dash { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; align-items: start; }
   .dash > .panel { grid-column: span 3; }
   #tab-stats, #tab-plan, #extras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
   #tab-plan { grid-template-rows: auto 1fr; }
-  #tab-stats { grid-template-rows: auto auto 1fr auto; }
+  #tab-stats { grid-template-rows: auto auto auto 1fr auto; }
   #tab-stats > .tall, #tab-plan > :nth-child(2) { grid-row: span 2; }
   #tab-stats > .full { grid-column: 1 / -1; }
   .daystats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -760,48 +766,10 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div class="head"><h2>Arbeitsweg</h2><button class="btn" type="button" data-go="tab-f">Öffnen</button></div>
             <div id="way-dash"></div>
           </section>
-          <section class="panel stack d-more">
-            <h2 id="dash-week-title">Letzte Woche</h2>
-            <div class="daystats" id="dash-week"></div>
-            <p class="hint" id="dash-week-top"></p>
-          </section>
-          <section class="panel stack clip d-wide d-more">
-            <div class="head"><h2>Ausgaben pro Tag</h2><span class="legendrow" id="dash-days-legend"></span></div>
-            <div class="daystats" id="dash-daystats"></div>
-            <div id="dash-days" class="chart"></div>
-            <p class="hint" id="dash-days-note"></p>
-            <div id="dash-dayinfo"></div>
-          </section>
-          <section class="panel stack d-side d-more">
-            <div class="head"><h2>Grösste Ausgaben</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
-            <div class="bars" id="dash-cats"></div>
-          </section>
-          <section class="panel stack d-wide d-more">
-            <div class="head"><h2>Verlauf</h2><span class="legendrow"><span><i class="dot inc"></i>Einnahmen</span><span><i class="dot out"></i>Ausgaben</span></span></div>
-            <div id="dash-chart" class="chart"></div>
-            <p class="hint" id="dash-chart-note" hidden>Balken in CHF umgerechnet, damit beide Währungen vergleichbar sind.</p>
-          </section>
-          <section class="panel stack clip d-side d-more">
-            <div class="head"><h2>Monatsvergleich</h2><button class="btn" type="button" data-go="tab-b">Auswertung</button></div>
-            <div id="dash-cmp"></div>
-          </section>
           <section class="panel stack clip">
             <div class="head"><h2>Letzte Einträge</h2><button class="btn" type="button" data-go="tab-a">Alle</button></div>
             <div id="dash-recent"></div>
           </section>
-          <section class="panel stack clip">
-            <div class="head"><h2>Nächste Fixposten</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
-            <div id="dash-fx"></div>
-          </section>
-          <section class="panel stack d-more">
-            <div class="head"><h2>Vermögen</h2><button class="btn" type="button" data-go="tab-e">Vermögen</button></div>
-            <div id="dash-acc"></div>
-          </section>
-          <section class="panel stack clip d-more">
-            <div class="head"><h2>Sparziele</h2><button class="btn" type="button" data-go="tab-c">Planung</button></div>
-            <div id="dash-goals"></div>
-          </section>
-          <button class="btn dash-toggle" id="dash-toggle" type="button" aria-expanded="false">Alle Auswertungen anzeigen</button>
         </div>
 
         <section class="panel" id="tab-list" hidden>
@@ -815,6 +783,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         </section>
 
         <div class="stack" id="tab-stats" hidden>
+          <section class="panel stack full">
+            <h2 id="dash-week-title">Letzte Woche</h2>
+            <div class="daystats" id="dash-week"></div>
+            <p class="hint" id="dash-week-top"></p>
+          </section>
           <section class="panel stack clip full">
             <div class="head"><h2>Ausgaben pro Tag</h2><span class="legendrow" id="st-days-legend"></span></div>
             <div class="daystats" id="st-daystats"></div>
@@ -1261,7 +1234,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true; $('as-form').hidden = true; $('dash-nudge').hidden = true; $('way-form').hidden = true; $('way-date').value = '';
     $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
-    ['way-dash', 'way-tiles', 'way-table', 'way-days', 'w-tiles', 'w-chart', 'w-acc', 'w-emergency', 'as-list', 'db-list', 'tx-table', 'tx-list', 'dash-week', 'list', 'cats', 'chart-year', 'dup-list', 'dash-days', 'dash-daystats', 'dash-dayinfo', 'dash-cmp', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-chart', 'dash-cats', 'dash-recent', 'dash-fx', 'dash-acc', 'dash-goals', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
+    ['way-dash', 'way-tiles', 'way-table', 'way-days', 'w-tiles', 'w-chart', 'w-acc', 'w-emergency', 'as-list', 'db-list', 'tx-table', 'tx-list', 'dash-week', 'list', 'cats', 'chart-year', 'dup-list', 'st-days', 'st-daystats', 'st-dayinfo', 'st-cmp', 'dash-recent', 'fx-list', 'bud-list', 'goal-list', 'acc-list', 'lists-body'].forEach(id => $(id).replaceChildren());
     $('entry-form').reset(); closeImport(); $('dups').hidden = true; setMore(false); setForm(false);
     $('app').hidden = true; $('lock').hidden = false; lockState(meta ? 'unlock' : 'create');
   }
@@ -1345,6 +1318,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
   function render() {
     if (!key) return;
+    if (tab === 'dash') view = ym(new Date()); // die Übersicht zeigt immer den laufenden Monat
     const base = baseCur(), t = totals(view, base), list = (months[view] || []).slice();
     $('m-label').textContent = monthName(view);
     const se = $('s-saldo');
@@ -1369,18 +1343,18 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
     else { rt.textContent = ''; rt.className = 'lab rate'; }
     $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth'; $('tab-way').hidden = tab !== 'way'; $('tab-quotes').hidden = tab !== 'quotes';
-    document.querySelector('.summary').hidden = tab === 'quotes'; document.querySelector('.monthbar').hidden = tab === 'quotes'; // Kurse hängen an keinem Monat
+    document.querySelector('.summary').hidden = tab === 'quotes'; document.querySelector('.monthbar').hidden = tab === 'quotes' || tab === 'dash'; // Kurse hängen an keinem Monat
     $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen', way: 'Arbeitsweg', quotes: 'Kurse' }[tab];
     syncLists(); renderFree(base, t); renderLists();
     renderDups();
-    if (tab === 'dash') { renderDash(base, list); return; }
+    if (tab === 'dash') { renderDash(); return; }
     if (tab === 'plan') { renderPlan(); return; }
     if (tab === 'worth') { renderWorth(base); return; }
     if (tab === 'way') { renderWay(); return; }
     if (tab === 'quotes') { renderQuotes(); return; }
 
     if (tab === 'stats') {
-      renderDays('st', base); renderCompare(base); renderTax();
+      renderWeek(base); renderDays('st', base); renderCompare(base); renderTax();
       catBars('cats', list, base, 0);
       renderAccounts(base);
       drawYear(base); return;
@@ -1441,7 +1415,6 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       hit.addEventListener('click', () => { view = m; render(); }); svg.append(hit); });
     host.replaceChildren(svg);
     $('year-note').textContent = (isSplit() ? 'Balken in CHF umgerechnet, damit beide Währungen vergleichbar sind' : 'Umgerechnet in ' + base) + '. Tippe auf einen Monat, um ihn zu öffnen.';
-    $('dash-chart-note').hidden = !isSplit();
   }
 
   /* ---------- CSV-Import ---------- */
@@ -1899,20 +1872,13 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function renderToday(base) {
     const now = ym(new Date()), td = today(), on = view === now;
     $('s-today-wrap').hidden = !on; $('s-hero').classList.toggle('solo', !on);
-    $('s-total-lab').textContent = 'Ausgaben im ' + monthName(view);
+    $('s-total-lab').textContent = on ? 'Ausgaben ' + new Intl.DateTimeFormat('de-CH', { month: 'long' }).format(new Date()) : 'Ausgaben im ' + monthName(view);
     if (!on) return;
     let c = 0, e = 0, b = 0;
     for (const x of months[now] || []) { if (x.t === 'in' || x.d !== td) continue; if (x.c === 'EUR') e += x.a; else c += x.a; b += conv(x.a, x.c, now, base); }
     if (isSplit()) $('s-today').replaceChildren(...money(c, e)); else $('s-today').textContent = fmt(Math.round(b), base);
-    $('s-today-sub').textContent = dayLabel(now, new Date().getDate()) + (b ? '' : ' · noch nichts ausgegeben');
+    $('s-today-sub').textContent = dayLabel(now, new Date().getDate());
   }
-  // Startseite am Handy: weitere Auswertungen erst auf Wunsch (pro Gerät gemerkt)
-  let dashAll = false; try { dashAll = localStorage.getItem('juma:dashall') === '1'; } catch (e) { /* bleibt eingeklappt */ }
-  function syncDashAll() { const b = $('dash-toggle'); $('tab-dash').classList.toggle('all', dashAll);
-    b.textContent = dashAll ? 'Weniger anzeigen' : 'Alle Auswertungen anzeigen'; b.setAttribute('aria-expanded', String(dashAll)); }
-  $('dash-toggle').addEventListener('click', () => { dashAll = !dashAll; try { localStorage.setItem('juma:dashall', dashAll ? '1' : '0'); } catch (e) { /* gilt bis zum Schliessen */ }
-    syncDashAll(); render(); });
-  syncDashAll();
 
   /* ---------- Kurse: eigene Seite mit Aktien und Krypto, bei jedem Öffnen neu geladen ---------- */
   const QUOTES = [['AAPL', 'Apple', 'AAPL'], ['ONON', 'On', 'ONON'], ['SPCX', 'SpaceX', 'SPCX'], ['TSLA', 'Tesla', 'TSLA'],
@@ -1979,22 +1945,15 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     waySet(td, true); toast('Fahrt eingetragen: ' + nfKm.format(w.km * 2) + ' km'); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) loadQuotes(false); });
 
-  function renderDash(base, list) {
-    renderNudge(); renderWayDash(); renderWeek(base); renderDays('dash', base); renderCompareMini(base);
-    drawYear(base, 'dash-chart'); catBars('dash-cats', list, base, 5); renderAccounts(base, 'dash-acc'); dashWorth(base); renderGoals('dash-goals');
+  function renderDash() {
+    renderNudge(); renderWayDash();
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
-    $('dash-recent').replaceChildren(...(all.length ? all.slice(0, 6).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
+    $('dash-recent').replaceChildren(...(all.length ? all.slice(0, 4).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
       row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
       what.append(h('b', null, e.cat), h('small', null, de(e.d) + ' · ' + sub(e)));
       row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; })
       : [h('div', 'empty', 'Noch keine Einträge. Erfasse den ersten über „Neuer Eintrag“.')]));
-    const due = (settings.fixed || []).map(f => [f, nextDue(f)]).filter(x => x[1]).sort((a, b) => a[1] < b[1] ? -1 : 1).slice(0, 6);
-    const dFmt = new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long' });
-    $('dash-fx').replaceChildren(...(due.length ? due.map(([f, d]) => { const row = h('button', 'row'), what = h('span'), n = daysTo(d), [y, mo, dd] = d.split('-').map(Number); row.type = 'button';
-      what.append(h('b', null, f.name), h('small', null, dFmt.format(new Date(y, mo - 1, dd)) + ' · ' + (n <= 0 ? 'heute' : n === 1 ? 'morgen' : 'in ' + n + ' Tagen')));
-      row.append(what, amtEl(f)); row.addEventListener('click', () => { go('tab-c'); fxOpen(f); }); return row; })
-      : [h('div', 'empty', (settings.fixed || []).length ? 'Keine Fixposten ausstehend.' : 'Noch keine Fixposten. Lege Miete, Abos oder Gehalt in der Planung an.')]));
   }
 
   /* ---------- Beträge je Währung ---------- */
@@ -2122,15 +2081,6 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('st-cmp').replaceChildren(hr, ...rows);
     $('st-cmp-note').textContent = 'Verglichen wird der Durchschnitt pro Tag, so ist auch der laufende Monat fair vergleichbar' + (sp ? '; die Prozente sind in CHF umgerechnet' : '') + '. Tippe auf einen Monat, um ihn zu öffnen.';
   }
-  function renderCompareMini(base) {
-    const sp = isSplit(), now = ym(new Date());
-    $('dash-cmp').replaceChildren(...cmpMonths().map(m => { const t = totals(m, base), a = monthAvg(m, base), row = h('button', 'row' + (m === view ? ' on' : '')), what = h('span'), amt = h('span', 'amt num'), cw = h('span', 'ln');
-      row.type = 'button';
-      what.append(h('b', null, monthName(m)), h('small', null, a ? 'Ø ' + (sp ? moneyText(Math.round(a.c), Math.round(a.e)) : fmt(Math.round(a.b), base)) + ' pro Tag' + (m === now ? ' (bisher)' : '') : 'noch nicht begonnen'));
-      if (sp) amt.append(...money(t.chf, t.eur)); else amt.append(fmt(Math.round(t.outB), base));
-      cw.append(deltaChip(m, base)); amt.append(cw);
-      row.append(what, amt); row.addEventListener('click', () => { view = m; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }); return row; }));
-  }
 
   /* ---------- Hilfen für Kacheln und Dateien ---------- */
   function mkTile(lab, nodes, sub, subCls) { const t = h('div'), v = h('span', 'num'); v.replaceChildren(...nodes); t.append(h('span', 'lab', lab), v);
@@ -2254,13 +2204,6 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     $('as-list').replaceChildren(...(inv.length ? inv.map(assetRow) : [h('div', 'empty', 'Noch keine Anlagen. Füge Depot, ETFs oder Krypto hinzu und trage den Wert ab und zu nach.')]));
     $('db-list').replaceChildren(...(dbs.length ? dbs.map(assetRow) : [h('div', 'empty', 'Keine Kredite erfasst. Mit Hypothek, Leasing oder Kredit stimmt dein Nettovermögen.')]));
     renderEmergency(base);
-  }
-  function dashWorth(base) { const host = $('dash-acc'), now = ym(new Date());
-    if (assetsAll().length) { const w = worthAt(today()), sp = isSplit(), line = (lab, c, e, b, cls) => { const r = h('div', 'accrow' + (cls ? ' ' + cls : '')); r.append(h('span', null, lab), h('span', 'num', sp ? moneyText(c, e) : sfmt(Math.round(b), base))); return r; };
-      host.append(line('Anlagen', w.inv.CHF, w.inv.EUR, cv(w.inv, now, base)), line('Schulden', -w.debt.CHF, -w.debt.EUR, -cv(w.debt, now, base)),
-        line('Nettovermögen', w.acc.CHF + w.inv.CHF - w.debt.CHF, w.acc.EUR + w.inv.EUR - w.debt.EUR, netOf(w, now, base), 'total')); }
-    const r = emergency(base); if (r.mo != null) { const [cls, word] = emStatus(r.mo), row = h('div', 'accrow'), v = h('span', 'num');
-      v.append(nf1.format(r.mo) + ' Monate ', h('span', 'chip ' + cls, word)); row.append(h('span', null, 'Notgroschen'), v); host.append(row); }
   }
   function asClose() { asEdit = null; $('as-form').hidden = true; }
   function asOpen(x, debtNew) {
