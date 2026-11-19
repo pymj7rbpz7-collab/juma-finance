@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<script>try{var t=localStorage.getItem('juma:theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
+<script>try{var t=localStorage.getItem('juma:theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;var p=localStorage.getItem('juma:palette');if(/^(lagune|salbei|lavendel|koralle|graphit)$/.test(p||''))document.documentElement.dataset.palette=p}catch(e){}</script>
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
 /* Layout: Liquid Glass. Blauer Hintergrund, Inhalt auf Milchglas-Karten, Bedienung schwebt als Glas darüber.
@@ -83,6 +83,34 @@
   --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
+
+/* Hintergrundfarben: Blau ist die Grundeinstellung, die anderen ersetzen nur Grundton und Farbflächen */
+:root[data-palette="lagune"] { --bg: #e6f5f3; --w1: #8fe0d4; --w2: #a8d8f0; --w3: #9be7d1; --w4: #c8efe9; }
+:root[data-palette="salbei"] { --bg: #edf3e9; --w1: #b5dba0; --w2: #cfe3b0; --w3: #a8d6b6; --w4: #dcebd0; }
+:root[data-palette="lavendel"] { --bg: #f0ecfb; --w1: #c6b4ff; --w2: #e0c4f5; --w3: #b7c3ff; --w4: #ddd3ff; }
+:root[data-palette="koralle"] { --bg: #fbefec; --w1: #ffc1b3; --w2: #ffcfe0; --w3: #ffd9a8; --w4: #ffe2da; }
+:root[data-palette="graphit"] { --bg: #eef0f3; --w1: #d3d8e0; --w2: #e2e4e8; --w3: #c9d0da; --w4: #e6e9ee; }
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="lagune"]:not([data-theme="light"]) { --bg: #03100f; --w1: #0c5a55; --w2: #0b4a66; --w3: #0d5f4a; --w4: #0a3a3a; }
+  :root[data-palette="salbei"]:not([data-theme="light"]) { --bg: #060d07; --w1: #1f5a2a; --w2: #3a5a1a; --w3: #12503a; --w4: #24401f; }
+  :root[data-palette="lavendel"]:not([data-theme="light"]) { --bg: #0a0614; --w1: #3e2491; --w2: #5a1f78; --w3: #2b2f8f; --w4: #2a1d5e; }
+  :root[data-palette="koralle"]:not([data-theme="light"]) { --bg: #12070a; --w1: #7a2436; --w2: #6e1f55; --w3: #7a3d14; --w4: #4a1a24; }
+  :root[data-palette="graphit"]:not([data-theme="light"]) { --bg: #08090b; --w1: #2a2e36; --w2: #23262c; --w3: #30353f; --w4: #1d2026; }
+}
+:root[data-palette="lagune"][data-theme="dark"] { --bg: #03100f; --w1: #0c5a55; --w2: #0b4a66; --w3: #0d5f4a; --w4: #0a3a3a; }
+:root[data-palette="salbei"][data-theme="dark"] { --bg: #060d07; --w1: #1f5a2a; --w2: #3a5a1a; --w3: #12503a; --w4: #24401f; }
+:root[data-palette="lavendel"][data-theme="dark"] { --bg: #0a0614; --w1: #3e2491; --w2: #5a1f78; --w3: #2b2f8f; --w4: #2a1d5e; }
+:root[data-palette="koralle"][data-theme="dark"] { --bg: #12070a; --w1: #7a2436; --w2: #6e1f55; --w3: #7a3d14; --w4: #4a1a24; }
+:root[data-palette="graphit"][data-theme="dark"] { --bg: #08090b; --w1: #2a2e36; --w2: #23262c; --w3: #30353f; --w4: #1d2026; }
+.swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+@media (min-width: 420px) { .swatches { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.swatches input { position: absolute; opacity: 0; pointer-events: none; }
+.sw { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0; cursor: pointer; font-size: 12px; color: var(--muted); border-radius: 14px; min-width: 0; }
+.sw i { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--s1), var(--s2));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 6px rgba(0, 0, 0, 0.15); transition: box-shadow 150ms ease; }
+.swatches input:checked + .sw { color: var(--ink); font-weight: 600; }
+.swatches input:checked + .sw i { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--accent); }
+.swatches input:focus-visible + .sw i { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 5px; }
 *, *::before, *::after { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.35; letter-spacing: -0.02em;
   -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
@@ -636,6 +664,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Hell</label>
             <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dunkel</label>
           </div>
+        </div>
+        <div class="field"><span>Hintergrundfarbe</span>
+          <div class="swatches" role="radiogroup" aria-label="Hintergrundfarbe"><input type="radio" name="palette" id="pal-blau" value="blau" checked><label class="sw" for="pal-blau" style="--s1:#5aa2ff;--s2:#2f6fe0"><i aria-hidden="true"></i>Blau</label><input type="radio" name="palette" id="pal-lagune" value="lagune"><label class="sw" for="pal-lagune" style="--s1:#3cc4b4;--s2:#1f8fb0"><i aria-hidden="true"></i>Lagune</label><input type="radio" name="palette" id="pal-salbei" value="salbei"><label class="sw" for="pal-salbei" style="--s1:#8cc66b;--s2:#3f9a5a"><i aria-hidden="true"></i>Salbei</label><input type="radio" name="palette" id="pal-lavendel" value="lavendel"><label class="sw" for="pal-lavendel" style="--s1:#a98bff;--s2:#7a5ce0"><i aria-hidden="true"></i>Lavendel</label><input type="radio" name="palette" id="pal-koralle" value="koralle"><label class="sw" for="pal-koralle" style="--s1:#ff9a85;--s2:#e2557a"><i aria-hidden="true"></i>Koralle</label><input type="radio" name="palette" id="pal-graphit" value="graphit"><label class="sw" for="pal-graphit" style="--s1:#9aa3b0;--s2:#5b6370"><i aria-hidden="true"></i>Graphit</label></div>
         </div>
         <div class="actions">
           <button class="btn grow" id="btn-import" type="button">CSV importieren</button>
@@ -1339,6 +1370,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (document.activeElement !== $('rate')) $('rate').value = rateFor(view).toFixed(4);
     $('rate-scope').textContent = settings.rates[view] ? 'für ' + monthName(view) : '(Standardkurs)';
     $('rate-auto').checked = settings.rateAuto !== false; syncWayFab();
+    if (settings.palette && PALS[settings.palette] && settings.palette !== palPref()) applyPalette(settings.palette, false);
     $('show-' + show().toLowerCase()).checked = true;
     const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
     else { rt.textContent = ''; rt.className = 'lab rate'; }
@@ -1970,8 +2002,16 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   /* ---------- Darstellung: automatisch, hell, dunkel (pro Gerät) ---------- */
   function themePref() { const t = document.documentElement.dataset.theme; return t === 'light' || t === 'dark' ? t : 'auto'; }
   function isDark() { const t = themePref(); return t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches); }
-  function syncTheme() { const t = themePref(); $('theme-' + t).checked = true; $(isDark() ? 'tq-dark' : 'tq-light').checked = true;
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { if (!m.dataset.o) m.dataset.o = m.content; m.content = t === 'auto' ? m.dataset.o : t === 'dark' ? '#0a1430' : '#dfe9fb'; }); }
+  const PALS = { blau: ['#dfe9fb', '#0a1430'], lagune: ['#e6f5f3', '#03100f'], salbei: ['#edf3e9', '#060d07'], lavendel: ['#f0ecfb', '#0a0614'], koralle: ['#fbefec', '#12070a'], graphit: ['#eef0f3', '#08090b'] };
+  function palPref() { const p = document.documentElement.dataset.palette; return PALS[p] ? p : 'blau'; }
+  function syncTheme() { const t = themePref(), pal = PALS[palPref()]; $('theme-' + t).checked = true; $(isDark() ? 'tq-dark' : 'tq-light').checked = true; $('pal-' + palPref()).checked = true;
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = t === 'dark' || (t === 'auto' && /dark/.test(m.media)) ? pal[1] : pal[0]; }); }
+  // Hintergrundfarbe: gilt sofort auf diesem Gerät und wird mit den Einstellungen auf die anderen Geräte übertragen
+  function applyPalette(p, save) { if (!PALS[p]) p = 'blau';
+    try { if (p === 'blau') localStorage.removeItem('juma:palette'); else localStorage.setItem('juma:palette', p); } catch (e) { /* gilt bis zum Schliessen */ }
+    if (p === 'blau') delete document.documentElement.dataset.palette; else document.documentElement.dataset.palette = p; syncTheme();
+    if (save && key && settings.palette !== p) { settings.palette = p; flush('settings'); } }
+  Object.keys(PALS).forEach(p => $('pal-' + p).addEventListener('change', () => applyPalette(p, true)));
   function setTheme(t) { try { if (t === 'auto') localStorage.removeItem('juma:theme'); else localStorage.setItem('juma:theme', t); } catch (e) { /* gilt dann nur bis zum Schliessen */ }
     if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t; syncTheme(); }
   ['theme-auto', 'theme-light', 'theme-dark'].forEach(id => $(id).addEventListener('change', () => setTheme($(id).value)));
