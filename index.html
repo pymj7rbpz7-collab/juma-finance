@@ -1457,7 +1457,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const rt = $('s-rate'); if (t.inB > 0) { const r = Math.round((t.inB - t.outB) / t.inB * 100); rt.textContent = 'Sparquote ' + r + ' %'; rt.className = 'lab rate ' + (r < 0 ? 'neg' : 'pos'); }
     else { rt.textContent = ''; rt.className = 'lab rate'; }
     $('tab-list').hidden = tab !== 'list'; $('tab-stats').hidden = tab !== 'stats'; $('tab-plan').hidden = tab !== 'plan'; $('tab-dash').hidden = tab !== 'dash'; $('tab-worth').hidden = tab !== 'worth'; $('tab-way').hidden = tab !== 'way'; $('tab-quotes').hidden = tab !== 'quotes';
-    document.querySelector('.summary').hidden = tab === 'quotes'; document.querySelector('.monthbar').hidden = tab === 'quotes' || tab === 'dash'; // Kurse hängen an keinem Monat
+    // Kurse hängen an keinem Monat; der Arbeitsweg zeigt nur Fahrten, ohne Ausgaben und Währungswahl
+    document.querySelector('.summary').hidden = tab === 'quotes' || tab === 'way'; document.querySelector('.monthbar').hidden = tab === 'quotes' || tab === 'dash';
+    document.querySelector('.seg.show').hidden = tab === 'way';
     $('page-title').textContent = { dash: 'Übersicht', list: 'Einträge', stats: 'Auswertung', plan: 'Planung', worth: 'Vermögen', way: 'Arbeitsweg', quotes: 'Kurse' }[tab];
     syncLists(); renderFree(base, t); renderLists();
     renderDups();
