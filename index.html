@@ -570,6 +570,45 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 78px); font-size: 14px; padding: 9px 16px; }
 }
 
+
+/* Schrift eine Stufe kleiner, auf allen Grössen */
+@media (min-width: 600px) {
+  body { font-size: 15px; }
+  h2 { font-size: 15px; }
+  .btn { font-size: 14px; min-height: 40px; padding: 8px 16px; }
+  .btn.primary { font-size: 15px; min-height: 46px; }
+  .actions .grow, .head .btn, .duprow .btn, .listrow .btn, .top .btn, .toast { font-size: 14px; }
+  .seg label { font-size: 14px; min-height: 36px; }
+  .seg.show label, .seg.themeseg label { font-size: 13px; }
+  .hint, .msg, .field > span, .summary .lab, .hero .sub, .row small, .qrow small, .day, .daystats .lab, .duprow small, .rateline span { font-size: 12px; }
+  .row .amt, .qrow .num, .accrow.total { font-size: 15px; }
+  .row { min-height: 52px; }
+  .bar, .budrow, .accrow, .rateline, .empty, .check { font-size: 14px; }
+  .daystats .num { font-size: 18px; }
+  .monthbar strong { font-size: 17px; }
+  .hero .num { font-size: 30px; }
+  .pair .num { font-size: 18px; } .free .num { font-size: 21px; }
+}
+@media (min-width: 1000px) {
+  .pagetitle { font-size: 26px; }
+  .top h1 { font-size: 19px; }
+  .fab { font-size: 15px; min-height: 46px; }
+  .seg.tabs label { font-size: 14px; min-height: 40px; padding: 8px 12px; }
+  .seg.tabs svg { width: 19px; height: 19px; }
+  .monthbar strong { font-size: 16px; }
+  .hero .num, .pair .num, .free .num { font-size: 24px; }
+  .summary > .hero:not(.solo) ~ .pair .num, .summary > .hero:not(.solo) ~ .free .num { font-size: 20px; }
+}
+@media (max-width: 599.98px) {
+  body { font-size: 14px; }
+  h1 { font-size: 24px; } h2 { font-size: 15px; }
+  .hint, .msg, .field > span, .summary .lab, .hero .sub, .row small, .qrow small, .day, .daystats .lab, .duprow small { font-size: 12px; }
+  .row .amt, .qrow .num { font-size: 14px; }
+  .btn { font-size: 14px; } .btn.primary { font-size: 15px; }
+  .hero .fig .num, .hero:not(.solo) .num { font-size: clamp(17px, 5.4vw, 21px); }
+  .pair .num { font-size: 16px; } .free .num { font-size: 18px; }
+  #way-dash .btn { font-size: 15px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .entry, .toast { animation: scrim-in 200ms ease both; }
   .btn, .fab, .seg label, .row { transition: none; }
@@ -657,7 +696,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
       <section class="panel stack" id="more">
         <h2>Einstellungen</h2>
         <label class="rateline">1 EUR = <input type="text" id="rate" inputmode="decimal" aria-label="Wechselkurs: Franken pro Euro"> CHF <span id="rate-scope"></span></label>
-        <label class="check"><input type="checkbox" id="rate-auto" checked> Kurs täglich automatisch aktualisieren</label>
+        <label class="check"><input type="checkbox" id="rate-auto" checked> Kurs automatisch aktualisieren (bei jedem Öffnen und stündlich)</label>
         <div class="field"><span>Darstellung</span>
           <div class="seg wide" role="radiogroup" aria-label="Darstellung">
             <input type="radio" name="theme" id="theme-auto" value="auto" checked><label for="theme-auto">Automatisch</label>
@@ -1330,7 +1369,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const r = Number($('rate').value.trim().replace(',', '.'));
     if (!isFinite(r) || r < 0.5 || r > 2) { toast('Der Kurs muss zwischen 0.5 und 2 liegen.'); $('rate').value = rateFor(view).toFixed(4); return; }
     settings.rates[view] = r; if (view >= ym(new Date())) settings.rate = r;
-    if (view === ym(new Date())) settings.rateDay = today(); // heute gilt die Eingabe, ab morgen wieder der Tageskurs
+    if (view === ym(new Date())) settings.rateDay = today(); // heute gilt die Eingabe, ab morgen wieder der aktuelle Kurs
     render(); flush('settings'); toast('Kurs für ' + monthName(view) + ' gespeichert');
   });
   ['show-both', 'show-chf', 'show-eur'].forEach(id => $(id).addEventListener('change', () => { const v = $(id).value; settings.show = v; if (v !== 'both') settings.base = v;
@@ -1956,17 +1995,22 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
   // Wechselkurs EUR -> CHF: einmal pro Tag aus den geladenen Kursen übernehmen, für den laufenden Monat und als Standardkurs.
   // Erst nach dem Abgleich, damit keine Einstellungen eines anderen Geräts überschrieben werden.
+  // Wechselkurs EUR -> CHF: bei jedem Laden der Kurse (beim Öffnen, beim Zurückkehren in die App und stündlich) übernehmen,
+  // für den laufenden Monat und als Standardkurs. Erst nach dem Abgleich, damit keine Einstellungen eines anderen Geräts
+  // überschrieben werden. Hast du heute selbst einen Kurs eingetragen, bleibt er bis morgen.
   function autoRate() {
-    if (!key || !synced || settings.rateAuto === false || !quotes || Date.now() - quotes.t > 6 * 3600000) return;
+    if (!key || !synced || settings.rateAuto === false || !quotes || Date.now() - quotes.t > 2 * 3600000) return;
     const x = quotes.q['EURCHF=X'], td = today(), now = td.slice(0, 7);
     if (!x || typeof x.price !== 'number' || x.price < 0.5 || x.price > 2 || settings.rateDay === td) return;
     const r = Math.round(x.price * 10000) / 10000;
+    if (settings.rates[now] === r && settings.rate === r) return;
     for (const m in months) if (m < now && !settings.rates[m]) settings.rates[m] = settings.rate; // vergangene Monate behalten ihren bisherigen Kurs
-    settings.rates[now] = r; settings.rate = r; settings.rateDay = td;
+    settings.rates[now] = r; settings.rate = r;
     flush('settings'); render();
   }
+  setInterval(() => { if (!document.hidden) loadQuotes(true); }, 3600000);
   $('rate-auto').addEventListener('change', () => { settings.rateAuto = $('rate-auto').checked; if (settings.rateAuto) settings.rateDay = '';
-    flush('settings'); toast(settings.rateAuto ? 'Der Kurs wird täglich aktualisiert' : 'Der Kurs bleibt, wie du ihn einträgst'); if (settings.rateAuto) { autoRate(); loadQuotes(false); } });
+    flush('settings'); toast(settings.rateAuto ? 'Der Kurs wird bei jedem Öffnen aktualisiert' : 'Der Kurs bleibt, wie du ihn einträgst'); if (settings.rateAuto) { autoRate(); loadQuotes(false); } });
 
   // Auto-Knopf über dem Plus: Fahrt von heute mit einem Tipp
   function syncWayFab() { const b = $('fab-way'), on = wdays().includes(today()); b.classList.toggle('done', on);
@@ -2402,13 +2446,27 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     if (m.sa) { const c = [m.H, m.ch, m.dvh]; if (Math.abs(m.W - m.sw) <= 2) c.push(m.sh); else if (Math.abs(m.W - m.sh) <= 2) c.push(m.sw);
       const low = Math.min.apply(null, c.filter(x => x > 250)); if (low < t - 20) t = low; }
     return t; }
+  let dockSeen = null, dockAt = null, dockScroll = 0;
+  window.addEventListener('scroll', () => { dockScroll = Date.now(); }, { passive: true });
   function dockFix() { const el = document.documentElement;
-    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '');
+    // Nur echte Texteingaben zählen (Tastatur offen); ein angetippter Reiter oder Haken ist auch ein Eingabefeld, öffnet aber keine Tastatur
+    const ae = document.activeElement, typing = !!(ae && ae.matches && ae.matches('textarea, select, input:not([type=radio]):not([type=checkbox]):not([type=button]):not([type=submit]):not([type=file])'));
     el.classList.remove('dockfix');
     const m = dockMeasure(), fixed = !$('app').hidden && getComputedStyle(dockBar).position === 'fixed';
-    let on = false;
+    let on = false, want = null;
     if (fixed && !typing && Math.abs(m.zoom - 1) <= 0.01) { const r = dockBar.getBoundingClientRect(), t = dockTarget(m);
-      if (r.height && (r.bottom > t + 2 || r.bottom < t - 90)) { el.style.setProperty('--dock-bottom', Math.round(t) + 'px'); el.classList.add('dockfix'); on = true; } }
+      if (r.height && (r.bottom > t + 6 || r.bottom < t - 90)) want = Math.round(t); }
+    // Kurze Abweichungen (Scrollen, Safari-Leiste fährt ein oder aus, Drehen) nicht korrigieren: erst wenn dieselbe
+    // Abweichung länger als 1,5 Sekunden besteht und gerade nicht gescrollt wird. Eine bestehende Korrektur bleibt ruhig stehen.
+    const nowMs = Date.now();
+    if (want == null) { dockSeen = null; dockAt = null; }
+    else {
+      if (dockAt == null || Math.abs(want - dockAt) > 8) {
+        if (!dockSeen || Math.abs(dockSeen.t - want) > 8) dockSeen = { t: want, since: nowMs };
+        if (nowMs - dockSeen.since >= 1500 && nowMs - dockScroll >= 800) dockAt = want;
+      }
+      if (dockAt != null) { el.style.setProperty('--dock-bottom', dockAt + 'px'); el.classList.add('dockfix'); on = true; }
+    }
     const info = $('dock-info'); if (info && !$('extras').hidden) info.textContent = 'Anzeige (für die Fehlersuche): ' + m.W + '×' + m.H + ' · sichtbar ' + m.vv + ' · Rand ' + m.L +
       ' · ' + m.ch + '/' + m.dvh + ' · Bildschirm ' + m.sw + '×' + m.sh + ' · ' + (m.sa ? 'App' : 'Browser') + ' · Zoom ' + (Math.round(m.zoom * 100) / 100) + ' · Korrektur ' + (on ? 'an' : 'aus'); }
   function dockSoon() { dockFix(); [120, 400, 900, 1800].forEach(ms => setTimeout(dockFix, ms)); }
