@@ -489,6 +489,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chipbtn { border: 0; border-radius: 999px; min-height: 38px; padding: 6px 14px; background: var(--fill); font-size: 14px; font-weight: 500; white-space: pre; transition: transform 100ms ease-out; }
 .chipbtn:active { transform: scale(0.95); }
+/* Kategorie-Knöpfe im Eingabefenster: die meistgenutzten zuerst */
+.catchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.catchips .chipbtn { color: var(--ink); white-space: nowrap; }
+.catchips .chipbtn[aria-checked="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.catchips .chipbtn.more { background: none; color: var(--accent); font-weight: 600; }
 .wayadd { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .wayadd input { flex: 1; min-width: 150px; }
 #way-dash { display: flex; flex-direction: column; gap: 12px; }
@@ -785,11 +790,14 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <input type="radio" name="cur" id="f-cur-eur" value="EUR"><label for="f-cur-eur">EUR</label>
           </div>
         </div>
-        <div class="two">
-          <label class="field"><span>Kategorie</span><select id="f-cat"></select></label>
-          <label class="field"><span>Konto</span><select id="f-acc"></select></label>
+        <div class="field"><span id="f-cat-lab">Kategorie</span>
+          <div class="catchips" id="f-catchips" role="radiogroup" aria-labelledby="f-cat-lab"></div>
+          <select id="f-cat" hidden aria-hidden="true" tabindex="-1"></select>
         </div>
-        <label class="field"><span>Datum</span><input type="date" id="f-date" required></label>
+        <div class="two">
+          <label class="field"><span>Konto</span><select id="f-acc"></select></label>
+          <label class="field"><span>Datum</span><input type="date" id="f-date" required></label>
+        </div>
         <label class="field"><span>Steuer (optional)</span><select id="f-tax"></select></label>
         <label class="field"><span>Notiz (optional)</span><input type="text" id="f-note" maxlength="120" placeholder="z. B. Spar Dornbirn"></label>
         <div class="actions">
@@ -1321,14 +1329,32 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function typeVal() { return $('f-type-in').checked ? 'in' : 'out'; }
   function curVal() { return $('f-cur-eur').checked ? 'EUR' : 'CHF'; }
   function setCur(c) { $('f-cur-eur').checked = c === 'EUR'; $('f-cur-chf').checked = c !== 'EUR'; }
-  function syncCats(keep) { fillSelect($('f-cat'), withKeep(typeVal() === 'in' ? incats() : cats(), keep), keep); }
+  // Kategorien nach Häufigkeit der letzten 120 Tage, bei Gleichstand in der gewohnten Reihenfolge
+  function catsByUse(type) { const base = type === 'in' ? incats() : cats(), n = {}, from = new Date(Date.now() - 120 * 86400000), lim = ym(from) + '-' + String(from.getDate()).padStart(2, '0');
+    for (const m in months) if (m >= lim.slice(0, 7)) for (const e of months[m]) if ((e.t === 'in') === (type === 'in') && e.d >= lim) n[e.cat] = (n[e.cat] || 0) + 1;
+    return base.map((c, i) => [c, n[c] || 0, i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map(x => x[0]); }
+  let catsAll = false;
+  function syncCats(keep) { const list = catsByUse(typeVal()); fillSelect($('f-cat'), withKeep(list, keep), keep); catsAll = false; renderCatChips(); }
+  function renderCatChips() {
+    const sel = $('f-cat'), cur = sel.value, all = [...sel.options].map(o => o.value), top = 6;
+    let shown = catsAll || all.length <= top + 1 ? all : all.slice(0, top);
+    if (!shown.includes(cur)) shown = shown.concat(cur);
+    const host = $('f-catchips');
+    host.replaceChildren(...shown.map(c => { const b = h('button', 'chipbtn', c); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(c === cur));
+      b.addEventListener('click', () => { sel.value = c; renderCatChips(); }); return b; }));
+    if (all.length > shown.length || catsAll) { const m = h('button', 'chipbtn more', catsAll ? 'Weniger' : 'Alle ' + all.length); m.type = 'button';
+      m.addEventListener('click', () => { catsAll = !catsAll; renderCatChips(); }); host.append(m); }
+  }
+  // Konto und Währung vom letzten neuen Eintrag merken (pro Gerät)
+  function lastPick() { try { return JSON.parse(localStorage.getItem('juma:last') || 'null') || {}; } catch (e) { return {}; } }
   function setForm(open) { formOpen = open; $('app').classList.toggle('form-open', open); $('fab').hidden = !key; $('fab-way').hidden = !key;
     if (open) { if (!wide()) $('entry-form').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('f-amount').focus({ preventScroll: true }); } }
   function resetForm() {
     editing = null; $('entry-form').reset();
-    fillSelect($('f-acc'), accNames()); syncCats();
+    const last = lastPick(), names = accNames(), acc = names.includes(last.acc) ? last.acc : names[0];
+    fillSelect($('f-acc'), names, acc); syncCats();
     $('f-date').value = view === ym(new Date()) ? today() : view + '-01';
-    setCur(accs()[0].c); $('form-title').textContent = 'Neuer Eintrag'; $('f-delete').hidden = true; delete $('f-delete').dataset.sure;
+    setCur(last.c === 'EUR' || last.c === 'CHF' ? last.c : (accs().find(x => x.n === acc) || accs()[0]).c); $('form-title').textContent = 'Neuer Eintrag'; $('f-delete').hidden = true; delete $('f-delete').dataset.sure;
     $('f-delete').textContent = 'Eintrag löschen'; setMsg('form-msg', '');
   }
   $('fab').addEventListener('click', () => { resetForm(); setForm(true); });
@@ -1345,6 +1371,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const touched = new Set();
     if (editing) for (const m in months) { if (months[m].some(x => x.id === editing)) { months[m] = months[m].filter(x => x.id !== editing); touched.add(m); } }
     const m = d.slice(0, 7); months[m] = (months[m] || []).concat(e); touched.add(m);
+    if (!editing) try { localStorage.setItem('juma:last', JSON.stringify({ acc: e.acc, c: e.c })); } catch (err) { /* nur bequemer, nicht nötig */ }
     const was = editing; view = m; resetForm(); setForm(false); render();
     touched.forEach(x => flush('m-' + x));
     toast(was ? 'Änderung gespeichert' : 'Gespeichert: ' + fmt(e.a, e.c)); if (wide()) $('f-amount').focus();
