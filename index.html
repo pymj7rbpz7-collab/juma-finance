@@ -614,6 +614,11 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   .pair .num { font-size: 16px; } .free .num { font-size: 18px; }
   #way-dash .btn { font-size: 15px; }
 }
+/* Einführungsvideo als schwebendes Fenster */
+.intro { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: var(--scrim);
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px)); }
+.intro-box { width: min(980px, 100%); max-height: 100%; overflow: auto; background: var(--sheet); }
+.intro video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 16px; background: #000; }
 @media (prefers-reduced-motion: reduce) {
   .entry, .toast { animation: scrim-in 200ms ease both; }
   .btn, .fab, .seg label, .row { transition: none; }
@@ -719,6 +724,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         <div class="actions">
           <button class="btn grow" id="btn-lists" type="button">Kategorien &amp; Konten</button>
           <button class="btn grow" id="btn-backup" type="button">Sicherung</button>
+          <button class="btn grow" id="btn-intro" type="button">Einführung ansehen</button>
         </div>
         <button class="btn" id="btn-logout" type="button" hidden>Abmelden</button>
         <button class="btn warn" id="btn-wipe" type="button">Alle Einträge löschen</button>
@@ -1050,6 +1056,15 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     </div>
   </div>
 </div>
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title" hidden>
+  <div class="panel stack intro-box">
+    <div class="head"><h2 id="intro-title">Einführung in pairo</h2><button class="btn" id="intro-close" type="button">Schliessen</button></div>
+    <video id="intro-video" controls playsinline preload="none" poster="intro/einfuehrung.jpg" width="1440" height="900">
+      <source src="intro/einfuehrung.mp4" type="video/mp4">
+    </video>
+    <p class="hint">Eine Minute, mit Beispielzahlen. Du findest die Einführung jederzeit unter „Mehr“.</p>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="vendor/supabase.js"></script>
@@ -1264,7 +1279,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function retryPending() { if (key) Object.keys(pending).forEach(id => flush(id)); }
 
   function start() {
-    $('lock').hidden = true; $('app').hidden = false;
+    $('lock').hidden = true; $('app').hidden = false; maybeIntro();
     $('store-note').textContent = backend.kind === 'cloud'
       ? 'Angemeldet als ' + user.email + '. Verschlüsselt gespeichert und auf allen deinen Geräten abgeglichen. Sperrt sich nach 10 Minuten ohne Eingabe.'
       : backend.kind === 'local' ? 'Die Einträge liegen verschlüsselt nur auf diesem Gerät und werden nicht synchronisiert. Sperrt sich nach 10 Minuten ohne Eingabe.'
@@ -1307,6 +1322,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   }
 
   function lock() {
+    closeIntro(false);
     key = null; months = {}; seen = {}; editing = null; settings = DEF(); selDay = '';
     synced = false; noticed = false; searchQ = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
     $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true; $('as-form').hidden = true; $('dash-nudge').hidden = true; $('way-form').hidden = true; $('way-date').value = '';
@@ -2069,6 +2085,19 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
     const t = { out: [0, 0], in: [0, 0] }; fx.forEach(f => { t[f.t === 'in' ? 'in' : 'out'][f.c === 'EUR' ? 1 : 0] += f.a / (f.every || 1); });
     const r = a => moneyText(Math.round(a[0]), Math.round(a[1]));
     return 'Fixkosten pro Monat: ' + r(t.out) + (t.in[0] || t.in[1] ? ' · Fixe Einnahmen: ' + r(t.in) : ''); }
+
+  /* ---------- Einführungsvideo: einmal beim ersten Start auf dem Mac, sonst unter Mehr ---------- */
+  function isMac() { return /Mac/.test(navigator.platform || '') && !(navigator.maxTouchPoints > 1); }
+  function showIntro(play) { const v = $('intro-video'); $('intro').hidden = false;
+    try { localStorage.setItem('juma:intro', '1'); } catch (e) { /* dann zeigt der Mac sie beim nächsten Start noch einmal */ }
+    $('intro-close').focus({ preventScroll: true }); if (play) v.play().catch(() => { /* der Nutzer startet selbst */ }); }
+  function closeIntro(focusBack) { const v = $('intro-video'); if ($('intro').hidden) return; v.pause(); $('intro').hidden = true; if (focusBack) $('btn-more').focus({ preventScroll: true }); }
+  function maybeIntro() { let seen = false; try { seen = localStorage.getItem('juma:intro') === '1'; } catch (e) { seen = true; }
+    if (!seen && isMac()) setTimeout(() => { if (key) showIntro(false); }, 600); }
+  $('btn-intro').addEventListener('click', () => { setMore(false); showIntro(true); });
+  $('intro-close').addEventListener('click', () => closeIntro(true));
+  $('intro').addEventListener('click', e => { if (e.target === $('intro')) closeIntro(true); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('intro').hidden) closeIntro(true); });
 
   /* ---------- Darstellung: automatisch, hell, dunkel (pro Gerät) ---------- */
   function themePref() { const t = document.documentElement.dataset.theme; return t === 'light' || t === 'dark' ? t : 'auto'; }

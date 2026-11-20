@@ -1,5 +1,5 @@
 // Offline-Betrieb: App-Dateien aus dem Cache, im Hintergrund aktualisieren.
-const CACHE = 'juma-finance-v29';
+const CACHE = 'juma-finance-v30';
 const FILES = ['./', 'index.html', 'config.js', 'vendor/supabase.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
@@ -7,6 +7,8 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  // Videos nicht aus dem Cache: Safari braucht dafür Teilantworten, die der Cache nicht liefert
+  if (e.request.headers.has('range') || /\.(mp4|m4v|webm)$/i.test(new URL(e.request.url).pathname)) return;
   e.respondWith(caches.open(CACHE).then(async c => {
     const hit = await c.match(e.request, { ignoreSearch: true });
     const net = fetch(e.request).then(r => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => hit);
