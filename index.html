@@ -229,6 +229,17 @@ html:has(#app.form-open) { overflow: hidden; }
 .qrow .num { text-align: right; font-size: 17px; font-weight: 600; white-space: nowrap; }
 .qrow .sub { grid-column: 1 / -1; text-align: right; }
 .qrow .chip { margin: 0 0 0 6px; }
+/* Tageskachel: zu früheren Tagen blättern */
+.daynav { display: inline-flex; align-items: center; gap: 4px; margin-left: -4px; }
+.daynav[hidden] { display: none; }
+.dd { width: 28px; height: 28px; min-height: 0; padding: 0; border: 0; border-radius: 50%; background: var(--fill); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.dd svg { width: 7px; height: 12px; }
+.dd:disabled { opacity: 0.3; cursor: default; }
+.ddpick { position: relative; padding: 2px 6px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.ddpick:hover { background: var(--fill); }
+.ddpick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; min-height: 0; font-size: 16px; cursor: pointer; }
+.ddpick:focus-within { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 1px; }
+.dayin { color: var(--pos); }
 /* Übersicht: nur das Tägliche. Die Zahlen zum Arbeitsweg stehen im Reiter Arbeitsweg. */
 #way-dash .daystats { display: none; }
 @media (max-width: 599.98px) {
@@ -237,7 +248,8 @@ html:has(#app.form-open) { overflow: hidden; }
   .hero .fig { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: start; }
   .hero .fig .lab { grid-column: 1; grid-row: 1; }
   .hero .fig .sub { grid-column: 1; grid-row: 2; }
-  .hero .fig .num, .hero:not(.solo) .num { grid-column: 2; grid-row: 1 / span 2; text-align: right; font-size: clamp(18px, 5.8vw, 23px); white-space: nowrap; }
+  .hero .fig .dayin { grid-column: 1; grid-row: 3; }
+  .hero .fig .num, .hero:not(.solo) .num { grid-column: 2; grid-row: 1 / span 3; text-align: right; font-size: clamp(18px, 5.8vw, 23px); white-space: nowrap; }
   .hero:not(.solo) .fig + .fig { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; }
   .top .themeseg { display: none; }
   #way-dash { gap: 10px; }
@@ -831,7 +843,9 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
         <section class="panel summary">
           <div class="hero" id="s-hero">
-            <div class="fig" id="s-today-wrap"><span class="lab">Ausgaben heute</span><span class="num" id="s-today"></span><span class="sub" id="s-today-sub"></span></div>
+            <div class="fig" id="s-today-wrap"><span class="lab" id="s-today-lab">Ausgaben heute</span><span class="num" id="s-today"></span>
+              <span class="sub daynav"><button class="dd" id="dd-prev" type="button" aria-label="Vorheriger Tag"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2 2 9l7 7"/></svg></button><span class="ddpick"><span id="s-today-sub"></span><input type="date" id="dd-pick" aria-label="Tag wählen"></span><button class="dd" id="dd-next" type="button" aria-label="Nächster Tag"><svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 7 7-7 7"/></svg></button></span>
+              <span class="sub dayin" id="s-day-in" hidden></span></div>
             <div class="fig"><span class="lab" id="s-total-lab">Ausgaben im Monat</span><span class="num" id="s-total"></span><span class="sub" id="s-split"></span></div>
           </div>
           <div class="pair">
@@ -851,7 +865,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
             <div id="way-dash"></div>
           </section>
           <section class="panel stack clip">
-            <div class="head"><h2>Letzte Einträge</h2><button class="btn" type="button" data-go="tab-a">Alle</button></div>
+            <div class="head"><h2 id="dash-recent-title">Letzte Einträge</h2><div class="actions"><button class="btn" id="dd-today" type="button" hidden>Heute</button><button class="btn" type="button" data-go="tab-a">Alle</button></div></div>
             <div id="dash-recent"></div>
           </section>
         </div>
@@ -1085,7 +1099,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   let seen = {}, busy = {}, dirty = {}, applyChain = Promise.resolve();
   let view = ym(new Date()), editing = null, idleTimer = null, loadTimer = null;
   let tab = 'dash', listFilter = 'all', formOpen = false, imp = null, resizeT;
-  let selDay = '', searchQ = '', synced = false, noticed = false, listSig = '', listsSig = '', budSig = '', fxEdit = null, goalEdit = null;
+  let dashDay = '', selDay = '', searchQ = '', synced = false, noticed = false, listSig = '', listsSig = '', budSig = '', fxEdit = null, goalEdit = null;
 
   /* ---------- Hilfen ---------- */
   function ym(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
@@ -1324,7 +1338,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
   function lock() {
     closeIntro(false);
     key = null; months = {}; seen = {}; editing = null; settings = DEF(); selDay = '';
-    synced = false; noticed = false; searchQ = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
+    synced = false; noticed = false; searchQ = ''; dashDay = ''; listSig = ''; listsSig = ''; budSig = ''; fxEdit = null; goalEdit = null;
     $('q').value = ''; $('lists').hidden = true; $('backup').hidden = true; $('bk-text').value = ''; $('fx-form').hidden = true; $('goal-form').hidden = true; $('as-form').hidden = true; $('dash-nudge').hidden = true; $('way-form').hidden = true; $('way-date').value = '';
     $('fx-form').reset(); $('goal-form').reset();
     if (unsub) { unsub(); unsub = null; } clearTimeout(idleTimer); clearTimeout(loadTimer);
@@ -1431,7 +1445,7 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
   function render() {
     if (!key) return;
-    if (tab === 'dash') view = ym(new Date()); // die Übersicht zeigt immer den laufenden Monat
+    if (tab === 'dash') view = dashDate().slice(0, 7); // die Übersicht zeigt den Monat des gewählten Tages (sonst den laufenden)
     const base = baseCur(), t = totals(view, base), list = (months[view] || []).slice();
     $('m-label').textContent = monthName(view);
     const se = $('s-saldo');
@@ -1985,16 +1999,40 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
         return m + '-' + String(Math.min(f.day || 1, new Date(y, mo, 0).getDate())).padStart(2, '0'); } m = shift(m, 1); }
     return null; }
   // Kennzahlen oben: Ausgaben von heute neben denen des Monats (nur im laufenden Monat)
+  // Tageskachel: auf der Übersicht kann man zu früheren Tagen blättern ('' = heute)
+  function dashDate() { const td = today(); return dashDay && dashDay < td ? dashDay : td; }
+  function dayShift(d, n) { const [y, m, dd] = d.split('-').map(Number), x = new Date(y, m - 1, dd + n);
+    return ym(x) + '-' + String(x.getDate()).padStart(2, '0'); }
+  function setDashDay(d) { const td = today(); dashDay = !d || d >= td ? '' : d; render(); }
   function renderToday(base) {
-    const now = ym(new Date()), td = today(), on = view === now;
+    const td = today(), dash = tab === 'dash', d = dash ? dashDate() : td, m = d.slice(0, 7), on = dash || view === ym(new Date());
     $('s-today-wrap').hidden = !on; $('s-hero').classList.toggle('solo', !on);
-    $('s-total-lab').textContent = on ? 'Ausgaben ' + new Intl.DateTimeFormat('de-CH', { month: 'long' }).format(new Date()) : 'Ausgaben im ' + monthName(view);
+    $('s-total-lab').textContent = m === ym(new Date()) && view === m ? 'Ausgaben ' + new Intl.DateTimeFormat('de-CH', { month: 'long' }).format(new Date()) : 'Ausgaben im ' + monthName(view);
+    document.querySelector('.daynav').hidden = !dash;
     if (!on) return;
-    let c = 0, e = 0, b = 0;
-    for (const x of months[now] || []) { if (x.t === 'in' || x.d !== td) continue; if (x.c === 'EUR') e += x.a; else c += x.a; b += conv(x.a, x.c, now, base); }
+    let c = 0, e = 0, b = 0, ic = 0, ie = 0;
+    for (const x of months[m] || []) { if (x.d !== d) continue;
+      if (x.t === 'in') { if (x.c === 'EUR') ie += x.a; else ic += x.a; continue; }
+      if (x.c === 'EUR') e += x.a; else c += x.a; b += conv(x.a, x.c, m, base); }
     if (isSplit()) $('s-today').replaceChildren(...money(c, e)); else $('s-today').textContent = fmt(Math.round(b), base);
-    $('s-today-sub').textContent = dayLabel(now, new Date().getDate());
+    const yest = dayShift(td, -1);
+    $('s-today-lab').textContent = d === td ? 'Ausgaben heute' : d === yest ? 'Ausgaben gestern' : 'Ausgaben an diesem Tag';
+    $('s-today-sub').textContent = dayLabel(m, Number(d.slice(8)));
+    $('dd-pick').value = d; $('dd-pick').max = td; $('dd-next').disabled = d >= td;
+    const inc = $('s-day-in'), incTxt = [];
+    if (ic) incTxt.push(fmt(ic, 'CHF')); if (ie) incTxt.push(fmt(ie, 'EUR'));
+    inc.hidden = !(dash && incTxt.length); inc.textContent = 'Einnahmen +' + incTxt.join(' · +');
   }
+  $('dd-prev').addEventListener('click', () => setDashDay(dayShift(dashDate(), -1)));
+  $('dd-next').addEventListener('click', () => setDashDay(dayShift(dashDate(), 1)));
+  $('dd-today').addEventListener('click', () => setDashDay(''));
+  $('dd-pick').addEventListener('click', e => { try { e.target.showPicker(); } catch (err) { /* Browser öffnet die Auswahl selbst */ } });
+  $('dd-pick').addEventListener('change', e => { if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) setDashDay(e.target.value); });
+  // Am Handy: auf der Kachel nach links oder rechts wischen
+  (() => { let sx = 0, sy = 0, on = false;
+    $('s-hero').addEventListener('touchstart', e => { if (tab !== 'dash' || e.touches.length !== 1) return; on = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    $('s-hero').addEventListener('touchend', e => { if (!on) return; on = false; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dy) < 40) setDashDay(dayShift(dashDate(), dx > 0 ? -1 : 1)); }, { passive: true }); })();
 
   /* ---------- Kurse: eigene Seite mit Aktien und Krypto, bei jedem Öffnen neu geladen ---------- */
   const QUOTES = [['AAPL', 'Apple', 'AAPL'], ['ONON', 'On', 'ONON'], ['SPCX', 'SpaceX', 'SPCX'], ['TSLA', 'Tesla', 'TSLA'],
@@ -2068,12 +2106,21 @@ input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 
   function renderDash() {
     renderNudge(); renderWayDash();
+    const d = dashDate(), past = d !== today(), mk = e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
+      row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
+      what.append(h('b', null, e.cat), h('small', null, (past ? '' : de(e.d) + ' · ') + sub(e)));
+      row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; };
+    $('dd-today').hidden = !past;
+    if (past) {
+      $('dash-recent-title').textContent = 'Einträge ' + dayLabel(d.slice(0, 7), Number(d.slice(8)));
+      const es = (months[d.slice(0, 7)] || []).filter(e => e.d === d).sort((a, b) => (a.t === 'in') - (b.t === 'in') || b.a - a.a);
+      $('dash-recent').replaceChildren(...(es.length ? es.map(mk) : [h('div', 'empty', 'An diesem Tag ist nichts erfasst.')]));
+      return;
+    }
+    $('dash-recent-title').textContent = 'Letzte Einträge';
     const all = []; for (const m in months) for (const e of months[m]) all.push(e);
     all.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : 0);
-    $('dash-recent').replaceChildren(...(all.length ? all.slice(0, 4).map(e => { const row = h('button', 'row'), what = h('span'); row.type = 'button';
-      row.setAttribute('aria-label', e.cat + ', ' + fmt(e.a, e.c) + ', ändern');
-      what.append(h('b', null, e.cat), h('small', null, de(e.d) + ' · ' + sub(e)));
-      row.append(what, amtEl(e)); row.addEventListener('click', () => edit(e)); return row; })
+    $('dash-recent').replaceChildren(...(all.length ? all.slice(0, 4).map(mk)
       : [h('div', 'empty', 'Noch keine Einträge. Erfasse den ersten über „Neuer Eintrag“.')]));
   }
 
